@@ -1,6 +1,6 @@
 # lazybv2int
 First order of business:
-- meeting schedulle
+- meeting schedule
 - timeline/plan
 - Tasks:
   - (Ahmed) Implementing the lazy translation
