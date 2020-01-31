@@ -6,17 +6,19 @@ from pysmt.typing import INT
 
 import pysmt.operators as pysmt_op
 
-
 class BV2INT(IdentityDagWalker):
 
-    def __init__(self, env=None):
+    def __init__(self, env=None, conf):
         if env is None:
             self.env = get_env()
         else:
             self.env = env
         IdentityDagWalker.__init__(self, env=self.env)
         self.mgr = self.env.formula_manager
+        self.conf = conf
         self.symbol_map = dict()
+        self.fbvand = self.mgr.Symbol(
+            "fbvand", FunctionType(INT, (INT, INT, INT)))
         self.extra_constraints = set()
         self.zero = self.mgr.Int(0)
 
@@ -40,9 +42,41 @@ class BV2INT(IdentityDagWalker):
     def walk_bv_constant(self, formula, **kwargs):
         return self.mgr.Int(formula.constant_value())
 
+    def expand_bv_bitwise_op(self, formula, args, op):
+        # TODO: implement
+        bvsize = formula.bv_width()
+        gran = self.conf.bv_bitwise_gran
+        while bvsize % gran != 0:
+            gran -= 1
+        assert(gran >= 1)
+        num_mono = formula.bv_width() / gran
+        sum = []
+        for i in range(num_mono):
+            u = (i+1)*gran - 1
+            l = i*gran
+            e0 = self.extract_term(arg[0], u, l)
+            e1 = self.extract_term(arg[1], u, l)
+            block = FreshSymbol(INT,
+                                "_".join(["block", str(op), str(u), str(l)]))
+            sum.append(self.mgr.Times(block, Int(2 ** i))
+            self.extra_constraints.add(
+                self.mgr.Equals(block, self.compute_block(gran, op, e0, e1)))
+        sum = self.mgr.Plus(sum)
+        return sum
+
+
+    def expand_bv_and(self, formula, args):
+        return self.expand_bv_bitwise_op(formula, args, pysmt_op.BV_AND)
+
+
     @handles(pysmt_op.BV_AND)
     def walk_bv_and(self, formula, args, **kwargs):
-        pass
+        # potential candidate for abstraction
+        if self.conf.abstract_bvand:
+            return self.mgr.Function(self.fbvand, (formula.bv_width(), args[0], arg[1]))
+        else:
+            # TODO: expand_bv_and function
+            return self.expand_bv_and(formula, args)
 
     @handles(pysmt_op.BV_NOT)
     def walk_bv_not(self, formula, args, **kwargs):
