@@ -42,6 +42,56 @@ class BV2INT(IdentityDagWalker):
     def walk_bv_constant(self, formula, **kwargs):
         return self.mgr.Int(formula.constant_value())
 
+    def add_elem_to_table(table, i, j, value):
+        if i not in table:
+            table[i] = {}
+        table[i,j] = value
+
+    def gen_truth_table(self, gran, op):
+        #fund is the actual Boolean function corresponding to op on single bits
+        func = self.op_to_func[op]
+        table = {}
+        max_value = 2 ** gran - 1
+        #go over each possible pair of values from 0 to 2^k-1
+        for i in range(0, max_value+1):
+            for j in range(0, max_value+1):
+                sum = 0
+                #go over each bit of the result, from 0 to gran-1
+                for k in range(0, gran):
+                    #The kth bit of i and j
+                    k_bit_of_i = (((i >> k) & 1) == 1)
+                    k_bit_of_j = (((j >> k) & 1) == 1)
+                    #result of op on these bits
+                    b = func(k_bit_of_i, k_bit_of_j)
+                    #if the result is a true bit, add the corresponding power of 2 to the sum
+                    if b:
+                        sum += 1 << k
+                add_elem_to_table(table, i, j, sum)
+        return table
+    
+    def gen_ite_from_table(self, truth_table, x, y, gran):
+
+        ite = truth_table[0][0]
+        max_value = 2 ** gran - 1
+        for i in range(0, max_value+1):
+            for j in range(0, max_value+1):
+                if i == 0 and j == 0:
+                    continue
+                else:
+                    ite = And(Equals(x, Int(i)), Equals(y, Int(j))), truth_table[i][j], ite)
+        return ite
+
+    def compute_block(self, gran, op, x, y):
+        if self.conf.bwop_blasting_mode == BLASTING_MODE.NAIVE:
+            truth_table = self.gen_truth_table(gran, op, x, y)
+            ite = self.gen_ite_from_table(truth_table)
+            return ite
+
+        elif: self.conf.bwop_blasting_mode == BLASTING_MODE_SYGUS:
+            #TODO
+        else:
+            Assert(False)
+
     def expand_bv_bitwise_op(self, formula, args, op):
         # TODO: implement
         bvsize = formula.bv_width()
@@ -63,7 +113,6 @@ class BV2INT(IdentityDagWalker):
                 self.mgr.Equals(block, self.compute_block(gran, op, e0, e1)))
         sum = self.mgr.Plus(sum)
         return sum
-
 
     def expand_bv_and(self, formula, args):
         return self.expand_bv_bitwise_op(formula, args, pysmt_op.BV_AND)
