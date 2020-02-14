@@ -41,6 +41,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     git checkout -f $SMT_SWITCH_VERSION
+    ./contrib/setup-btor.sh
     if [[ "$WITH_MSAT" != default ]]; then
         ./contrib/setup-msat.sh $MSAT_OPTS
     fi
@@ -54,7 +55,7 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] ; then \
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-btor.so ] ; then \
     echo "It appears smt-switch with boolector was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
