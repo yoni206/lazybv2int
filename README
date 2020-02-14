@@ -1,0 +1,4 @@
+# Setup
+
+* run `./contrib/set-smt-switch --with-msat`
+
