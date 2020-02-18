@@ -10,13 +10,7 @@ namespace lbv2i {
     LBV2ISolver();
     ~LBV2ISolver();
 
-    typedef struct {
-      UNSAT = 0;
-      SAT = 1;
-      UNKNOWN = 2;
-    } solver_result;
-
-    solver_result solve();
+    smt::Result solve();
 
     bool push();
     bool pop();
@@ -26,10 +20,15 @@ namespace lbv2i {
 
   private:
 
-    bool refine();
+    bool refine(smt::TermVec &outlemmas);
 
     // BV2Int Translator
     BV2Int bv2int_;
+
+    // Preprocessor that will eliminate some bv operators. Note: keep in mind
+    // while writing the preprocessor that we want to use it also in the
+    // incremental setting (push/pop)
+    Preprocessor prepro_;
 
     // smt-switch solver
     smt::SmtSolver solver_;
