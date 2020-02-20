@@ -1,5 +1,7 @@
 #pragma once
 
+#include "smt-switch/smt.h"
+
 namespace lbv2i {
 
   class BV2Int {
@@ -11,6 +13,6 @@ namespace lbv2i {
     smt::Term convert(smt::Term t);
 
   private:
-    
+
   };
 }

@@ -18,7 +18,11 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 #list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/smt-switch")
 
 add_executable(lazybv2int
+  "${PROJECT_SOURCE_DIR}/main.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
+  "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
+  "${PROJECT_SOURCE_DIR}/src/preprocessor.cpp"
+  "${PROJECT_SOURCE_DIR}/src/smtlibsolver.cpp"
   )
 
 if (APPLE)
