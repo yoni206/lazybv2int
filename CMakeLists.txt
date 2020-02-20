@@ -51,7 +51,8 @@ if (WITH_MSAT)
 endif()
 
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/src")
-#target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/")
+target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib")
+target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/smtlib2parser-1.4")
 #target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/optionparser-1.7/src")
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/include")
 
