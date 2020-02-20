@@ -1,4 +1,4 @@
-#include "lbv2intsolver.h"
+#include "lbv2isolver.h"
 
 using namespace smt;
 
