@@ -1,6 +1,8 @@
 #pragma once
 
 #include "smt-switch/smt.h"
+#include "bv2int.h"
+#include "preprocessor.h"
 
 namespace lbv2i {
 

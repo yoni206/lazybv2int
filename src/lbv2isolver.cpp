@@ -4,22 +4,22 @@ using namespace smt;
 
 namespace lbv2i {
 
-  LBV2INTSolver::LBV2INTSolver()
+  LBV2ISolver::LBV2ISolver()
   {
   }
 
-  LBV2INTSolver::~LBV2INTSolver()
+  LBV2ISolver::~LBV2ISolver()
   {
   }
 
-  Result solve()
+  Result LBV2ISolver::solve()
   {
     TermVec lemmas;
 
     while (true) {
-      Result r = solver_.check_sat();
+      Result r = solver_->check_sat();
 
-      if (r == UNSAT) {
+      if (r.is_unsat()) {
         return r;
       }
 
@@ -29,29 +29,29 @@ namespace lbv2i {
       }
 
       for (auto l : lemmas) {
-        solver_.assert_formula(l);
+        solver_->assert_formula(l);
       }
     }
   }
 
-  bool LBV2INTSolver::push()
+  bool LBV2ISolver::push()
   {
     return false;
   }
 
-  bool LBV2INTSolver::pop()
+  bool LBV2ISolver::pop()
   {
     return false;
   }
 
-  bool LBV2INTSolver::reset()
+  bool LBV2ISolver::reset()
   {
-    solver_.reset_assertions();
+    solver_->reset_assertions();
 
     return false;
   }
 
-  bool LBV2INTSolver::assert_formula(Term f)
+  bool LBV2ISolver::assert_formula(Term f)
   {
     // preprocess the formula
     Term pre_f = prepro_.process(f);
@@ -59,12 +59,12 @@ namespace lbv2i {
     // translate
     Term t_f = bv2int_.convert(pre_f);
 
-    solver_.assert_formula(t_f);
+    solver_->assert_formula(t_f);
 
     return true;
   }
 
-  bool LBV2INTSolver::refine(smt::TermVec &outlemmas)
+  bool LBV2ISolver::refine(smt::TermVec &outlemmas)
   {
     return true;
   }
