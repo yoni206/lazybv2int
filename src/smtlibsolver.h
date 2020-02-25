@@ -15,7 +15,7 @@ namespace lbv2i {
 class SmtLibSolver
 {
  public:
-  SmtLibSolver();
+  SmtLibSolver(smt::SmtSolver & solver);
   ~SmtLibSolver();
 
   // main method. it will read the file and prints the results on the standard

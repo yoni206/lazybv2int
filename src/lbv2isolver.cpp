@@ -4,7 +4,9 @@ using namespace smt;
 
 namespace lbv2i {
 
-LBV2ISolver::LBV2ISolver() {}
+LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
+  solver_(solver)
+{}
 
 LBV2ISolver::~LBV2ISolver() {}
 

@@ -9,7 +9,7 @@ namespace lbv2i {
 class LBV2ISolver
 {
  public:
-  LBV2ISolver();
+  LBV2ISolver(smt::SmtSolver & sovler);
   ~LBV2ISolver();
 
   smt::Result solve();
@@ -32,6 +32,6 @@ class LBV2ISolver
   Preprocessor prepro_;
 
   // smt-switch solver
-  smt::SmtSolver solver_;
+  smt::SmtSolver & solver_;
 };
 }  // namespace lbv2i
