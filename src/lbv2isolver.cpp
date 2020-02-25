@@ -32,14 +32,46 @@ Result LBV2ISolver::solve()
   }
 }
 
-bool LBV2ISolver::push() { return false; }
+bool LBV2ISolver::set_logic(string logic_name) {solver_->set_logic(logic_name); return true;}
 
-bool LBV2ISolver::pop() { return false; }
+
+Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const 
+{
+   return solver_->make_term(op, terms);
+}
+
+Term LBV2ISolver::make_term(const Op op, const Term & t) const{
+   return solver_->make_term(op, t);
+}
+
+Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term& t1) const {
+   return solver_->make_term(op, t0, t1);
+}
+
+Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term& t1, const Term& t2) const {
+   return solver_->make_term(op, t0, t1, t2);
+}
+
+Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort) {
+  return solver_->make_symbol(name, sort);
+}
+
+Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const{
+  return solver_->make_sort(sk, size);
+}
+
+bool LBV2ISolver::set_opt(string op, string value) {
+  solver_->set_opt(op, value);
+  return true;
+}
+
+bool LBV2ISolver::push() { solver_->push(); return true; }
+
+bool LBV2ISolver::pop() { solver_->pop(); return true; }
 
 bool LBV2ISolver::reset()
 {
   solver_->reset_assertions();
-
   return false;
 }
 

@@ -1,27 +1,46 @@
 #pragma once
 
+#include <iostream>
 #include "bv2int.h"
 #include "preprocessor.h"
 #include "smt-switch/smt.h"
+#include "smt-switch/result.h"
 
 namespace lbv2i {
+
+  using namespace std;
+  using namespace smt;
 
 class LBV2ISolver
 {
  public:
-  LBV2ISolver(smt::SmtSolver & sovler);
+  LBV2ISolver(SmtSolver & sovler);
   ~LBV2ISolver();
 
-  smt::Result solve();
+  Result solve();
 
   bool push();
   bool pop();
   bool reset();
+  bool set_logic(string logic_name);
+  bool set_opt(string op, string value);
+  bool assert_formula(Term f);
+  Result check_sat();
 
-  bool assert_formula(smt::Term f);
+  Sort make_sort(const SortKind sk, uint64_t size) const;
+  Term make_symbol(const std::string name, const Sort & sort);
+  Term make_term(const Op op, const TermVec & terms) const;
+  Term make_term(const Op op, const Term & t) const;
+  Term make_term(const Op op,
+                         const Term & t0,
+                         const Term & t1) const;
+  Term make_term(const Op op,
+                         const Term & t0,
+                         const Term & t1,
+                         const Term & t2) const;
 
  private:
-  bool refine(smt::TermVec & outlemmas);
+  bool refine(TermVec & outlemmas);
 
   // BV2Int Translator
   BV2Int bv2int_;
