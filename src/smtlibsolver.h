@@ -12,17 +12,17 @@ namespace lbv2i {
  * in solver_.
  */
 
-class SmtLibSolver
+class SmtLibSolver : public LBV2ISolver
 {
  public:
   SmtLibSolver(smt::SmtSolver & solver);
   ~SmtLibSolver();
 
+  typedef LBV2ISolver super;
+  
   // main method. it will read the file and prints the results on the standard
   // output.
   void run(std::string filename);
 
- private:
-  LBV2ISolver solver_;
 };
 }  // namespace lbv2i
