@@ -11,7 +11,6 @@ BV2Int::~BV2Int() {}
 Term BV2Int::convert(Term t)
 {
   Term res;
-
   return t;
 }
 

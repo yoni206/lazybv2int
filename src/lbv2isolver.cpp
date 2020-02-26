@@ -87,6 +87,6 @@ bool LBV2ISolver::assert_formula(Term f)
   return true;
 }
 
-bool LBV2ISolver::refine(smt::TermVec & outlemmas) { return true; }
+bool LBV2ISolver::refine(smt::TermVec & outlemmas) { return false; }
 
 }  // namespace lbv2i
