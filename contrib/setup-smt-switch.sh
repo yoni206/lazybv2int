@@ -13,22 +13,17 @@ Usage: $0 [<option> ...]
 Sets up the smt-switch API for interfacing with SMT solvers through a C++ API.
 
 -h, --help              display this message and exit
---with-msat             include MathSAT which is under a custom non-BSD compliant license (default: off)
--y, --auto-yes          automatically agree to conditions (default: off)
+--debug                 build a debug version
 EOF
     exit 0
 }
-
-WITH_MSAT=default
 
 while [ $# -gt 0 ]
 do
     case $1 in
         -h|--help) usage;;
-        --with-msat)
-            WITH_MSAT=ON
-            CONF_OPTS=--msat;;
-        -y|--auto-yes) MSAT_OPTS=--auto-yes;;
+        --debug)
+            CONF_OPTS=--debug;;
         *) die "unexpected argument: $1";;
     esac
     shift
@@ -41,11 +36,8 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     git checkout -f $SMT_SWITCH_VERSION
-    ./contrib/setup-btor.sh
-    if [[ "$WITH_MSAT" != default ]]; then
-        ./contrib/setup-msat.sh $MSAT_OPTS
-    fi
-    ./configure.sh --btor $CONF_OPTS --prefix=local
+    ./contrib/setup-msat.sh
+    ./configure.sh --msat --prefix=local $CONF_OPTS
     cd build
     make -j$(nproc)
     make test
@@ -55,8 +47,8 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-btor.so ] ; then \
-    echo "It appears smt-switch with boolector was successfully installed to $DEPS/smt-switch/local."
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.so ] ; then \
+    echo "It appears smt-switch with MathSAT was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
     echo "You might be missing some dependencies."
