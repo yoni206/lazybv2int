@@ -12,7 +12,7 @@ Term BV2Int::convert(Term t)
 {
   Term res;
 
-  return res;
+  return t;
 }
 
 }  // namespace lbv2i
