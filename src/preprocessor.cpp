@@ -12,7 +12,7 @@ Term Binarizer::process(Term t)
 {
   Term res;
 
-  return res;
+  return t;
 }
 
 OpEliminator::OpEliminator() {}
@@ -23,7 +23,7 @@ Term OpEliminator::process(Term t)
 {
   Term res;
 
-  return res;
+  return t;
 }
 
 Preprocessor::Preprocessor() {}
@@ -34,7 +34,7 @@ Term Preprocessor::process(Term t)
 {
   Term res;
 
-  return res;
+  return t;
 }
 
 }  // namespace lbv2i
