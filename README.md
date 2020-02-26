@@ -1,8 +1,12 @@
 # Setup
+```
+./contrib/setup-smt-switch.sh
+./configure.sh
+cd build
+make
+```
 
-* run `./contrib/set-smt-switch --with-msat`
-
-* run `mkdir build`
-* run `cd build`
-* run `cmake ../ -DWITH_MSAT=ON`
-* run `make`
+#Testing
+```
+./test/test1.out
+```
