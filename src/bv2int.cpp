@@ -22,7 +22,7 @@ static string pow2_str(uint64_t k)
 
 BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
   super(solver, clear_cache)
-{}
+{int_sort_ = solver->make_sort(INT);}
 
 BV2Int::~BV2Int() {}
 
@@ -37,13 +37,11 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
       }
 
       uint64_t bv_width = term->get_sort()->get_width();
-      Term zero = solver_->make_term("0", INT);
-      Term one = solver_->make_term("1", INT);
-
-      switch (op) {
-        case BVAdd: {
+      Term zero = solver_->make_term(string("0"), int_sort_);
+      Term one = solver_->make_term(string("1"), int_sort_);
+        if (op == BVAdd) { 
             string name = "sigma_" + to_string(sigma_vars_.size());
-            Term sigma = solver_->make_symbol(name, INT);
+            Term sigma = solver_->make_symbol(name, int_sort_);
             Term plus = solver_->make_term(Plus, cached_children);
             Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
 
@@ -51,16 +49,17 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
 
             range_assertions_.push_back(solver_->make_term(Ge, sigma, zero));
             range_assertions_.push_back(solver_->make_term(Le, sigma, one));
-            range_assertions_.push_back(make_range_constraint(res), bv_width);
+            range_assertions_.push_back(make_range_constraint(res, bv_width));
 
             cache_[term] = res;
-            break;
           }
+        else {
+          assert(false);
+        }
     
       }
     }
   }
-}
 
 Term BV2Int::convert(Term t)
 {
@@ -70,18 +69,17 @@ Term BV2Int::convert(Term t)
 
 Term BV2Int::pow2(uint64_t k)
 {
-  string pow_bv_width_str = pow2_str(bv_width);
-  return solver_->make_term(pow_bv_width_str, INT);
+  string pow_bv_width_str = pow2_str(k);
+  return solver_->make_term(pow_bv_width_str, int_sort_);
 }
   
 Term BV2Int::make_range_constraint(Term var, uint64_t bv_width)
 {
   // returns 0<= var < 2^bv_width as a constraint
-  Term zero = solver_->make_term("0", INT);
+  Term zero = solver_->make_term("0", int_sort_);
   Term l = solver_->make_term(Le, zero, var);
   Term u = solver_->make_term(Lt, var, pow2(bv_width));
   return solver_->make_term(And, l, u);
 }
 
-
-}  // namespace lbv2i
+}

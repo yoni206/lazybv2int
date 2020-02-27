@@ -26,5 +26,6 @@ class BV2Int : IdentityWalker
   
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
+  smt::Sort int_sort_;
 };
 }  // namespace lbv2i
