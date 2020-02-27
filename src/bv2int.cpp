@@ -59,7 +59,12 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
       }
     
     }
+  } else {
+    // leaf now
+
   }
+
+  return Walker_Continue;
 }
 
 Term BV2Int::convert(Term t)
