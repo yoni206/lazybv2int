@@ -41,27 +41,26 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
       uint64_t bv_width = term->get_sort()->get_width();
       Term zero = solver_->make_term(string("0"), int_sort_);
       Term one = solver_->make_term(string("1"), int_sort_);
-        if (op == BVAdd) { 
-            string name = "sigma_" + to_string(sigma_vars_.size());
-            Term sigma = solver_->make_symbol(name, int_sort_);
-            Term plus = solver_->make_term(Plus, cached_children);
-            Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
+      if (op == BVAdd) { 
+        string name = "sigma_" + to_string(sigma_vars_.size());
+        Term sigma = solver_->make_symbol(name, int_sort_);
+        Term plus = solver_->make_term(Plus, cached_children);
+        Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
 
-            Term res = solver_->make_term(Minus, plus, multSig);
+        Term res = solver_->make_term(Minus, plus, multSig);
 
-            range_assertions_.push_back(solver_->make_term(Ge, sigma, zero));
-            range_assertions_.push_back(solver_->make_term(Le, sigma, one));
-            range_assertions_.push_back(make_range_constraint(res, bv_width));
+        range_assertions_.push_back(solver_->make_term(Ge, sigma, zero));
+        range_assertions_.push_back(solver_->make_term(Le, sigma, one));
+        range_assertions_.push_back(make_range_constraint(res, bv_width));
 
-            cache_[term] = res;
-          }
-        else {
-          assert(false);
-        }
-    
+        cache_[term] = res;
+      } else {
+        assert(false);
       }
+    
     }
   }
+}
 
 Term BV2Int::convert(Term t)
 {
