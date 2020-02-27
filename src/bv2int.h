@@ -1,17 +1,19 @@
 #pragma once
 
 #include "smt-switch/smt.h"
+#include "smt-switch/identity_walker.h"
 
 namespace lbv2i {
 
-class BV2Int
+using namespace smt;
+
+class BV2Int : IdentityWalker 
 {
  public:
   // it will also use the walker infrastructure
-  BV2Int();
-  ~BV2Int();
-
-  smt::Term convert(smt::Term t);
+  
+  WalkerStepResult visit_term(Term& term);
+  Term convert(Term t);
 
  private:
 };
