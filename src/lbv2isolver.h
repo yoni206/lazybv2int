@@ -38,7 +38,9 @@ class LBV2ISolver
                          const Term & t0,
                          const Term & t1,
                          const Term & t2) const;
-
+  Term make_term(const std::string val,
+                 const Sort & sort,
+                 uint64_t base = 10);
  private:
   bool refine(TermVec & outlemmas);
 

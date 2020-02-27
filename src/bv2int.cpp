@@ -28,20 +28,21 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
 
 BV2Int::~BV2Int() {}
 
-WalkerStepResult BV2Int::visit_term(Term& term) {
+WalkerStepResult BV2Int::visit_term(Term& t) {
   if (!preorder_) {
-    Op op = term->get_op();
+    Op op = t->get_op();
     if (!op.is_null()) {
       //term has children
       TermVec cached_children;
-      for (auto t : term) {
-        cached_children.push_back(cache_.at(t));
+      for (auto c : t) {
+        cached_children.push_back(cache_.at(c));
       }
 
-      uint64_t bv_width = term->get_sort()->get_width();
       Term zero = solver_->make_term(string("0"), int_sort_);
       Term one = solver_->make_term(string("1"), int_sort_);
-      if (op == BVAdd) { 
+
+      if (op == BVAdd) {
+        uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
         Term plus = solver_->make_term(Plus, cached_children);
@@ -49,20 +50,39 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
 
         Term res = solver_->make_term(Minus, plus, multSig);
 
-        range_assertions_.push_back(solver_->make_term(Ge, sigma, zero));
-        range_assertions_.push_back(solver_->make_term(Le, sigma, one));
+        range_assertions_.push_back(make_range_constraint(res, 1));
         range_assertions_.push_back(make_range_constraint(res, bv_width));
 
-        cache_[term] = res;
+        cache_[t] = res;
       } else {
         assert(false);
       }
     
-    }
-  } else {
-    // leaf now
+    } else {
+      // leaf now
+      Sort s = t->get_sort();
+      if (t->is_symbolic_const()) {
+        // a variable
+        if (s->get_sort_kind() == SortKind::BV) {
+          uint64_t bv_width = t->get_sort()->get_width();
+          string name = "bv2int_" + t->to_string();
+          Term res = solver_->make_symbol(name, int_sort_);
 
-  }
+          range_assertions_.push_back(make_range_constraint(res, bv_width));
+          cache_[t] = res;
+        } else {
+          assert(s->get_sort_kind() == SortKind::BOOL ||
+                 s->get_sort_kind() == SortKind::FUNCTION);
+          cache_[t] = t;
+        }
+      } else if(t->is_value()) {
+        // a constant
+        if (s->get_sort_kind() == SortKind::BV) {
+          
+        }
+      }
+    }
+  } 
 
   return Walker_Continue;
 }

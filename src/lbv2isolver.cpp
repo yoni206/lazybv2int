@@ -53,6 +53,12 @@ Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term& t1, const 
    return solver_->make_term(op, t0, t1, t2);
 }
 
+Term LBV2ISolver::make_term(const string val, const Sort & sort,
+                            uint64_t base)
+{
+  return solver_->make_term(val, sort, base);
+}
+
 Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort) {
   return solver_->make_symbol(name, sort);
 }
