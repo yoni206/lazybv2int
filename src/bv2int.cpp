@@ -4,13 +4,15 @@ using namespace smt;
 
 namespace lbv2i {
 
-BV2Int::BV2Int() {}
+BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
+  super(solver, clear_cache)
+{}
 
 BV2Int::~BV2Int() {}
 
 
-WalkerStepResult BV2Int::WalkerStepResult visit_term(Term& term) {
-  return Walker_Continue
+WalkerStepResult BV2Int::visit_term(Term& term) {
+  return Walker_Continue;
 }
 
 Term BV2Int::convert(Term t)

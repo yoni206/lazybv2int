@@ -10,6 +10,10 @@ using namespace smt;
 class BV2Int : IdentityWalker 
 {
  public:
+  BV2Int(smt::SmtSolver &solver, bool clear_cache);
+  ~BV2Int();
+
+  typedef IdentityWalker super;
   // it will also use the walker infrastructure
   
   WalkerStepResult visit_term(Term& term);

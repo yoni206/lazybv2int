@@ -5,7 +5,8 @@ using namespace smt;
 namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
-  solver_(solver)
+  solver_(solver),
+  bv2int_(solver, true)
 {}
 
 LBV2ISolver::~LBV2ISolver() {}
