@@ -12,7 +12,24 @@ BV2Int::~BV2Int() {}
 
 
 WalkerStepResult BV2Int::visit_term(Term& term) {
-  return Walker_Continue;
+  if (!preorder_) {
+    Op op = term->get_op();
+    if (!op.is_null()) {
+      //term has children
+      TermVec cached_children;
+      for (auto t : term) {
+        cached_children.push_back(cache_.at(t));
+      }
+      switch (op) {
+        case BVAdd:
+          {
+            cache_[term] = solver_->make_term()
+            break;
+          }
+    
+      }
+    }
+  }
 }
 
 Term BV2Int::convert(Term t)
