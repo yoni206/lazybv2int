@@ -22,7 +22,9 @@ static string pow2_str(uint64_t k)
 
 BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
   super(solver, clear_cache)
-{int_sort_ = solver->make_sort(INT);}
+{
+  int_sort_ = solver->make_sort(INT);
+}
 
 BV2Int::~BV2Int() {}
 
