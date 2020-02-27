@@ -63,8 +63,8 @@ WalkerStepResult BV2Int::visit_term(Term& term) {
 
 Term BV2Int::convert(Term t)
 {
-  Term res;
-  return t;
+  visit_term(t);
+  return cache_[t];
 }
 
 Term BV2Int::pow2(uint64_t k)
