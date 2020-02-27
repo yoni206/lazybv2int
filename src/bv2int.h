@@ -20,5 +20,11 @@ class BV2Int : IdentityWalker
   Term convert(Term t);
 
  private:
+
+  smt::Term pow2(uint64_t k);
+  smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
+  
+  smt::TermVec range_assertions_;
+  smt::TermVec sigma_vars_;
 };
 }  // namespace lbv2i
