@@ -140,6 +140,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 Term BV2Int::convert(Term t)
 {
   visit(t);
+  // add range constraints
   return cache_[t];
 }
 

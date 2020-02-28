@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iostream>
+
 #include "bv2int.h"
 #include "preprocessor.h"
+#include "axioms.h"
+
 #include "smt-switch/smt.h"
 #include "smt-switch/result.h"
 
@@ -52,6 +55,9 @@ class LBV2ISolver
   // incremental setting (push/pop)
   Preprocessor prepro_;
 
+  // axioms for refinement
+  Axioms axioms_;
+  
   // smt-switch solver
   smt::SmtSolver & solver_;
 };
