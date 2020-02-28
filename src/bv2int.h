@@ -34,5 +34,6 @@ class BV2Int : IdentityWalker
   std::vector<stack_entry_t> stack_;
 
   smt::Sort int_sort_;
+  smt::Term int_zero_;
 };
 }  // namespace lbv2i
