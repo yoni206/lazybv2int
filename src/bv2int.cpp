@@ -29,6 +29,8 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
 BV2Int::~BV2Int() {}
 
 WalkerStepResult BV2Int::visit_term(Term& t) {
+  cout << "panda " << t->to_string() << endl;
+  cout << "panda " << preorder_ << endl;
   if (!preorder_) {
     Op op = t->get_op();
     if (!op.is_null()) {
@@ -61,9 +63,10 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
     } else {
       // leaf now
       Sort s = t->get_sort();
+      SortKind sk = s->get_sort_kind();
       if (t->is_symbolic_const()) {
         // a variable
-        if (s->get_sort_kind() == SortKind::BV) {
+        if (sk == SortKind::BV) {
           uint64_t bv_width = t->get_sort()->get_width();
           string name = "bv2int_" + t->to_string();
           Term res = solver_->make_symbol(name, int_sort_);
@@ -71,18 +74,29 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
           range_assertions_.push_back(make_range_constraint(res, bv_width));
           cache_[t] = res;
         } else {
-          assert(s->get_sort_kind() == SortKind::BOOL ||
-                 s->get_sort_kind() == SortKind::FUNCTION);
+          assert(sk == SortKind::BOOL ||
+                 sk == SortKind::FUNCTION);
           cache_[t] = t;
         }
       } else if(t->is_value()) {
         // a constant
-        if (s->get_sort_kind() == SortKind::BV) {
-          
+        if (sk == SortKind::BV) {
+          string smtlib_string = t->to_string();
+          //smtlib_string has the form (_ bv*** k). 
+          //We want to fetch ***
+          size_t last_space_location = smtlib_string.find_last_of(" ");
+          size_t decimal_begin = 5; // "(_ bv" has 5 charecters
+          size_t decimal_length = last_space_location - decimal_begin;
+          string decimal = smtlib_string.substr(5, decimal_length);
+          cache_[t] = solver_->make_term(decimal, int_sort_);
+        } else
+          assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
+          cache_[t] = t;
+        } else {
+          assert(false);
         }
-      }
     }
-  } 
+  }
 
   return Walker_Continue;
 }

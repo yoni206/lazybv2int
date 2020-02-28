@@ -17,18 +17,14 @@ int main() {
   Sort bvsort8 = s.make_sort(BV, 8);
   string val = string("01010101");
   Term c = s.make_term(val, bvsort8, 2);
-  std::cout << c->to_string() << std::endl;
 
   Term x = s.make_symbol("x", bvsort8);
   Term y = s.make_symbol("y", bvsort8);
   Term z = s.make_symbol("z", bvsort8);
   Term a = s.make_term(Equal, z, s.make_term(BVAdd, y, z));
-  Term b = s.make_term(Equal, z, s.make_term(BVSub, y, z));
-
+  Term b = s.make_term(Equal, z, s.make_term(BVAdd, y, z));
   s.assert_formula(a);
   s.assert_formula(b);
-  std::cout << "panda " << std::endl;
   Result r = s.solve();
-  std::cout << "panda " << std::endl;
   assert(r.is_sat());
 }
