@@ -72,8 +72,8 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         range_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
-      } else {
-        assert(false);
+      } else if (op == Equal){
+        cache_[t] = solver_->make_term(Equal, cached_children);
       }
     
     } else {
@@ -104,6 +104,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
           size_t decimal_begin = 5; // "(_ bv" has 5 charecters
           size_t decimal_length = last_space_location - decimal_begin;
           string decimal = smtlib_string.substr(5, decimal_length);
+          cout << "panda decimal = " << decimal << "$" << endl;
           cache_[t] = solver_->make_term(decimal, int_sort_);
         } else
           assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
