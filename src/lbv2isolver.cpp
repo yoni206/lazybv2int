@@ -6,7 +6,8 @@ namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
   solver_(solver),
-  bv2int_(solver, true)
+  bv2int_(solver, true),
+  axioms_(solver)
 {}
 
 LBV2ISolver::~LBV2ISolver() {}

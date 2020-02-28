@@ -13,6 +13,7 @@ add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
   "${PROJECT_SOURCE_DIR}/src/preprocessor.cpp"
+  "${PROJECT_SOURCE_DIR}/src/axioms.cpp"
   "${PROJECT_SOURCE_DIR}/src/smtlibsolver.cpp"
   )
 
