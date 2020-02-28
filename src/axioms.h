@@ -15,8 +15,12 @@ class Axioms
   bool check_bvand_base_case(smt::Term t, smt::TermVec &outlemmas);
 
  private:
+
+  void add_if_voilated(smt::Term l, smt::TermVec &out);
+
   smt::SmtSolver &solver_;
 
+  smt::Term false_;
 }; // class axioms
 
 } // namespace lbv2i
