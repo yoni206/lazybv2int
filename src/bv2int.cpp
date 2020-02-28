@@ -33,8 +33,9 @@ static bool is_simple_op(Op op)
   return false;
 }
 
-BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
-  super(solver, clear_cache)
+BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool abstract) :
+  super(solver, clear_cache),
+  abstract_(abstract)
 {
   int_sort_ = solver->make_sort(INT);
   int_zero_ = solver_->make_term(0, int_sort_);

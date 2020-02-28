@@ -10,7 +10,7 @@ using namespace smt;
 class BV2Int : IdentityWalker
 {
  public:
-  BV2Int(smt::SmtSolver &solver, bool clear_cache);
+  BV2Int(smt::SmtSolver &solver, bool clear_cache, bool abstract=false);
   ~BV2Int();
 
   typedef IdentityWalker super;
@@ -29,6 +29,8 @@ class BV2Int : IdentityWalker
   smt::Term make_bvnot_term(smt::Term x, uint64_t k);
   smt::Term int_max(uint64_t k);
 
+  bool abstract_;
+  
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
 
@@ -37,5 +39,6 @@ class BV2Int : IdentityWalker
 
   smt::Sort int_sort_;
   smt::Term int_zero_;
+
 };
 }  // namespace lbv2i
