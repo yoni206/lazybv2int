@@ -26,6 +26,8 @@ class BV2Int : IdentityWalker
 
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
+  smt::Term make_bvnot_term(smt::Term x, uint64_t k);
+  smt::Term int_max(uint64_t k);
 
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
