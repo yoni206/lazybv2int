@@ -20,6 +20,19 @@ static string pow2_str(uint64_t k)
   return to_string(p);
 }
 
+static bool is_simple_op(Op op)
+{
+  vector<Op> simple_op =
+    {And, Or, Xor, Not, Implies, Iff, Ite, Equal, Distinct, Plus, Minus,
+     Negate, Mult, Div, Lt, Le, Gt, Ge, Mod, Abs, Pow, To_Real};
+  for (auto o : simple_op) {
+    if (o == op) {
+      return true;
+    }
+  }
+  return false;
+}
+
 BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
   super(solver, clear_cache)
 {
@@ -59,8 +72,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 
       std::cout << "visiting operator: " << op.to_string() << std::endl;
 
-      if (op == And || op == Or || op == Xor || op == Not || op == Implies ||
-          op == Iff || op == Ite || op == Equal ) {
+      if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
       } else if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
