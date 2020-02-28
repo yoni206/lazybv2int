@@ -125,6 +125,34 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         cache_[t] = res;
       } else if (op == BV_To_Nat) {
         cache_[t] = cached_children[0];
+      } else if (op == Concat) {
+         uint64_t bv_width = t->get_sort()->get_width();
+         Term left = solver_->make_term(Mult, cached_children[0], pow2(bv_width));
+         Term res = solver_->make_term(Plus, left, cached_children[1]);
+         cache_[t] = res;
+      } else if (op == Extract) {
+        uint64_t upper = op.idx0;
+        uint64_t lower = op.idx1;
+        
+        Term upper_term = solver_->make_term(upper, int_sort_);
+        Term lower_term = solver_->make_term(lower, int_sort_);
+
+        Term div = solver_->make_term(Div, cached_children[0], lower_term);
+        uint64_t interval = upper - lower;
+        Term res = solver_->make_term(Mod, div, pow2(interval));
+        cache_[t] = res;
+      } else if (op == BVUlt) {
+        Term res = solver_->make_term(Lt, cached_children);
+        cache_[t] = res;
+      } else if (op == BVUle) {
+        Term res = solver_->make_term(Le, cached_children);
+        cache_[t] = res;
+      } else if (op == BVUgt) {
+        Term res = solver_->make_term(Gt, cached_children);
+        cache_[t] = res;
+      } else if (op == BVUge) {
+        Term res = solver_->make_term(Ge, cached_children);
+        cache_[t] = res;
       } else  {
         assert(false);
       }
