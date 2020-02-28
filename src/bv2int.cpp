@@ -28,6 +28,22 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache) :
 
 BV2Int::~BV2Int() {}
 
+void BV2Int::push()
+{
+  stack_.push_back(stack_entry_t(cache_,
+                                 range_assertions_.size(),
+                                 sigma_vars_.size()));
+}
+
+void BV2Int::pop()
+{
+  stack_entry_t e = stack_.back();
+  cache_ = std::get<0>(e);
+  range_assertions_.resize(std::get<1>(e));
+  sigma_vars_.resize(std::get<2>(e));
+  stack_.pop_back();
+}
+
 WalkerStepResult BV2Int::visit_term(Term& t) {
   if (!preorder_) {
     Op op = t->get_op();
