@@ -12,11 +12,8 @@ int main() {
   SmtSolver underlying_solver = smt::MsatSolverFactory::create();
 
   LBV2ISolver s = LBV2ISolver(underlying_solver);
-  s.push();
   s.set_logic("QF_BV");
   Sort bvsort8 = s.make_sort(BV, 8);
-  string val = string("01010101");
-  Term c = s.make_term(val, bvsort8, 2);
 
   Term x = s.make_symbol("x", bvsort8);
   Term y = s.make_symbol("y", bvsort8);
