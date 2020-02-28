@@ -59,7 +59,10 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 
       std::cout << "visiting operator: " << op.to_string() << std::endl;
 
-      if (op == BVAdd) {
+      if (op == And || op == Or || op == Xor || op == Not || op == Implies ||
+          op == Iff || op == Ite || op == Equal ) {
+        cache_[t] = solver_->make_term(op, cached_children);
+      } else if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
@@ -72,10 +75,8 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         range_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
-      } else if (op == Equal){
-        cache_[t] = solver_->make_term(Equal, cached_children);
       }
-    
+
     } else {
       // leaf now
       Sort s = t->get_sort();
