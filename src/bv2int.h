@@ -7,7 +7,7 @@ namespace lbv2i {
 
 using namespace smt;
 
-class BV2Int : IdentityWalker 
+class BV2Int : IdentityWalker
 {
  public:
   BV2Int(smt::SmtSolver &solver, bool clear_cache);
@@ -15,17 +15,24 @@ class BV2Int : IdentityWalker
 
   typedef IdentityWalker super;
   // it will also use the walker infrastructure
-  
+
   WalkerStepResult visit_term(Term& term);
   Term convert(Term t);
+
+  void push();
+  void pop();
 
  private:
 
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
-  
+
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
+
+  typedef std::tuple<smt::UnorderedTermMap, size_t, size_t> stack_entry_t;
+  std::vector<stack_entry_t> stack_;
+
   smt::Sort int_sort_;
 };
 }  // namespace lbv2i

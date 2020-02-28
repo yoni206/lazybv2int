@@ -72,9 +72,18 @@ bool LBV2ISolver::set_opt(string op, string value) {
   return true;
 }
 
-bool LBV2ISolver::push() { solver_->push(); return true; }
+bool LBV2ISolver::push()
+{
+  bv2int_.push();
+  solver_->push();
+  return true;
+}
 
-bool LBV2ISolver::pop() { solver_->pop(); return true; }
+bool LBV2ISolver::pop() {
+  bv2int_.push();
+  solver_->pop();
+  return true;
+}
 
 bool LBV2ISolver::reset()
 {
