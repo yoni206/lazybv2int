@@ -45,8 +45,6 @@ void BV2Int::pop()
 }
 
 WalkerStepResult BV2Int::visit_term(Term& t) {
-  cout << "panda " << t->to_string() << endl;
-  cout << "panda " << preorder_ << endl;
   if (!preorder_) {
     Op op = t->get_op();
     if (!op.is_null()) {
@@ -106,7 +104,6 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
           size_t decimal_begin = 5; // "(_ bv" has 5 charecters
           size_t decimal_length = last_space_location - decimal_begin;
           string decimal = smtlib_string.substr(5, decimal_length);
-          cout << "panda decimal = " << decimal << "$" << endl;
           cache_[t] = solver_->make_term(decimal, int_sort_);
         } else
           assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
