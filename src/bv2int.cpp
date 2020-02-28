@@ -59,6 +59,8 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       Term zero = solver_->make_term(string("0"), int_sort_);
       Term one = solver_->make_term(string("1"), int_sort_);
 
+      std::cout << "visiting operator: " << op.to_string() << std::endl;
+
       if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_" + to_string(sigma_vars_.size());
