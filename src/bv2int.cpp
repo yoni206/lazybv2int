@@ -42,6 +42,7 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool abstract) :
     solver_->make_sort(FUNCTION,
                        SortVec{int_sort_, int_sort_, int_sort_, int_sort_});
   int_zero_ = solver_->make_term(0, int_sort_);
+  granularity_ = 1;
 }
 
 BV2Int::~BV2Int() {}
@@ -258,6 +259,7 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
 }
 
 Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width) {
+
   return t;
 }
 

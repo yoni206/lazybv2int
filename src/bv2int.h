@@ -48,6 +48,7 @@ class BV2Int : smt::IdentityWalker
   //witwise operators (and/or/shift/...) 
   //lazily or eagerly.
   bool lazy_bw_;
+  uint64_t granularity_;
 
 };
 }  // namespace lbv2i
