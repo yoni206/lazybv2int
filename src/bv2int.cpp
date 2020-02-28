@@ -153,6 +153,10 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       } else if (op == BVUge) {
         Term res = solver_->make_term(Ge, cached_children);
         cache_[t] = res;
+      } else if (is_bw_op(op)) {
+         uint64_t bv_width = t->get_sort()->get_width();
+        Term res = handle_bw_op(t, bv_width);
+        cache_[t] = res;
       } else  {
         assert(false);
       }
@@ -231,6 +235,26 @@ Term BV2Int::int_max(uint64_t k) {
     val = pow(2, k) - 1;
   }
   return solver_->make_term(val, int_sort_);
+}
+
+bool BV2Int::is_bw_op(Op op) {
+  return (op == BVAnd || op == BVOr || op == BVXor || op == BVNand || op == BVNor || op == BVXnor|| op == BVLshr || op == BVShl);
+}
+
+Term BV2Int::handle_bw_op(Term t, uint64_t bv_width) {
+  if (lazy_bw_) {
+    return handle_bw_op_lazy(t, bv_width);
+  } else {
+    return handle_bw_op_eager(t, bv_width);
+  }
+}
+
+Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
+  return t;
+}
+
+Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width) {
+  return t;
 }
 
 }

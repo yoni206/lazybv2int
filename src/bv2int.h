@@ -28,7 +28,10 @@ class BV2Int : IdentityWalker
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
   smt::Term make_bvnot_term(smt::Term x, uint64_t k);
   smt::Term int_max(uint64_t k);
-
+  smt::Term handle_bw_op(Term t, uint64_t bv_width);
+  smt::Term handle_bw_op_lazy(Term t, uint64_t bv_width);
+  smt::Term handle_bw_op_eager(Term t, uint64_t bv_width);
+  bool is_bw_op(Op op);
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
 
@@ -37,5 +40,9 @@ class BV2Int : IdentityWalker
 
   smt::Sort int_sort_;
   smt::Term int_zero_;
+  //flag that determines if we handle
+  //witwise operators (and/or/shift/...) 
+  //lazily or eagerly.
+  bool lazy_bw_;
 };
 }  // namespace lbv2i
