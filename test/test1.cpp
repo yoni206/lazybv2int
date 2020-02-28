@@ -19,9 +19,8 @@ int main() {
   Term y = s.make_symbol("y", bvsort8);
   Term z = s.make_symbol("z", bvsort8);
   Term a = s.make_term(Equal, z, s.make_term(BVAdd, y, z));
-  Term b = s.make_term(Equal, z, s.make_term(BVAdd, y, z));
+  cout << "panda test " << a->to_string() << endl;
   s.assert_formula(a);
-  s.assert_formula(b);
   Result r = s.solve();
   assert(r.is_sat());
 }
