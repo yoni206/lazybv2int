@@ -75,7 +75,9 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 
       if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
-      } else if (op == BVAdd) {
+      } 
+
+      else if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
@@ -84,9 +86,32 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 
         Term res = solver_->make_term(Minus, plus, multSig);
 
-        range_assertions_.push_back(make_range_constraint(res, 1));
+        range_assertions_.push_back(make_range_constraint(sigma, 1));
         range_assertions_.push_back(make_range_constraint(res, bv_width));
 
+        cache_[t] = res;
+      } else if (op == BVMul) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        string name = "sigma_" + to_string(sigma_vars_.size());
+        Term sigma = solver_->make_symbol(name, int_sort_);
+        Term mul = solver_->make_term(Plus, cached_children);
+        Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
+        Term res = solver_->make_term(Minus, mul, multSig);
+
+        range_assertions_.push_back(make_range_constraint(sigma, bv_width));
+        range_assertions_.push_back(make_range_constraint(res, bv_width));
+        cache_[t] = res;
+      } else if (op == BVUdiv) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        Term div = solver_->make_term(Div, cached_children);
+        Term condition = solver_->make_term(Equal, cached_children[1], int_zero_);
+        Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
+        cache_[t] = res;
+      } else if (op == BVUrem) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        Term mod = solver_->make_term(Mod, cached_children);
+        Term condition = solver_->make_term(Equal, cached_children[1], int_zero_);
+        Term res = solver_->make_term(Ite, condition, cached_children[0], mod);
         cache_[t] = res;
       } else if (op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -94,6 +119,12 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         Term neg = solver_->make_term(Minus, pow2(bv_width), cached_children[0]);
         Term res = solver_->make_term(Ite, is_zero, int_zero_, neg); 
         cache_[t] = res;
+      } else if (op == BVNot) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        Term res = make_bvnot_term(cached_children[0], bv_width);
+        cache_[t] = res;
+      } else if (op == BV_To_Nat) {
+        cache_[t] = cached_children[0];
       } else  {
         assert(false);
       }
@@ -157,6 +188,21 @@ Term BV2Int::make_range_constraint(Term var, uint64_t bv_width)
   Term l = solver_->make_term(Le, zero, var);
   Term u = solver_->make_term(Lt, var, pow2(bv_width));
   return solver_->make_term(And, l, u);
+}
+
+Term BV2Int::make_bvnot_term(Term x, uint64_t k) {
+  return solver_->make_term(Minus, int_max(k), x);
+}
+
+Term BV2Int::int_max(uint64_t k) {
+  assert(k <= 64);
+  uint64_t val;
+  if (k == 64) {
+    val = -1;
+  } else {
+    val = pow(2, k) - 1;
+  }
+  return solver_->make_term(val, int_sort_);
 }
 
 }
