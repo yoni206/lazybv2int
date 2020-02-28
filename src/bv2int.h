@@ -5,19 +5,19 @@
 
 namespace lbv2i {
 
-using namespace smt;
 
-class BV2Int : IdentityWalker
+
+class BV2Int : smt::IdentityWalker
 {
  public:
   BV2Int(smt::SmtSolver &solver, bool clear_cache, bool abstract=false);
   ~BV2Int();
 
-  typedef IdentityWalker super;
+  typedef smt::IdentityWalker super;
   // it will also use the walker infrastructure
 
-  WalkerStepResult visit_term(Term& term);
-  Term convert(Term t);
+  smt::WalkerStepResult visit_term(smt::Term& term);
+  smt::Term convert(smt::Term t);
 
   void push();
   void pop();
@@ -30,7 +30,7 @@ class BV2Int : IdentityWalker
   smt::Term int_max(uint64_t k);
 
   bool abstract_;
-  
+
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
 
@@ -38,6 +38,8 @@ class BV2Int : IdentityWalker
   std::vector<stack_entry_t> stack_;
 
   smt::Sort int_sort_;
+  smt::Sort fbvand_sort_;
+
   smt::Term int_zero_;
 
 };
