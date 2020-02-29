@@ -209,8 +209,12 @@ Term BV2Int::convert(Term t)
 {
   visit(t);
   Term res = cache_[t];
-  stack_entry_t e = stack_.back();
-  size_t r_begin_idx = std::get<1>(e);
+
+  size_t r_begin_idx = 0;
+  if (stack_.size() > 0) {
+    stack_entry_t e = stack_.back();
+    size_t r_begin_idx = std::get<1>(e);
+  }
 
   for (size_t i = r_begin_idx; i < range_assertions_.size(); ++i) {
     res = solver_->make_term(And, res, range_assertions_[i]);
