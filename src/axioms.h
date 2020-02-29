@@ -14,6 +14,7 @@ class Axioms
   // note the function name
   bool check_bvand_base_case(smt::Term t, smt::TermVec &outlemmas);
   bool check_bvand_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
+  bool check_bvand_idempotence(smt::Term t, smt::TermVec &outlemmas);
 
  private:
 

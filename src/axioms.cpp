@@ -85,6 +85,23 @@ bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
+bool Axioms::check_bvand_idempotence(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbvand_args(t, bv_width, a, b);
+
+  Term l = make_eq(t, a);
+  if (a != b) {
+    Term pre = make_eq(a, b);
+    l = make_implies(pre, l);
+  }
+
+  add_if_voilated(l, outlemmas);
+
+  return outlemmas.size() > 0;
+}
+
 inline Term Axioms::pow2_minus_one(uint64_t k)
 {
   string p = pow2_minus_one_str(k);
