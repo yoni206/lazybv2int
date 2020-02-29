@@ -216,7 +216,6 @@ Term BV2Int::convert(Term t)
     res = solver_->make_term(And, res, range_assertions_[i]);
   }
 
-  // add range constraints
   return res;
 }
 
