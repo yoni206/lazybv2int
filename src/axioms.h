@@ -13,7 +13,7 @@ class Axioms
   // we assume that the term t looks like "fbvand(x, y)"
   // note the function name
   bool check_bvand_base_case(smt::Term t, smt::TermVec &outlemmas);
-  bool check_bvand_max(smt::Term t, smt::TermVec &outlemmas);
+  bool check_bvand_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
 
  private:
 
@@ -29,6 +29,7 @@ class Axioms
   smt::Sort int_sort_;
 
   smt::Term false_;
+  smt::Term zero_;
 
 }; // class axioms
 

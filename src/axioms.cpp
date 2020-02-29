@@ -39,6 +39,7 @@ Axioms::Axioms(SmtSolver & solver) :
 {
   int_sort_ = solver_->make_sort(INT);
   false_ = solver_->make_term(false);
+  zero_ = solver_->make_term("0", int_sort_);
 }
 
 Axioms::~Axioms()
@@ -60,20 +61,23 @@ bool Axioms::check_bvand_base_case(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_max(Term t, TermVec &outlemmas)
+bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
   get_fbvand_args(t, bv_width, a, b);
 
-  Term r = make_eq(t, a);
+  Term r = is_max ? make_eq(t, a) : make_eq(t, zero_);
   if (!b->is_value()) {
-    Term pre = make_eq(b, pow2_minus_one(bv_width));
+    Term pre = is_max ? make_eq(b, pow2_minus_one(bv_width)) :
+      make_eq(b, zero_);
     Term l = make_implies(pre, r);
     add_if_voilated(l, outlemmas);
   } else {
     uint64_t b_val = b->to_int();
-    if (b_val == (pow(2, bv_width) - 1)) {
+    if (is_max && b_val == (pow(2, bv_width) - 1)) {
+      add_if_voilated(r, outlemmas);
+    } else if (!is_max && b_val == 0) {
       add_if_voilated(r, outlemmas);
     }
   }
