@@ -32,7 +32,6 @@ class BV2Int : smt::IdentityWalker
   smt::Term handle_bw_op_lazy(smt::Term t, uint64_t bv_width);
   smt::Term handle_bw_op_eager(smt::Term t, uint64_t bv_width);
   bool is_bw_op(smt::Op op);
-  bool abstract_;
 
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
@@ -44,8 +43,10 @@ class BV2Int : smt::IdentityWalker
   smt::Sort fbvand_sort_;
 
   smt::Term int_zero_;
+
+  bool abstract_;
   //flag that determines if we handle
-  //witwise operators (and/or/shift/...) 
+  //bitwise operators (and/or/shift/...) 
   //lazily or eagerly.
   bool lazy_bw_;
   uint64_t granularity_;
