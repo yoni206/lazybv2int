@@ -160,7 +160,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         cache_[t] = res;
       } else if (is_bw_op(op)) {
          uint64_t bv_width = t->get_sort()->get_width();
-        Term res = handle_bw_op(t, bv_width);
+        Term res = handle_bw_op(t, bv_width, cached_children);
         cache_[t] = res;
       } else  {
         assert(false);
@@ -254,21 +254,55 @@ bool BV2Int::is_bw_op(Op op) {
   return (op == BVAnd || op == BVOr || op == BVXor || op == BVNand || op == BVNor || op == BVXnor|| op == BVLshr || op == BVShl);
 }
 
-Term BV2Int::handle_bw_op(Term t, uint64_t bv_width) {
+Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children) {
   if (lazy_bw_) {
     return handle_bw_op_lazy(t, bv_width);
   } else {
-    return handle_bw_op_eager(t, bv_width);
+    return handle_bw_op_eager(t, bv_width, cached_children);
   }
+}
+
+Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width) {
+  assert(false);
+  return t;
 }
 
 Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
   return t;
 }
 
-Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width) {
-
+Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+  if (is_shift_op(t->get_op())) {
+    handle_shift_eager(t, bv_width, cached_children);
+  } else {
+    handle_boolean_bw_eager(t, bv_width);
+  }
   return t;
+}
+
+bool BV2Int::is_shift_op(Op op) {
+  return (op == BVShl || op == BVLshr);
+}
+
+Term BV2Int::handle_shift_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+  Term ite = int_zero_;
+  Term x = cached_children[0];
+  Term y = cached_children[1];
+  for (uint64_t i=0; i<bv_width; i++) {
+    Term i_term = solver_->make_term(i, int_sort_);
+    Term condition = solver_->make_term(Equal, y, i_term);
+    ite = solver_->make_term(Ite, condition, i_term, ite);
+  }
+  Term res;
+  Op op = t->get_op();
+  if (op == BVShl) {
+    res = solver_->make_term(Mult, x, ite);
+  } else {
+    assert(op == BVLshr);
+    res = solver_->make_term(Div, x, ite);
+  }
+  res = solver_->make_term(Mod, res, pow2(bv_width));
+  return res;
 }
 
 }
