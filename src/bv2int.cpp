@@ -208,8 +208,19 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
 Term BV2Int::convert(Term t)
 {
   visit(t);
-  // add range constraints
-  return cache_[t];
+  Term res = cache_[t];
+
+  size_t r_begin_idx = 0;
+  if (stack_.size() > 0) {
+    stack_entry_t e = stack_.back();
+    size_t r_begin_idx = std::get<1>(e);
+  }
+
+  for (size_t i = r_begin_idx; i < range_assertions_.size(); ++i) {
+    res = solver_->make_term(And, res, range_assertions_[i]);
+  }
+
+  return res;
 }
 
 inline Term BV2Int::pow2(uint64_t k)
