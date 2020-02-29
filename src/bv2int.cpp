@@ -212,7 +212,7 @@ Term BV2Int::convert(Term t)
   return cache_[t];
 }
 
-Term BV2Int::pow2(uint64_t k)
+inline Term BV2Int::pow2(uint64_t k)
 {
   string pow_bv_width_str = pow2_str(k);
   return solver_->make_term(pow_bv_width_str, int_sort_);
