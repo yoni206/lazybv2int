@@ -254,9 +254,38 @@ Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children) {
   }
 }
 
-Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width) {
+Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+  assert(granularity_ > 0);
+  uint64_t block_size = granularity_;
+  if (block_size > bv_width) {
+    block_size = bv_width;
+  }
+  while (bv_width % block_size != 0) {
+    block_size = block_size - 1;
+  }
+  uint64_t num_of_blocks = bv_width / block_size;
+
+  Op op = t->get_op();
+  TermVec sum_parts;
+  for (uint64_t i=0; i < num_of_blocks; i++) {
+    Term block = gen_block(op, cached_children, i, block_size);
+    Term power_of_two = pow2(i);
+    Term sum_part = solver_->make_term(Mult, block, power_of_two);
+    sum_parts.push_back(sum_part);
+  }
+  Term ret = solver_->make_term(Plus, sum_parts);
+  return ret;
+}
+
+Term BV2Int::gen_block(Op op, TermVec cached_children, uint64_t i, uint64_t block_size) {
+  Term left = solver_->make_term(Mod, solver_->make_term(Div, cached_children[0], pow2(i*block_size)), pow2(block_size));
+  Term right = solver_->make_term(Mod, solver_->make_term(Div, cached_children[1], pow2(i*block_size)), pow2(block_size));
+  return gen_bitwise_int(op, block_size, left, right);
+}
+
+Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term a, Term b) {
   assert(false);
-  return t;
+  return a;
 }
 
 Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
@@ -267,7 +296,7 @@ Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width, TermVec cached_childr
   if (is_shift_op(t->get_op())) {
     handle_shift_eager(t, bv_width, cached_children);
   } else {
-    handle_boolean_bw_eager(t, bv_width);
+    handle_boolean_bw_eager(t, bv_width, cached_children);
   }
   return t;
 }
