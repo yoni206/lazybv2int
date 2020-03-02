@@ -1,29 +1,42 @@
 #pragma once
 
 #include "smt-switch/smt.h"
+#include "smt-switch/identity_walker.h"
 
 namespace lbv2i {
 
-class Binarizer
+class Binarizer : public smt::IdentityWalker
 {
-  // probably this class will inherit form SMT-Switch-Walker
+  // probably this class will inherit from SMT-Switch-Walker
  public:
-  Binarizer();
+  Binarizer(smt::SmtSolver & solver);
   ~Binarizer();
 
+  typedef smt::IdentityWalker super;
+  // it will also use the walker infrastructure
+
   smt::Term process(smt::Term t);
+
+ protected:
+  smt::WalkerStepResult visit_term(smt::Term & term) override;
 
  private:
 };
 
-class OpEliminator
+class OpEliminator : public smt::IdentityWalker
 {
-  // probably this class will inherit form SMT-Switch-Walker
+  // probably this class will inherit from SMT-Switch-Walker
  public:
-  OpEliminator();
+  OpEliminator(smt::SmtSolver & solver);
   ~OpEliminator();
 
+  typedef smt::IdentityWalker super;
+  // it will also use the walker infrastructure
+
   smt::Term process(smt::Term t);
+
+ protected:
+  smt::WalkerStepResult visit_term(smt::Term & term) override;
 
  private:
 };
@@ -31,7 +44,7 @@ class OpEliminator
 class Preprocessor
 {
  public:
-  Preprocessor();
+  Preprocessor(smt::SmtSolver & solver);
   ~Preprocessor();
 
   smt::Term process(smt::Term t);
