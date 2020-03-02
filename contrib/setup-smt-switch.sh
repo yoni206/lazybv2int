@@ -3,9 +3,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPS=$DIR/../deps
 
-# get a particular version of smt-switch
-SMT_SWITCH_VERSION=e9c1eb58ef56c8339579424a71ddcb22463904cdc
-
 usage () {
     cat <<EOF
 Usage: $0 [<option> ...]
@@ -33,8 +30,7 @@ mkdir -p $DEPS
 
 if [ ! -d "$DEPS/smt-switch" ]; then
     cd $DEPS
-    # temporarily pull walker branch
-    git clone -b walker https://github.com/makaimann/smt-switch
+    git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     git checkout -f $SMT_SWITCH_VERSION
     ./contrib/setup-msat.sh
