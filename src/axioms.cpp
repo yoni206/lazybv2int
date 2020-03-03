@@ -144,6 +144,31 @@ bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
+bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbvand_args(t, bv_width, a, b);
+
+  if (a == b) {
+    return false;
+  }
+
+  // output of t is positive, we don't need to check that
+
+  Term pre = solver_->make_term(Le, a, b);
+  Term l = make_implies(pre, solver_->make_term(Le, a));
+  add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == 0) {
+    pre = solver_->make_term(Gt, a, b);
+    Term l = make_implies(pre, solver_->make_term(Le, b));
+    add_if_voilated(l, outlemmas);
+  }
+
+  return outlemmas.size() > 0;
+}
+
 inline Term Axioms::pow2_minus_one(uint64_t k)
 {
   string p = pow2_minus_one_str(k);

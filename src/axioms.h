@@ -15,11 +15,15 @@ class Axioms
   bool check_bvand_base_case(smt::Term t, smt::TermVec &outlemmas);
   bool check_bvand_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
   bool check_bvand_idempotence(smt::Term t, smt::TermVec &outlemmas);
+
   // we don't need symmetry if we sort the arguments
+
   bool check_bvand_difference(smt::Term t1, smt::Term t2, smt::TermVec &outlemmas);
   // t1 and t2 have same bitwidth and also have a common argument
 
- private:
+  bool check_bvand_range(smt::Term t, smt::TermVec &outlemmas);
+
+private:
 
   smt::Term pow2_minus_one(uint64_t k);
 
