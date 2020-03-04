@@ -231,7 +231,7 @@ bool Axioms::check_bvor_idempotence(Term t, TermVec &outlemmas)
   return check_bvand_idempotence(t, outlemmas);
 }
 
-bool Axioms::check_bvor_excluded_middle(smt::Term t, smt::TermVec &outlemmas)
+bool Axioms::check_bvor_excluded_middle(Term t, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -269,6 +269,71 @@ bool Axioms::check_bvor_range(Term t, TermVec &outlemmas)
     l = make_implies(pre, solver_->make_term(Le, a, t));
     add_if_voilated(l, outlemmas);
   }
+
+  if (outlemmas.size() == 0) {
+    l = solver_->make_term(Le, t, pow2_minus_one(bv_width));
+    add_if_voilated(l, outlemmas);
+  }
+
+  return outlemmas.size() > 0;
+}
+bool Axioms::check_bvxor_base_case(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  if (bv_width == 1) {
+    Term pre = make_eq(a, b);
+    Term l = make_implies(pre, make_eq(t, zero_));
+    add_if_voilated(l, outlemmas);
+
+    if (outlemmas.size() == 0) {
+      pre = make_neq(a, b);
+      Term one = solver_->make_term("1", int_sort_);
+      l = make_implies(pre, make_eq(t, one));
+      add_if_voilated(l, outlemmas);
+    }
+  }
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvxor_zero(Term t, bool is_max, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  Term l;
+  if (a == b) {
+    l = make_eq(t, zero_);
+  } else {
+    Term pre = make_eq(a, b);
+    l = make_implies(pre, make_eq(t, zero_));
+  }
+  add_if_voilated(l, outlemmas);
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvxor_one(Term t, TermVec &outlemmas)
+{
+  return check_bvor_excluded_middle(t, outlemmas);
+}
+
+bool Axioms::check_bvxor_range(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  if (a == b) {
+    return false;
+  }
+
+  Term l = solver_->make_term(Le, zero_, t);
+  add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == 0) {
     l = solver_->make_term(Le, t, pow2_minus_one(bv_width));
