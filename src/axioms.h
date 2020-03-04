@@ -27,6 +27,12 @@ class Axioms
   bool check_bvor_base_case(smt::Term t, smt::TermVec &outlemmas);
   bool check_bvor_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
   bool check_bvor_idempotence(smt::Term t, smt::TermVec &outlemmas);
+  // we don't need symmetry if we sort the arguments
+
+  bool check_bvor_difference(smt::Term t1, smt::Term t2, smt::TermVec &outlemmas);
+  // t1 and t2 have same bitwidth and also have a common argument
+
+  bool check_bvor_range(smt::Term t, smt::TermVec &outlemmas);
 
 private:
 

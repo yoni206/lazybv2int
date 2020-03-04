@@ -168,15 +168,18 @@ bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
     return false;
   }
 
-  // output of t is positive, we don't need to check that
-
-  Term pre = solver_->make_term(Le, a, b);
-  Term l = make_implies(pre, solver_->make_term(Le, a));
+  Term l = solver_->make_term(Le, zero_, t);
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == 0) {
-    pre = solver_->make_term(Gt, a, b);
-    Term l = make_implies(pre, solver_->make_term(Le, b));
+    Term pre = solver_->make_term(Le, a, b);
+    l = make_implies(pre, solver_->make_term(Le, t, a));
+    add_if_voilated(l, outlemmas);
+  }
+
+  if (outlemmas.size() == 0) {
+    Term pre = solver_->make_term(Gt, a, b);
+    l = make_implies(pre, solver_->make_term(Le, t, b));
     add_if_voilated(l, outlemmas);
   }
 
@@ -225,17 +228,38 @@ bool Axioms::check_bvor_minmax(Term t, bool is_max, TermVec &outlemmas)
 
 bool Axioms::check_bvor_idempotence(Term t, TermVec &outlemmas)
 {
+  return check_bvand_idempotence(t, outlemmas);
+}
+
+bool Axioms::check_bvor_difference(Term t1, Term t2, TermVec &outlemmas)
+{
+  return check_bvand_difference(t1, t2, outlemmas);
+}
+
+bool Axioms::check_bvor_range(Term t, TermVec &outlemmas)
+{
   uint64_t bv_width;
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  Term l = make_eq(t, a);
-  if (a != b) {
-    Term pre = make_eq(a, b);
-    l = make_implies(pre, l);
+  if (a == b) {
+    return false;
   }
 
+  Term pre = solver_->make_term(Le, a, b);
+  Term l = make_implies(pre, solver_->make_term(Le, b, t));
   add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == 0) {
+    pre = solver_->make_term(Gt, a, b);
+    l = make_implies(pre, solver_->make_term(Le, a, t));
+    add_if_voilated(l, outlemmas);
+  }
+
+  if (outlemmas.size() == 0) {
+    l = solver_->make_term(Le, t, pow2_minus_one(bv_width));
+    add_if_voilated(l, outlemmas);
+  }
 
   return outlemmas.size() > 0;
 }
