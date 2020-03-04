@@ -19,7 +19,9 @@ int main() {
   Term x = s.make_symbol("x", bvsort8);
   Term y = s.make_symbol("y", bvsort8);
   Term z = s.make_symbol("z", bvsort8);
-  Term a = s.make_term(Equal, s.make_term(BVAnd, x, y), s.make_term(BVAdd, x, y));
+  Term x_and_y = s.make_term(BVAnd, x, y);
+  Term x_add_y = s.make_term(BVAdd, x, y);
+  Term a = s.make_term(Equal, x_add_y, x_add_y);
   s.assert_formula(a);
   Result r = s.solve();
   assert(r.is_sat());
