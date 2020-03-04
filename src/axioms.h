@@ -15,13 +15,20 @@ class Axioms
   bool check_bvand_base_case(smt::Term t, smt::TermVec &outlemmas);
   bool check_bvand_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
   bool check_bvand_idempotence(smt::Term t, smt::TermVec &outlemmas);
+  bool check_bvand_contradiction(smt::Term t, smt::TermVec &outlemmas);
   // we don't need symmetry if we sort the arguments
 
- private:
+  bool check_bvand_difference(smt::Term t1, smt::Term t2, smt::TermVec &outlemmas);
+  // t1 and t2 have same bitwidth and also have a common argument
+
+  bool check_bvand_range(smt::Term t, smt::TermVec &outlemmas);
+
+private:
 
   smt::Term pow2_minus_one(uint64_t k);
 
   smt::Term make_eq(smt::Term x, smt::Term y);
+  smt::Term make_neq(smt::Term x, smt::Term y);
   smt::Term make_implies(smt::Term x, smt::Term y);
 
   void add_if_voilated(smt::Term l, smt::TermVec &out);

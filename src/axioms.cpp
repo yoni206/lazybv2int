@@ -102,6 +102,87 @@ bool Axioms::check_bvand_idempotence(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
+bool Axioms::check_bvand_contradiction(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbvand_args(t, bv_width, a, b);
+
+  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b); 
+  Term pre = make_eq(a, not_b);
+  Term l = make_implies(pre, make_eq(t, zero_));
+  add_if_voilated(l, outlemmas);
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
+{
+  uint64_t bv_width1;
+  Term a1, b1;
+  get_fbvand_args(t1, bv_width1, a1, b1);
+  uint64_t bv_width2;
+  Term a2, b2;
+  get_fbvand_args(t2, bv_width2, a2, b2);
+
+  assert(bv_width1 == bv_width2);
+
+  Term x, y, z; // same as in the paper
+  if (a1 == a2) {
+    z = a1;
+    x = b1;
+    y = b2;
+  } else if (a1 == b2) {
+    z = a1;
+    x = b1;
+    y = a2;
+  } else if (b1 == a2) {
+    z = b1;
+    x = a1;
+    y = b2;
+  } else if (b1 == b2) {
+    z = b1;
+    x = a1;
+    y = a2;
+  } else {
+    assert(false);
+  }
+
+  Term pre = make_neq(x, y);
+  Term neq1 = make_neq(t1, y);
+  Term neq2 = make_neq(t2, x);
+  Term l = make_implies(pre, solver_->make_term(Or, neq1, neq2));
+
+  add_if_voilated(l, outlemmas);
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbvand_args(t, bv_width, a, b);
+
+  if (a == b) {
+    return false;
+  }
+
+  // output of t is positive, we don't need to check that
+
+  Term pre = solver_->make_term(Le, a, b);
+  Term l = make_implies(pre, solver_->make_term(Le, a));
+  add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == 0) {
+    pre = solver_->make_term(Gt, a, b);
+    Term l = make_implies(pre, solver_->make_term(Le, b));
+    add_if_voilated(l, outlemmas);
+  }
+
+  return outlemmas.size() > 0;
+}
+
 inline Term Axioms::pow2_minus_one(uint64_t k)
 {
   string p = pow2_minus_one_str(k);
@@ -111,6 +192,11 @@ inline Term Axioms::pow2_minus_one(uint64_t k)
 inline Term Axioms::make_eq(Term x, Term y)
 {
   return solver_->make_term(Equal, x, y);
+}
+
+inline Term Axioms::make_neq(Term x, Term y)
+{
+  return solver_->make_term(Not, make_eq(x, y));
 }
 
 inline Term Axioms::make_implies(Term x, Term y)
