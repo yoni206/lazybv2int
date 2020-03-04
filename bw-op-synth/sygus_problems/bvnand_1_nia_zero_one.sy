@@ -1,0 +1,28 @@
+
+(set-logic NIA)
+(synth-fun int_bvnand_1 ((s Int) (t Int)) Int
+  (
+   (Start Int (
+     StartCons
+     s
+     t
+     (+ Start Start)
+     (- Start  Start)
+     (* Start Start)
+     (ite StartBool Start Start)
+   ))
+   (StartCons Int ( 
+    0
+1
+   ))
+(StartBool Bool (
+     (= Start Start)
+     (>= Start Start)
+     (not StartBool)
+   ))
+))
+(constraint (= (int_bvnand_1 0 0) -1))
+(constraint (= (int_bvnand_1 0 1) -1))
+(constraint (= (int_bvnand_1 1 0) -1))
+(constraint (= (int_bvnand_1 1 1) -2))
+(check-synth)

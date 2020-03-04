@@ -1,0 +1,27 @@
+
+(set-logic LIA)
+(synth-fun int_bvxnor_1 ((s Int) (t Int)) Int
+  (
+   (Start Int (
+     StartCons
+     s
+     t
+     (+ Start Start)
+     (- Start  Start)
+     (* StartCons Start)
+     (ite StartBool Start Start)
+   ))
+   (StartCons Int ( 
+    (Constant Int)
+   ))
+(StartBool Bool (
+     (= Start Start)
+     (>= Start Start)
+     (not StartBool)
+   ))
+))
+(constraint (= (int_bvxnor_1 0 0) -1))
+(constraint (= (int_bvxnor_1 0 1) -2))
+(constraint (= (int_bvxnor_1 1 0) -2))
+(constraint (= (int_bvxnor_1 1 1) -1))
+(check-synth)
