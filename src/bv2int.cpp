@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <assert.h>
+#include "bw_functions.h"
 
 using namespace std;
 using namespace smt;
@@ -294,9 +295,68 @@ Term BV2Int::gen_block(Op op, TermVec cached_children, uint64_t i, uint64_t bloc
   return gen_bitwise_int(op, block_size, left, right);
 }
 
-Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term a, Term b) {
+Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y) {
+  if (op == BVAnd) {
+        switch (k)
+        {
+          case 1: return int_bvand_1(x, y, solver_);
+          case 2: return int_bvand_2(x, y, solver_);
+          case 3: return int_bvand_3(x, y, solver_);
+          case 4: return int_bvand_4(x, y, solver_);
+          case 5: return int_bvand_5(x, y, solver_);
+          case 6: return int_bvand_6(x, y, solver_);
+          default: assert(false);
+        }
+  } else if (op == BVOr) {
+        switch (k)
+        {
+          case 1: return int_bvor_1(x, y, solver_);
+          case 2: return int_bvor_2(x, y, solver_);
+          case 3: return int_bvor_3(x, y, solver_);
+          case 4: return int_bvor_4(x, y, solver_);
+          case 5: return int_bvor_5(x, y, solver_);
+          case 6: return int_bvor_6(x, y, solver_);
+          default: assert(false);
+        }
+  } else if (op == BVXor) {
+        switch (k)
+        {
+          case 1: return int_bvxor_1(x, y, solver_);
+          case 2: return int_bvxor_2(x, y, solver_);
+          case 3: return int_bvxor_3(x, y, solver_);
+          case 4: return int_bvxor_4(x, y, solver_);
+          case 5: return int_bvxor_5(x, y, solver_);
+          default: assert(false);
+        }
+  } else if (op == BVXnor) {
+        switch (k)
+        {
+          case 1: return int_bvxnor_1(x, y, solver_);
+          case 2: return int_bvxnor_2(x, y, solver_);
+          case 3: return int_bvxnor_3(x, y, solver_);
+          case 4: return int_bvxnor_4(x, y, solver_);
+          default: assert(false);
+        }
+  } else if (op == BVNand) {
+        switch (k)
+        {
+          case 1: return int_bvnand_1(x, y, solver_);
+          case 2: return int_bvnand_2(x, y, solver_);
+          case 3: return int_bvnand_3(x, y, solver_);
+          case 4: return int_bvnand_4(x, y, solver_);
+          default: assert(false);
+        }
+  } else if (op == BVNor) {
+        switch (k)
+        {
+          case 1: return int_bvnor_1(x, y, solver_);
+          case 2: return int_bvnor_2(x, y, solver_);
+          case 3: return int_bvnor_3(x, y, solver_);
+          case 4: return int_bvnor_4(x, y, solver_);
+          default: assert(false);
+        }
+  }
   assert(false);
-  return a;
 }
 
 Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
