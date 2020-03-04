@@ -100,7 +100,8 @@ bool LBV2ISolver::assert_formula(Term f)
 
   // translate
   Term t_f = bv2int_.convert(pre_f);
-  cout << " panda " << t_f << endl;
+  cout << "panda pre" << pre_f << endl;
+  cout << "panda post" << t_f << endl;
   solver_->assert_formula(t_f);
 
   return true;

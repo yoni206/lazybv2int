@@ -1,5 +1,7 @@
 set(TESTS
   test1
+  test2
+  test3
   # Add more tests here
   )
 

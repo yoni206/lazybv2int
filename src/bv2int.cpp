@@ -44,6 +44,7 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool abstract) :
                        SortVec{int_sort_, int_sort_, int_sort_, int_sort_});
   int_zero_ = solver_->make_term(0, int_sort_);
   granularity_ = 1;
+  lazy_bw_ = false;
 }
 
 BV2Int::~BV2Int() {}
@@ -66,10 +67,12 @@ void BV2Int::pop()
 
 
 Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b) {
-        string name0 = "sigma_" + to_string(sigma_vars_.size());
+        cout <<"panda a: " << a << endl;
+        cout <<"panda b: " << b << endl;
+        string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
         Term sigma0 = solver_->make_symbol(name0, int_sort_);
         sigma_vars_.push_back(sigma0);
-        string name1 = "sigma_" + to_string(sigma_vars_.size());
+        string name1 = "sigma_mod_" + to_string(sigma_vars_.size());
         Term sigma1 = solver_->make_symbol(name1, int_sort_);
         sigma_vars_.push_back(sigma1);
         //sigma0 = a mod b
@@ -98,14 +101,13 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       Term one = solver_->make_term(string("1"), int_sort_);
 
       std::cout << "visiting operator: " << op.to_string() << std::endl;
-
       if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
       } 
 
       else if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_" + to_string(sigma_vars_.size());
+        string name = "sigma_add_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
         sigma_vars_.push_back(sigma);
         Term plus = solver_->make_term(Plus, cached_children);
@@ -117,7 +119,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         cache_[t] = res;
       } else if (op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_" + to_string(sigma_vars_.size());
+        string name = "sigma_mul_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
         sigma_vars_.push_back(sigma);
         Term mul = solver_->make_term(Plus, cached_children);
@@ -307,6 +309,10 @@ Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_c
 }
 
 Term BV2Int::gen_block(Op op, TermVec cached_children, uint64_t i, uint64_t block_size) {
+  cout << endl;
+  cout <<"panda gen block op == " << op << endl;
+  cout <<"panda gen block c[0] == " << cached_children[0] <<endl;
+  cout <<"panda gen block c[1] == " << cached_children[1] <<endl;
   Term left_a = solver_->make_term(Div, cached_children[0], pow2(i*block_size));
   Term left_b = pow2(block_size);
   Term left = gen_mod(block_size, left_a, left_b);
@@ -382,16 +388,16 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y) {
 }
 
 Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
+  assert(false);
   return t;
 }
 
 Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width, TermVec cached_children) {
   if (is_shift_op(t->get_op())) {
-    handle_shift_eager(t, bv_width, cached_children);
+    return handle_shift_eager(t, bv_width, cached_children);
   } else {
-    handle_boolean_bw_eager(t, bv_width, cached_children);
+    return handle_boolean_bw_eager(t, bv_width, cached_children);
   }
-  return t;
 }
 
 bool BV2Int::is_shift_op(Op op) {
