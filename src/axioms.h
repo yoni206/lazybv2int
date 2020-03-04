@@ -23,6 +23,11 @@ class Axioms
 
   bool check_bvand_range(smt::Term t, smt::TermVec &outlemmas);
 
+  /* bvor */
+  bool check_bvor_base_case(smt::Term t, smt::TermVec &outlemmas);
+  bool check_bvor_minmax(smt::Term t, bool is_max, smt::TermVec &outlemmas);
+  bool check_bvor_idempotence(smt::Term t, smt::TermVec &outlemmas);
+
 private:
 
   smt::Term pow2_minus_one(uint64_t k);

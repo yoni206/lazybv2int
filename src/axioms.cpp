@@ -20,7 +20,7 @@ static string pow2_minus_one_str(uint64_t k)
   return to_string(p);
 }
 
-static void get_fbvand_args(Term f, uint64_t &bv_width, Term &a, Term &b)
+static void get_fbv_args(Term f, uint64_t &bv_width, Term &a, Term &b)
 {
   TermIter it = f->begin();
   Term tmp = *it;
@@ -50,7 +50,7 @@ bool Axioms::check_bvand_base_case(Term t, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
-  get_fbvand_args(t, bv_width, a, b);
+  get_fbv_args(t, bv_width, a, b);
 
   if (bv_width == 1) {
     Term mul = solver_->make_term(Mult, a, b);
@@ -65,7 +65,7 @@ bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
-  get_fbvand_args(t, bv_width, a, b);
+  get_fbv_args(t, bv_width, a, b);
 
   Term r = is_max ? make_eq(t, a) : make_eq(t, zero_);
   if (!b->is_value()) {
@@ -89,7 +89,7 @@ bool Axioms::check_bvand_idempotence(Term t, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
-  get_fbvand_args(t, bv_width, a, b);
+  get_fbv_args(t, bv_width, a, b);
 
   Term l = make_eq(t, a);
   if (a != b) {
@@ -106,7 +106,7 @@ bool Axioms::check_bvand_contradiction(Term t, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
-  get_fbvand_args(t, bv_width, a, b);
+  get_fbv_args(t, bv_width, a, b);
 
   Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b); 
   Term pre = make_eq(a, not_b);
@@ -120,10 +120,10 @@ bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
 {
   uint64_t bv_width1;
   Term a1, b1;
-  get_fbvand_args(t1, bv_width1, a1, b1);
+  get_fbv_args(t1, bv_width1, a1, b1);
   uint64_t bv_width2;
   Term a2, b2;
-  get_fbvand_args(t2, bv_width2, a2, b2);
+  get_fbv_args(t2, bv_width2, a2, b2);
 
   assert(bv_width1 == bv_width2);
 
@@ -162,7 +162,7 @@ bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
-  get_fbvand_args(t, bv_width, a, b);
+  get_fbv_args(t, bv_width, a, b);
 
   if (a == b) {
     return false;
@@ -179,6 +179,63 @@ bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
     Term l = make_implies(pre, solver_->make_term(Le, b));
     add_if_voilated(l, outlemmas);
   }
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvor_base_case(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  if (bv_width == 1) {
+    Term p = solver_->make_term(Plus, a, b);
+    Term l = make_eq(t, p);
+    add_if_voilated(l, outlemmas);
+  }
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvor_minmax(Term t, bool is_max, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  Term r = is_max ? make_eq(t, pow2_minus_one(bv_width))
+    : make_eq(t, a);
+  if (!b->is_value()) {
+    Term pre = is_max ? make_eq(b, pow2_minus_one(bv_width)) :
+      make_eq(b, zero_);
+    Term l = make_implies(pre, r);
+    add_if_voilated(l, outlemmas);
+  } else {
+    uint64_t b_val = b->to_int();
+    if (is_max && b_val == (pow(2, bv_width) - 1)) {
+      add_if_voilated(r, outlemmas);
+    } else if (!is_max && b_val == 0) {
+      add_if_voilated(r, outlemmas);
+    }
+  }
+
+  return outlemmas.size() > 0;
+}
+
+bool Axioms::check_bvor_idempotence(Term t, TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  Term l = make_eq(t, a);
+  if (a != b) {
+    Term pre = make_eq(a, b);
+    l = make_implies(pre, l);
+  }
+
+  add_if_voilated(l, outlemmas);
 
   return outlemmas.size() > 0;
 }
