@@ -231,6 +231,20 @@ bool Axioms::check_bvor_idempotence(Term t, TermVec &outlemmas)
   return check_bvand_idempotence(t, outlemmas);
 }
 
+bool Axioms::check_bvor_excluded_middle(smt::Term t, smt::TermVec &outlemmas)
+{
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b); 
+  Term pre = make_eq(a, not_b);
+  Term l = make_implies(pre, make_eq(t, pow2_minus_one(bv_width)));
+  add_if_voilated(l, outlemmas);
+
+  return outlemmas.size() > 0;
+}
+
 bool Axioms::check_bvor_difference(Term t1, Term t2, TermVec &outlemmas)
 {
   return check_bvand_difference(t1, t2, outlemmas);
