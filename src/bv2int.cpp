@@ -25,7 +25,7 @@ static bool is_simple_op(Op op)
 {
   vector<Op> simple_op =
     {And, Or, Xor, Not, Implies, Iff, Ite, Equal, Distinct, Plus, Minus,
-     Negate, Mult, Div, Lt, Le, Gt, Ge, Mod, Abs, Pow, To_Real};
+     Negate, Mult, IntDiv, Lt, Le, Gt, Ge, Mod, Abs, Pow, To_Real};
   for (auto o : simple_op) {
     if (o == op) {
       return true;
@@ -67,8 +67,6 @@ void BV2Int::pop()
 
 
 Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b) {
-        cout <<"panda a: " << a << endl;
-        cout <<"panda b: " << b << endl;
         string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
         Term sigma0 = solver_->make_symbol(name0, int_sort_);
         sigma_vars_.push_back(sigma0);
@@ -131,7 +129,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         cache_[t] = res;
       } else if (op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term div = solver_->make_term(Div, cached_children);
+        Term div = solver_->make_term(IntDiv, cached_children);
         Term condition = solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
         cache_[t] = res;
@@ -163,7 +161,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         Term upper_term = solver_->make_term(upper, int_sort_);
         Term lower_term = solver_->make_term(lower, int_sort_);
 
-        Term div = solver_->make_term(Div, cached_children[0], lower_term);
+        Term div = solver_->make_term(IntDiv, cached_children[0], lower_term);
         uint64_t interval = upper - lower;
         Term res = solver_->make_term(Mod, div, pow2(interval));
         cache_[t] = res;
@@ -301,7 +299,9 @@ Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_c
   Term sum = int_zero_;
   for (uint64_t i=0; i < num_of_blocks; i++) {
     Term block = gen_block(op, cached_children, i, block_size);
+    cout << "panda block = " << block << endl;
     Term power_of_two = pow2(i);
+    cout << "panda ppp = " << block << endl;
     Term sum_part = solver_->make_term(Mult, block, power_of_two);
     sum = solver_->make_term(Plus, sum, sum_part);
   }
@@ -310,14 +310,11 @@ Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_c
 
 Term BV2Int::gen_block(Op op, TermVec cached_children, uint64_t i, uint64_t block_size) {
   cout << endl;
-  cout <<"panda gen block op == " << op << endl;
-  cout <<"panda gen block c[0] == " << cached_children[0] <<endl;
-  cout <<"panda gen block c[1] == " << cached_children[1] <<endl;
-  Term left_a = solver_->make_term(Div, cached_children[0], pow2(i*block_size));
+  Term left_a = solver_->make_term(IntDiv, cached_children[0], pow2(i*block_size));
   Term left_b = pow2(block_size);
   Term left = gen_mod(block_size, left_a, left_b);
 
-  Term right_a = solver_->make_term(Div, cached_children[1], pow2(i*block_size));
+  Term right_a = solver_->make_term(IntDiv, cached_children[1], pow2(i*block_size));
   Term right_b = pow2(block_size);
   Term right = gen_mod(block_size, left_a, left_b);
   return gen_bitwise_int(op, block_size, left, right);
@@ -419,7 +416,7 @@ Term BV2Int::handle_shift_eager(Term t, uint64_t bv_width, TermVec cached_childr
     res = solver_->make_term(Mult, x, ite);
   } else {
     assert(op == BVLshr);
-    res = solver_->make_term(Div, x, ite);
+    res = solver_->make_term(IntDiv, x, ite);
   }
   res = gen_mod(bv_width, res, pow2(bv_width));
   return res;

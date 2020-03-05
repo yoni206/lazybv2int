@@ -2,7 +2,7 @@
 solver=$1
 cd scripts
 mkdir ../bw-op-synth/cpp
-./smtlib2cvc4.sh ../bw-op-synth/sygus_results/functions.txt $solver > ../bw-op-synth/cpp/bw_functions.cpp
+./smtlib2cvc4.sh ../bw-op-synth/sygus_results/functions.txt_chosen.txt $solver > ../bw-op-synth/cpp/bw_functions.cpp
 echo "#include \"bw_functions.h\"" > tmp
 cat ../bw-op-synth/cpp/bw_functions.cpp >> tmp
 cat tmp > ../bw-op-synth/cpp/bw_functions.cpp
