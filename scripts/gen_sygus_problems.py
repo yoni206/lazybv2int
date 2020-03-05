@@ -3,28 +3,35 @@ import os
 
 OPS = ["bvand", "bvor", "bvxor", "bvxnor", "bvnand", "bvnor"]
 GRANULARITIES = range(1, 9) #actually 1..8
+
 skeleton = """
 (set-logic <logic>)
 (synth-fun <F> ((s Int) (t Int)) Int
-  (
-   (Start Int (
-     StartCons
-     s
-     t
-     (+ Start Start)
-     (- Start  Start)
-     <multiplication>
-     (ite StartBool Start Start)
-   ))
-   (StartCons Int ( 
+(
+  (I Int) (Ic Int) (B Bool)
+)
+(
+  (I Int  (
+       Ic
+       (+ I I )
+       <multiplication>
+       (ite B I I)
+    )
+  )
+  (Ic Int (
+  s
+  t
     <constants>
-   ))
-(StartBool Bool (
-     (= Start Start)
-     (>= Start Start)
-     (not StartBool)
-   ))
-))
+  )
+)
+  (B Bool (
+       (= I I)
+       (>= I I)
+       (not B)
+     )
+  )
+)
+)
 <constraints>
 (check-synth)
 """
@@ -78,8 +85,8 @@ os.makedirs(sygus_problems_dir)
 for op in OPS:
     for gran in GRANULARITIES:
         problem_template = create_sygus_problem_template_for_op_and_granularity(op, gran)
-        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* Start Start)")
-        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* StartCons Start)")
+        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)")
+        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)")
 
         problem_nia_explicit_constants = nia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
         problem_nia_zero_one_constants = nia_template.replace("<constants>", "0\n1")

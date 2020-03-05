@@ -1,25 +1,31 @@
 
 (set-logic NIA)
 (synth-fun int_bvand_8 ((s Int) (t Int)) Int
-  (
-   (Start Int (
-     StartCons
-     s
-     t
-     (+ Start Start)
-     (- Start  Start)
-     (* Start Start)
-     (ite StartBool Start Start)
-   ))
-   (StartCons Int ( 
+(
+  (I Int) (Ic Int) (B Bool)
+)
+(
+  (I Int  (
+       Ic
+       (+ I I )
+       (* I I)
+       (ite B I I)
+    )
+  )
+  (Ic Int (
+  s
+  t
     (Constant Int)
-   ))
-(StartBool Bool (
-     (= Start Start)
-     (>= Start Start)
-     (not StartBool)
-   ))
-))
+  )
+)
+  (B Bool (
+       (= I I)
+       (>= I I)
+       (not B)
+     )
+  )
+)
+)
 (constraint (= (int_bvand_8 0 0) 0))
 (constraint (= (int_bvand_8 0 1) 0))
 (constraint (= (int_bvand_8 0 2) 0))

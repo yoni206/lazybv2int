@@ -1,17 +1,20 @@
 
 (set-logic LIA)
 (synth-fun int_bvand_8 ((s Int) (t Int)) Int
-  (
-   (Start Int (
-     StartCons
-     s
-     t
-     (+ Start Start)
-     (- Start  Start)
-     (* StartCons Start)
-     (ite StartBool Start Start)
-   ))
-   (StartCons Int ( 
+(
+  (I Int) (Ic Int) (B Bool)
+)
+(
+  (I Int  (
+       Ic
+       (+ I I )
+       (* Ic I)
+       (ite B I I)
+    )
+  )
+  (Ic Int (
+  s
+  t
     0
 1
 2
@@ -268,13 +271,16 @@
 253
 254
 255
-   ))
-(StartBool Bool (
-     (= Start Start)
-     (>= Start Start)
-     (not StartBool)
-   ))
-))
+  )
+)
+  (B Bool (
+       (= I I)
+       (>= I I)
+       (not B)
+     )
+  )
+)
+)
 (constraint (= (int_bvand_8 0 0) 0))
 (constraint (= (int_bvand_8 0 1) 0))
 (constraint (= (int_bvand_8 0 2) 0))
