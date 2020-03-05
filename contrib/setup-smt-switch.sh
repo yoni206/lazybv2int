@@ -33,8 +33,9 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     git checkout -f $SMT_SWITCH_VERSION
+    ./contrib/setup-cvc4.sh
     ./contrib/setup-msat.sh
-    ./configure.sh --msat --prefix=local $CONF_OPTS
+    ./configure.sh --cvc4 --msat --prefix=local $CONF_OPTS
     cd build
     make -j$(nproc)
     make test
@@ -44,8 +45,8 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.so ] ; then \
-    echo "It appears smt-switch with MathSAT was successfully installed to $DEPS/smt-switch/local."
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.so ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.so ] ; then \
+    echo "It appears smt-switch with MathSAT and CVC4 was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
     echo "You might be missing some dependencies."
