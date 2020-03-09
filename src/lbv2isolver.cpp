@@ -1,4 +1,5 @@
 #include "lbv2isolver.h"
+#include "smtlibmsatparser.h"
 #include <assert.h>
 
 using namespace smt;
@@ -7,15 +8,30 @@ namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
   solver_(solver),
-  bv2int_(solver, true),
+  bv2int_(new BV2Int(solver, true)),
   axioms_(solver),
-  prepro_(solver)
+  prepro_(new Preprocessor(solver))
 {}
 
-LBV2ISolver::~LBV2ISolver() {}
+LBV2ISolver::~LBV2ISolver() {
+  delete bv2int_;
+  delete prepro_;
+}
 
 Result LBV2ISolver::check_sat() {
   return solve();
+}
+
+Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
+{
+  push();
+  for (auto a : assumptions)
+  {
+    assert_formula(a);
+  }
+  Result r = check_sat();
+  pop();
+  return r;
 }
 
 Result LBV2ISolver::solve()
@@ -55,10 +71,15 @@ Term LBV2ISolver::make_term(int64_t i, const Sort & sort) const {
 }
 
 Term LBV2ISolver::make_term(const Term & val, const Sort & sort) const {
-  solver_->make_term(val, sort);
+  return solver_->make_term(val, sort);
 }
 
-Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const 
+Term LBV2ISolver::make_term(const std::string val, const Sort & sort, uint64_t base) const
+{
+  return solver_->make_term(val, sort, base);
+}
+
+Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const
 {
    return solver_->make_term(op, terms);
 }
@@ -93,7 +114,7 @@ Sort LBV2ISolver::make_sort(const SortKind sk) const {
   return solver_->make_sort(sk);
 }
 
-Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const { 
+Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const {
   return solver_->make_sort(sk, size);
 }
 
@@ -125,40 +146,54 @@ void LBV2ISolver::set_opt(string op, string value) {
   solver_->set_opt(op, value);
 }
 
-Term LBV2ISolver::get_value(Term& t) {
+Term LBV2ISolver::get_value(Term& t) const {
   //Need to do this by translating back to bv...
   assert(false);
 }
 
-void LBV2ISolver::push()
+void LBV2ISolver::push(uint64_t num)
 {
-  bv2int_.push();
-  solver_->push();
+  for (size_t i = 0; i < num; i++)
+  {
+    bv2int_->push();
+  }
+  solver_->push(num);
 }
 
-void LBV2ISolver::pop() {
-  bv2int_.push();
-  solver_->pop();
+void LBV2ISolver::pop(uint64_t num) {
+  for (size_t i = 0; i < num; i++)
+  {
+    bv2int_->pop();
+  }
+  solver_->pop(num);
 }
 
 void LBV2ISolver::reset()
 {
-  solver_->reset_assertions();
-  false;
+  solver_->reset();
 }
 
 void LBV2ISolver::assert_formula(const Term& f) const
 {
   // preprocess the formula
-  Term pre_f = prepro_.process(f);
+  Term pre_f = prepro_->process(f);
 
   // translate
-  Term t_f = bv2int_.convert(pre_f);
+  Term t_f = bv2int_->convert(pre_f);
   cout << "panda pre" << pre_f << endl;
   cout << "panda post" << t_f << endl;
   solver_->assert_formula(t_f);
 }
 
 bool LBV2ISolver::refine(smt::TermVec & outlemmas) { return false; }
+
+void LBV2ISolver::run(string filename)
+{
+  TermTranslator tr(solver_);
+  FILE * f = fopen(filename.c_str(), "r");
+  Term assert_term = parse_smt2(f, tr);
+  assert_formula(assert_term);
+  check_sat();
+}
 
 }  // namespace lbv2i

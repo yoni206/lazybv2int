@@ -14,7 +14,7 @@ namespace lbv2i {
   using namespace std;
   using namespace smt;
 
-class LBV2ISolver : AbsSmtSolver
+class LBV2ISolver : public AbsSmtSolver
 {
  public:
   LBV2ISolver(SmtSolver & sovler);
@@ -22,14 +22,14 @@ class LBV2ISolver : AbsSmtSolver
 
   Result solve();
 
-  void push();
-  void pop();
+  void push(uint64_t num=1);
+  void pop(uint64_t num=1);
   void reset();
   void reset_assertions();
   void set_logic(const string logic_name) const;
   void set_opt(string op, string value);
   void assert_formula(const Term& f) const;
-  Term get_value(Term& t);
+  Term get_value(Term& t) const;
   Result check_sat();
   Result check_sat_assuming(const TermVec & assumptions);
 
@@ -63,17 +63,19 @@ class LBV2ISolver : AbsSmtSolver
   Term make_term(bool b) const;
   Term make_term(int64_t i, const Sort & sort) const;
   Term make_term(const Term & val, const Sort & sort) const;
+  Term make_term(const std::string val, const Sort & sort, uint64_t base=10) const;
+  void run(std::string filename);
 
  private:
   bool refine(TermVec & outlemmas);
 
   // BV2Int Translator
-  BV2Int bv2int_;
+  BV2Int * bv2int_;
 
   // Preprocessor that will eliminate some bv operators. Note: keep in mind
   // while writing the preprocessor that we want to use it also in the
   // incremental setting (push/pop)
-  Preprocessor prepro_;
+  Preprocessor * prepro_;
 
   // axioms for refinement
   Axioms axioms_;
