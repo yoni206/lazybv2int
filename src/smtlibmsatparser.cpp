@@ -21,7 +21,10 @@ Term parse_smt2(FILE * f, TermTranslator tr)
   }
 
   Term mterm(new MsatTerm(env, res));
-  return tr.transfer_term(mterm);
+  Term transferred_term = tr.transfer_term(mterm);
+  msat_destroy_env(env);
+  msat_destroy_config(cfg);
+  return transferred_term;
 }
 
 }  // namespace lbv2i
