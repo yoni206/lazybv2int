@@ -11,7 +11,7 @@ int main(int argc, char ** argv)
 
   smt::SmtSolver underlying_solver = smt::MsatSolverFactory::create();
 
-  SmtLibSolver solver(underlying_solver);
+  LBV2ISolver solver = LBV2ISolver(underlying_solver);
 
   solver.run(filename);
 }

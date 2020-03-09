@@ -48,12 +48,16 @@ def get_constraints_for_op_and_granularity(op, granularity):
     constraints= []
     for i in range(0, 2 ** granularity):
         for j in range(0, 2 ** granularity):
-            eval = evaluate(op, i, j)
+            eval = evaluate(op, i, j,granularity)
             constraint = "(constraint (= " + "(int_" + op + "_" + str(granularity)  + " " + str(i) + " " + str(j) + ") " + str(eval) + "))"
             constraints.append(str(constraint))
     return constraints
 
-def evaluate(op, x, y):
+def bvnot(x, k):
+    return 2**k - 1 - x
+
+
+def evaluate(op, x, y, k):
     if op == "bvand":
         return x & y
     elif op == "bvor":
@@ -61,11 +65,11 @@ def evaluate(op, x, y):
     elif op == "bvxor":
         return x^y
     elif op == "bvxnor":
-        return (x|~y)&(~x|y)
+        return (x|bvnot(y,k))&(bvnot(x,k)|y)
     elif op == "bvnand":
-        return ~(x&y)
+        return bvnot(x&y,k)
     elif op == "bvnor":
-        return ~(x|y)
+        return bvnot(x|y, k)
 
 
 
