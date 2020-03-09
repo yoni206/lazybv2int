@@ -17,7 +17,7 @@ class BV2Int : smt::IdentityWalker
   // it will also use the walker infrastructure
 
   smt::WalkerStepResult visit_term(smt::Term& term);
-  smt::Term convert(smt::Term t);
+  smt::Term convert(smt::Term& t); 
 
   void push();
   void pop();

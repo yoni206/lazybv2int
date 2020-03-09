@@ -1,4 +1,5 @@
 #include "lbv2isolver.h"
+#include <assert.h>
 
 using namespace smt;
 
@@ -12,6 +13,10 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
 {}
 
 LBV2ISolver::~LBV2ISolver() {}
+
+Result LBV2ISolver::check_sat() {
+  return solve();
+}
 
 Result LBV2ISolver::solve()
 {
@@ -35,8 +40,23 @@ Result LBV2ISolver::solve()
   }
 }
 
-bool LBV2ISolver::set_logic(string logic_name) {solver_->set_logic(logic_name); return true;}
+void LBV2ISolver::set_logic(const string logic_name) const {solver_->set_logic(logic_name); }
 
+void LBV2ISolver::reset_assertions() {
+  solver_->reset_assertions();
+}
+
+Term LBV2ISolver::make_term(bool b) const {
+  return solver_->make_term(b);
+}
+
+Term LBV2ISolver::make_term(int64_t i, const Sort & sort) const {
+  return solver_->make_term(i, sort);
+}
+
+Term LBV2ISolver::make_term(const Term & val, const Sort & sort) const {
+  solver_->make_term(val, sort);
+}
 
 Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const 
 {
@@ -65,35 +85,69 @@ Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort) {
   return solver_->make_symbol(name, sort);
 }
 
-Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const{
+Sort LBV2ISolver::make_sort(const std::string name, uint64_t arity) const {
+  return solver_->make_sort(name, arity);
+}
+
+Sort LBV2ISolver::make_sort(const SortKind sk) const {
+  return solver_->make_sort(sk);
+}
+
+Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const { 
   return solver_->make_sort(sk, size);
 }
 
-bool LBV2ISolver::set_opt(string op, string value) {
-  solver_->set_opt(op, value);
-  return true;
+Sort LBV2ISolver::make_sort(const SortKind sk, const Sort & sort1) const {
+  return solver_->make_sort(sk, sort1);
 }
 
-bool LBV2ISolver::push()
+
+Sort LBV2ISolver::make_sort(const SortKind sk,
+                         const Sort & sort1,
+                         const Sort & sort2) const {
+  return solver_->make_sort(sk, sort1, sort2);
+}
+
+Sort LBV2ISolver::make_sort(const SortKind sk,
+                         const Sort & sort1,
+                         const Sort & sort2,
+                         const Sort & sort3) const {
+  return solver_->make_sort(sk, sort1, sort2, sort3);
+}
+
+
+Sort LBV2ISolver::make_sort(const SortKind sk, const SortVec & sorts) const {
+  return solver_->make_sort(sk, sorts);
+}
+
+
+void LBV2ISolver::set_opt(string op, string value) {
+  solver_->set_opt(op, value);
+}
+
+Term LBV2ISolver::get_value(Term& t) {
+  //Need to do this by translating back to bv...
+  assert(false);
+}
+
+void LBV2ISolver::push()
 {
   bv2int_.push();
   solver_->push();
-  return true;
 }
 
-bool LBV2ISolver::pop() {
+void LBV2ISolver::pop() {
   bv2int_.push();
   solver_->pop();
-  return true;
 }
 
-bool LBV2ISolver::reset()
+void LBV2ISolver::reset()
 {
   solver_->reset_assertions();
-  return false;
+  false;
 }
 
-bool LBV2ISolver::assert_formula(Term f)
+void LBV2ISolver::assert_formula(const Term& f) const
 {
   // preprocess the formula
   Term pre_f = prepro_.process(f);
@@ -103,8 +157,6 @@ bool LBV2ISolver::assert_formula(Term f)
   cout << "panda pre" << pre_f << endl;
   cout << "panda post" << t_f << endl;
   solver_->assert_formula(t_f);
-
-  return true;
 }
 
 bool LBV2ISolver::refine(smt::TermVec & outlemmas) { return false; }

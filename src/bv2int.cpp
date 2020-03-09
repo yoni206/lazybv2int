@@ -224,7 +224,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
   return Walker_Continue;
 }
 
-Term BV2Int::convert(Term t)
+Term BV2Int::convert(Term& t) 
 {
   visit(t);
   Term res = cache_[t];

@@ -8,7 +8,7 @@ Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
 
 Binarizer::~Binarizer() {}
 
-Term Binarizer::process(Term t)
+Term Binarizer::process(const Term& t) const
 {
   return visit(t);
 }
@@ -55,7 +55,7 @@ OpEliminator::OpEliminator(SmtSolver & solver) : super(solver, false) {}
 
 OpEliminator::~OpEliminator() {}
 
-Term OpEliminator::process(Term t)
+Term OpEliminator::process(const Term& t) const
 {
   return visit(t);
 }

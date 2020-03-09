@@ -15,7 +15,7 @@ class Binarizer : public smt::IdentityWalker
   typedef smt::IdentityWalker super;
   // it will also use the walker infrastructure
 
-  smt::Term process(smt::Term t);
+  smt::Term process(const smt::Term& t) const;
 
  protected:
   smt::WalkerStepResult visit_term(smt::Term & term) override;
@@ -33,7 +33,7 @@ class OpEliminator : public smt::IdentityWalker
   typedef smt::IdentityWalker super;
   // it will also use the walker infrastructure
 
-  smt::Term process(smt::Term t);
+  smt::Term process(const smt::Term& t) const ;
 
  protected:
   smt::WalkerStepResult visit_term(smt::Term & term) override;
@@ -47,7 +47,7 @@ class Preprocessor
   Preprocessor(smt::SmtSolver & solver);
   ~Preprocessor();
 
-  smt::Term process(smt::Term t);
+  smt::Term process(const smt::Term& t) const;
 
  private:
   // binarizer

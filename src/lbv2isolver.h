@@ -14,7 +14,7 @@ namespace lbv2i {
   using namespace std;
   using namespace smt;
 
-class LBV2ISolver
+class LBV2ISolver : AbsSmtSolver
 {
  public:
   LBV2ISolver(SmtSolver & sovler);
@@ -22,15 +22,30 @@ class LBV2ISolver
 
   Result solve();
 
-  bool push();
-  bool pop();
-  bool reset();
-  bool set_logic(string logic_name);
-  bool set_opt(string op, string value);
-  bool assert_formula(Term f);
+  void push();
+  void pop();
+  void reset();
+  void reset_assertions();
+  void set_logic(const string logic_name) const;
+  void set_opt(string op, string value);
+  void assert_formula(const Term& f) const;
+  Term get_value(Term& t);
   Result check_sat();
+  Result check_sat_assuming(const TermVec & assumptions);
 
+  Sort make_sort(const SortKind sk) const;
+  Sort make_sort(const std::string name, uint64_t arity) const;
   Sort make_sort(const SortKind sk, uint64_t size) const;
+  Sort make_sort(const SortKind sk, const Sort & sort1) const;
+  Sort make_sort(const SortKind sk,
+                         const Sort & sort1,
+                         const Sort & sort2) const;
+  Sort make_sort(const SortKind sk,
+                         const Sort & sort1,
+                         const Sort & sort2,
+                         const Sort & sort3) const;
+  Sort make_sort(const SortKind sk, const SortVec & sorts) const;
+
   Term make_symbol(const std::string name, const Sort & sort);
   Term make_term(const Op op, const TermVec & terms) const;
   Term make_term(const Op op, const Term & t) const;
@@ -44,6 +59,11 @@ class LBV2ISolver
   Term make_term(const std::string val,
                  const Sort & sort,
                  uint64_t base = 10);
+
+  Term make_term(bool b) const;
+  Term make_term(int64_t i, const Sort & sort) const;
+  Term make_term(const Term & val, const Sort & sort) const;
+
  private:
   bool refine(TermVec & outlemmas);
 
