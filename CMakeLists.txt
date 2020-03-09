@@ -16,6 +16,7 @@ add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/axioms.cpp"
   "${PROJECT_SOURCE_DIR}/src/smtlibsolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bw_functions.cpp"
+  "${PROJECT_SOURCE_DIR}/src/smtlibmsatparser.cpp"
   )
 
 if (APPLE)
@@ -50,6 +51,14 @@ target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib")
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/smtlib2parser-1.4")
 #target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/optionparser-1.7/src")
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/include")
+
+# HACK: Using MathSAT parser (need to expose some of smt-switch internals)
+target_include_directories(lazybv2int PUBLIC
+  "${PROJECT_SOURCE_DIR}/smt-switch/local/include"
+  "${PROJECT_SOURCE_DIR}/deps/smt-switch"
+  "${PROJECT_SOURCE_DIR}/deps/smt-switch/include"
+  "${PROJECT_SOURCE_DIR}/deps/smt-switch/deps/mathsat/include")
+
 
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.${SHARED_LIBRARY_EXT}")
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.${SHARED_LIBRARY_EXT}")
