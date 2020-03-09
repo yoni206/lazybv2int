@@ -1,8 +1,71 @@
+#include <functional>
+#include <map>
+
 #include "preprocessor.h"
 
 using namespace smt;
 
 namespace lbv2i {
+
+enum RewriteRule
+{
+ UdivZero,
+ SdivEliminate,
+ SremEliminate,
+ SmodEliminate,
+ RepeatEliminate,
+ ZeroExtendEliminate,
+ SignExtendEliminate,
+ RotateRightEliminate,
+ RotateLeftEliminate,
+ CompEliminate,
+ SleEliminate,
+ SltEliminate,
+ SgtEliminate,
+ SgeEliminate,
+ ShlByConst,
+ LshrByConst
+};
+
+// TODO: implement all of these
+const std::map<RewriteRule, std::function<bool(const Term & t)>> rr_applies({
+ { UdivZero, [](const Term & t) { return false; } },
+ { SdivEliminate, [](const Term & t) { return false; } },
+ { SremEliminate, [](const Term & t) { return false; } },
+ { SmodEliminate, [](const Term & t) { return false; } },
+ { RepeatEliminate, [](const Term & t) { return false; } },
+ { ZeroExtendEliminate, [](const Term & t) { return false; } },
+ { SignExtendEliminate, [](const Term & t) { return false; } },
+ { RotateRightEliminate, [](const Term & t) { return false; } },
+ { RotateLeftEliminate, [](const Term & t) { return false; } },
+ { CompEliminate, [](const Term & t) { return false; } },
+ { SleEliminate, [](const Term & t) { return false; } },
+ { SltEliminate, [](const Term & t) { return false; } },
+ { SgtEliminate, [](const Term & t) { return false; } },
+ { SgeEliminate, [](const Term & t) { return false; } },
+ { ShlByConst, [](const Term & t) { return false; } },
+ { LshrByConst, [](const Term & t) { return false; } }
+    });
+
+// TODO: implement all of these
+const std::map<RewriteRule, std::function<Term(const Term & t)>> rr_apply({
+ { UdivZero, [](const Term & t) { Term res; return res; } },
+ { SdivEliminate, [](const Term & t) { Term res; return res; } },
+ { SremEliminate, [](const Term & t) { Term res; return res; } },
+ { SmodEliminate, [](const Term & t) { Term res; return res; } },
+ { RepeatEliminate, [](const Term & t) { Term res; return res; } },
+ { ZeroExtendEliminate, [](const Term & t) { Term res; return res; } },
+ { SignExtendEliminate, [](const Term & t) { Term res; return res; } },
+ { RotateRightEliminate, [](const Term & t) { Term res; return res; } },
+ { RotateLeftEliminate, [](const Term & t) { Term res; return res; } },
+ { CompEliminate, [](const Term & t) { Term res; return res; } },
+ { SleEliminate, [](const Term & t) { Term res; return res; } },
+ { SltEliminate, [](const Term & t) { Term res; return res; } },
+ { SgtEliminate, [](const Term & t) { Term res; return res; } },
+ { SgeEliminate, [](const Term & t) { Term res; return res; } },
+ { ShlByConst, [](const Term & t) { Term res; return res; } },
+ { LshrByConst, [](const Term & t) { Term res; return res; } }
+    });
 
 Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
 
