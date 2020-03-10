@@ -7,7 +7,8 @@ namespace lbv2i {
 class Axioms
 {
  public:
-  Axioms(smt::SmtSolver &solver);
+  Axioms(smt::SmtSolver &solver, const smt::Term &fbvand,
+         const smt::Term &fbvor, const smt::Term &fbvxor);
   ~Axioms();
 
   // we assume that the term t looks like "fbvand(x, y)"
@@ -55,6 +56,10 @@ private:
 
   smt::SmtSolver &solver_;
 
+  smt::Term fbvand_;
+  smt::Term fbvor_;
+  smt::Term fbvxor_;
+  
   smt::Sort int_sort_;
 
   smt::Term false_;

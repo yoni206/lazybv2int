@@ -34,7 +34,12 @@ static void get_fbv_args(Term f, uint64_t & bv_width, Term & a, Term & b)
   b = *it;
 }
 
-Axioms::Axioms(SmtSolver & solver) : solver_(solver)
+Axioms::Axioms(SmtSolver & solver, const Term &fbvand, const Term &fbvor,
+               const Term &fbvxor)
+  : solver_(solver),
+    fbvand_(fbvand),
+    fbvor_(fbvor),
+    fbvxor_(fbvxor)
 {
   int_sort_ = solver_->make_sort(INT);
   false_ = solver_->make_term(false);

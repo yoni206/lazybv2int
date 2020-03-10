@@ -5,7 +5,10 @@ using namespace smt;
 namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver)
-    : solver_(solver), bv2int_(solver, true), axioms_(solver), prepro_(solver)
+  : solver_(solver),
+    bv2int_(solver, true),
+    axioms_(solver, bv2int_.fbv_and(), bv2int_.fbv_or(), bv2int_.fbv_xor()),
+    prepro_(solver)
 {
 }
 

@@ -22,7 +22,11 @@ class BV2Int : smt::IdentityWalker
   void push();
   void pop();
 
- private:
+  const smt::Term & fbv_and() const { return fbvand_; }
+  const smt::Term & fbv_or() const { return fbvor_; }
+  const smt::Term & fbv_xor() const { return fbvxor_; }
+
+private:
 
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
