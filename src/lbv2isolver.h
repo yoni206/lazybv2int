@@ -11,59 +11,58 @@
 
 namespace lbv2i {
 
-  using namespace std;
-  using namespace smt;
-
-class LBV2ISolver : public AbsSmtSolver
+class LBV2ISolver : public smt::AbsSmtSolver
 {
  public:
-  LBV2ISolver(SmtSolver & sovler, bool lazy = false);
+  LBV2ISolver(smt::SmtSolver & solver, bool lazy = false);
   ~LBV2ISolver();
 
-  Result solve();
+  smt::Result solve();
 
   void push(uint64_t num=1);
   void pop(uint64_t num=1);
   void reset();
   void reset_assertions();
-  void set_logic(const string logic_name) const;
-  void set_opt(string op, string value);
-  void assert_formula(const Term& f) const;
-  Term get_value(Term& t) const;
-  Result check_sat();
-  Result check_sat_assuming(const TermVec & assumptions);
+  void set_logic(const std::string logic_name) const;
+  void set_opt(std::string op, std::string value);
+  void assert_formula(const smt::Term & f) const;
+  smt::Term get_value(smt::Term & t) const;
+  smt::Result check_sat();
+  smt::Result check_sat_assuming(const smt::TermVec & assumptions);
 
-  Sort make_sort(const SortKind sk) const;
-  Sort make_sort(const std::string name, uint64_t arity) const;
-  Sort make_sort(const SortKind sk, uint64_t size) const;
-  Sort make_sort(const SortKind sk, const Sort & sort1) const;
-  Sort make_sort(const SortKind sk,
-                         const Sort & sort1,
-                         const Sort & sort2) const;
-  Sort make_sort(const SortKind sk,
-                         const Sort & sort1,
-                         const Sort & sort2,
-                         const Sort & sort3) const;
-  Sort make_sort(const SortKind sk, const SortVec & sorts) const;
+  smt::Sort make_sort(const smt::SortKind sk) const;
+  smt::Sort make_sort(const std::string name, uint64_t arity) const;
+  smt::Sort make_sort(const smt::SortKind sk, uint64_t size) const;
+  smt::Sort make_sort(const smt::SortKind sk, const smt::Sort & sort1) const;
+  smt::Sort make_sort(const smt::SortKind sk,
+                      const smt::Sort & sort1,
+                      const smt::Sort & sort2) const;
+  smt::Sort make_sort(const smt::SortKind sk,
+                      const smt::Sort & sort1,
+                      const smt::Sort & sort2,
+                      const smt::Sort & sort3) const;
+  smt::Sort make_sort(const smt::SortKind sk, const smt::SortVec & sorts) const;
 
-  Term make_symbol(const std::string name, const Sort & sort);
-  Term make_term(const Op op, const TermVec & terms) const;
-  Term make_term(const Op op, const Term & t) const;
-  Term make_term(const Op op,
-                         const Term & t0,
-                         const Term & t1) const;
-  Term make_term(const Op op,
-                         const Term & t0,
-                         const Term & t1,
-                         const Term & t2) const;
-  Term make_term(const std::string val,
-                 const Sort & sort,
-                 uint64_t base = 10);
+  smt::Term make_symbol(const std::string name, const smt::Sort & sort);
+  smt::Term make_term(const smt::Op op, const smt::TermVec & terms) const;
+  smt::Term make_term(const smt::Op op, const smt::Term & t) const;
+  smt::Term make_term(const smt::Op op,
+                      const smt::Term & t0,
+                      const smt::Term & t1) const;
+  smt::Term make_term(const smt::Op op,
+                      const smt::Term & t0,
+                      const smt::Term & t1,
+                      const smt::Term & t2) const;
+  smt::Term make_term(const std::string val,
+                      const smt::Sort & sort,
+                      uint64_t base = 10);
 
-  Term make_term(bool b) const;
-  Term make_term(int64_t i, const Sort & sort) const;
-  Term make_term(const Term & val, const Sort & sort) const;
-  Term make_term(const std::string val, const Sort & sort, uint64_t base=10) const;
+  smt::Term make_term(bool b) const;
+  smt::Term make_term(int64_t i, const smt::Sort & sort) const;
+  smt::Term make_term(const smt::Term & val, const smt::Sort & sort) const;
+  smt::Term make_term(const std::string val,
+                      const smt::Sort & sort,
+                      uint64_t base = 10) const;
   void run(std::string filename);
 
  private:
@@ -82,10 +81,11 @@ class LBV2ISolver : public AbsSmtSolver
 
   // axioms for refinement
   Axioms axioms_;
-  
+
   // smt-switch solver
   smt::SmtSolver & solver_;
 
   bool lazy_;
 };
+
 }  // namespace lbv2i

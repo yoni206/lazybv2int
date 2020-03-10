@@ -7,6 +7,7 @@
 
 using namespace lbv2i;
 using namespace smt;
+using namespace std;
 
 int main() {
   SmtSolver underlying_solver = smt::CVC4SolverFactory::create();

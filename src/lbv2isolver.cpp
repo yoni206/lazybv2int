@@ -3,6 +3,7 @@
 #include <assert.h>
 
 using namespace smt;
+using namespace std;
 
 namespace lbv2i {
 
