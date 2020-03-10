@@ -26,6 +26,7 @@ class BV2Int : smt::IdentityWalker
   const smt::Term & fbv_or() const { return fbvor_; }
   const smt::Term & fbv_xor() const { return fbvxor_; }
 
+  const smt::TermVec & fbv_terms() const { return fterms_; }
 private:
 
   smt::Term pow2(uint64_t k);
