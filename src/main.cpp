@@ -35,4 +35,5 @@ int main(int argc, char ** argv)
   smt::SmtSolver underlying_solver = smt::MsatSolverFactory::create();
   LBV2ISolver solver = LBV2ISolver(underlying_solver, false);
   solver.run(filename);
+  return 0;
 }
