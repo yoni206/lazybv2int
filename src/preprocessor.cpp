@@ -9,7 +9,7 @@ namespace lbv2i {
 
 enum RewriteRule
 {
- UdivZero,
+ UdivZero=0,
  SdivEliminate,
  SremEliminate,
  SmodEliminate,
@@ -24,7 +24,9 @@ enum RewriteRule
  SgtEliminate,
  SgeEliminate,
  ShlByConst,
- LshrByConst
+ LshrByConst,
+ // Not meant to be used except for iteration
+ NUM_REWRITE_RULES
 };
 
 // TODO: implement all of these
@@ -455,8 +457,39 @@ Term OpEliminator::process(Term t) { return visit(t); }
 
 WalkerStepResult OpEliminator::visit_term(Term & term)
 {
-  // TODO: Implement this
-  throw std::exception();
+  if (!preorder_)
+  {
+    Term res = term;
+    TermVec children;
+    for (auto tt : term)
+    {
+      children.push_back(tt);
+    }
+
+    bool fixpoint;
+    do
+    {
+      fixpoint = true;
+
+      // iterate over all the rewrite rules and apply applicable ones
+      for (int rr_int = 0; rr_int < NUM_REWRITE_RULES; rr_int++)
+      {
+        RewriteRule rr = static_cast<RewriteRule>(rr_int);
+        if (rr_applies.at(rr)(res, children, solver_))
+        {
+          fixpoint = false;
+          res = rr_apply.at(rr)(res, children, solver_);
+          // update children after rewriting
+          children.clear();
+          for (auto tt : res)
+          {
+            children.push_back(tt);
+          }
+        }
+      }
+    } while(!fixpoint);
+  }
+  return Walker_Continue;
 }
 
 Preprocessor::Preprocessor(SmtSolver & solver) : bin_(solver), opelim_(solver)
