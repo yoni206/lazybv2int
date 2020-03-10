@@ -43,11 +43,11 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
   int_zero_ = solver_->make_term(0, int_sort_);
   granularity_ = 1;
 
-  Sort fbv_sort = solver_->make_sort(
-                                     FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
-  fbvand_ = solver_->make_term("fbv_and", fbv_sort);
-  fbvor_ = solver_->make_term("fbv_or", fbv_sort);
-  fbvxor_ = solver_->make_term("fbv_xor", fbv_sort);
+  Sort fbv_sort = solver_->make_sort(FUNCTION,
+                                     SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
+  fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
+  fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
+  fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
 }
 
 BV2Int::~BV2Int() {}
@@ -406,7 +406,7 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
   Term x = cached_children[0];
   Term y = cached_children[1];
   Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
-
+  
   Term res;
   if (op == BVAnd) {
     TermVec args = {fbvand_, bv_width_term, x, y};
