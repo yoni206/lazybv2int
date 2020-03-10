@@ -54,8 +54,8 @@ BV2Int::~BV2Int() {}
 
 void BV2Int::push()
 {
-  stack_.push_back(
-      stack_entry_t(cache_, range_assertions_.size(), sigma_vars_.size()));
+  stack_.push_back(stack_entry_t(cache_, range_assertions_.size(),
+                                 sigma_vars_.size(), fterms_.size()));
 }
 
 void BV2Int::pop()
@@ -64,6 +64,7 @@ void BV2Int::pop()
   cache_ = std::get<0>(e);
   range_assertions_.resize(std::get<1>(e));
   sigma_vars_.resize(std::get<2>(e));
+  fterms_.resize(std::get<3>(e));
   stack_.pop_back();
 }
 
@@ -288,7 +289,7 @@ bool BV2Int::is_bw_op(Op op)
 Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
 {
   if (lazy_bw_) {
-    return handle_bw_op_lazy(t, bv_width);
+    return handle_bw_op_lazy(t, bv_width, cached_children);
   } else {
     return handle_bw_op_eager(t, bv_width, cached_children);
   }
@@ -296,7 +297,7 @@ Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
 
 Term BV2Int::handle_boolean_bw_eager(Term t,
                                      uint64_t bv_width,
-                                     TermVec cached_children)
+                                     const TermVec &cached_children)
 {
   assert(granularity_ > 0);
   uint64_t block_size = granularity_;
@@ -322,7 +323,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
 }
 
 Term BV2Int::gen_block(Op op,
-                       TermVec cached_children,
+                       const TermVec &cached_children,
                        uint64_t i,
                        uint64_t block_size)
 {
@@ -398,15 +399,36 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
   assert(false);
 }
 
-Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width)
+Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
+                               const TermVec &cached_children)
 {
-  assert(false);
-  return t;
+  Op op = t->get_op();
+  Term x = cached_children[0];
+  Term y = cached_children[1];
+  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
+
+  Term res;
+  if (op == BVAnd) {
+    TermVec args = {fbvand_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else if (op == BVOr) {
+    TermVec args = {fbvor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else if (op == BVXor) {
+    TermVec args = {fbvxor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else {
+    assert(false);
+  }
+
+  fterms_.push_back(res);
+
+  return res;
 }
 
 Term BV2Int::handle_bw_op_eager(Term t,
                                 uint64_t bv_width,
-                                TermVec cached_children)
+                                const TermVec &cached_children)
 {
   if (is_shift_op(t->get_op())) {
     return handle_shift_eager(t, bv_width, cached_children);
@@ -419,7 +441,7 @@ bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
 Term BV2Int::handle_shift_eager(Term t,
                                 uint64_t bv_width,
-                                TermVec cached_children)
+                                const TermVec &cached_children)
 {
   Term ite = int_zero_;
   Term x = cached_children[0];
