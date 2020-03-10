@@ -1,6 +1,7 @@
 #include <functional>
 #include <map>
 
+#include "opts.h"
 #include "preprocessor.h"
 
 using namespace smt;
@@ -501,7 +502,53 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
   return Walker_Continue;
 }
 
-Preprocessor::Preprocessor(SmtSolver & solver) : bin_(solver), opelim_(solver)
+BitwiseOpDefs::BitwiseOpDefs(SmtSolver & solver) : super(solver, false) {}
+
+BitwiseOpDefs::~BitwiseOpDefs() {}
+
+Term BitwiseOpDefs::process(Term t) { return visit(t); }
+
+const TermVec & BitwiseOpDefs::get_definitions() const { return definitions_; };
+
+WalkerStepResult BitwiseOpDefs::visit_term(Term & term)
+{
+  if (!preorder_) {
+    Op op = term->get_op();
+    if (op.is_null()) {
+      cache_[term] = term;
+      return Walker_Continue;
+    }
+
+    TermVec children;
+    for (auto tt : term) {
+      children.push_back(cache_.at(tt));
+    }
+
+    Term res = solver_->make_term(op, children);
+
+    switch (op.prim_op) {
+      case BVAnd:
+      case BVOr:
+      case BVXor: {
+        Term sym =
+            solver_->make_symbol(op.to_string() + "_" + children[0]->to_string()
+                                     + "_" + children[1]->to_string(),
+                                 term->get_sort());
+        Term def = solver_->make_term(Equal, sym, res);
+        definitions_.push_back(def);
+        solver_->assert_formula(def);
+        cache_[term] = sym;
+        break;
+      }
+      default: break;
+    }
+  }
+
+  return Walker_Continue;
+}
+
+Preprocessor::Preprocessor(SmtSolver & solver)
+    : bin_(solver), opelim_(solver), bvopdefs_(solver)
 {
 }
 
@@ -511,7 +558,17 @@ Term Preprocessor::process(Term t)
 {
   Term res = bin_.process(t);
   res = opelim_.process(res);
+
+  if (opts.introduce_bvop_symbols) {
+    res = bvopdefs_.process(res);
+  }
+
   return res;
+}
+
+const TermVec & Preprocessor::get_definitions() const
+{
+  return bvopdefs_.get_definitions();
 }
 
 }  // namespace lbv2i
