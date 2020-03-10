@@ -309,16 +309,51 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
     block_size = block_size - 1;
   }
   uint64_t num_of_blocks = bv_width / block_size;
-
   Op op = t->get_op();
-  Term sum = int_zero_;
-  for (uint64_t i = 0; i < num_of_blocks; i++) {
-    Term block = gen_block(op, cached_children, i, block_size);
-    Term power_of_two = pow2(i);
-    Term sum_part = solver_->make_term(Mult, block, power_of_two);
-    sum = solver_->make_term(Plus, sum, sum_part);
+
+  if (opts.use_sum_bvops) {
+    Term sum = int_zero_;
+    for (uint64_t i = 0; i < num_of_blocks; i++) {
+      Term block = gen_block(op, cached_children, i, block_size);
+      Term power_of_two = pow2(i);
+      Term sum_part = solver_->make_term(Mult, block, power_of_two);
+      sum = solver_->make_term(Plus, sum, sum_part);
+    }
+    return sum;
+  } else {
+    // only supporting granularity 1
+    // probably not strictly necessary, but it's simpler
+    assert(granularity_ == 1);
+
+    Sort intsort = solver_->make_sort(INT);
+
+    // add bitwise equality assertions over integers
+    // e.g. introduce bvand_x_y := (bvand x y)
+    // and assert bvand_x_y[i] = min(x[i], y[i]) for each i up to width-1
+    // using division and mod to extract bits
+    string name =
+        "sigma_" + op.to_string() + "_" + to_string(sigma_vars_.size());
+    Term sigma = solver_->make_symbol(name, intsort);
+    sigma_vars_.push_back(sigma);
+
+    Term block;
+    Term sigma_i;
+    for (uint64_t i = 0; i < num_of_blocks; i++) {
+      block = gen_block(op, cached_children, i, block_size);
+      // now extract the corresponding bit of sigma
+      // ((_ extract i i) sigma) is sigma / 2^i mod 2
+      sigma_i = solver_->make_term(IntDiv, sigma, pow2(i));
+      sigma_i =
+          solver_->make_term(Mod, sigma_i, solver_->make_term(2, intsort));
+      // now we assert that the two are equal
+      solver_->assert_formula(solver_->make_term(Equal, sigma_i, block));
+    }
+
+    // sigma is the new symbol for this bitwise operator
+    // and we've asserted that it is equivalent at each bit
+    // in the binary representation
+    return sigma;
   }
-  return sum;
 }
 
 Term BV2Int::gen_block(Op op,
