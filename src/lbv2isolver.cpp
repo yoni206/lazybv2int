@@ -9,7 +9,7 @@ namespace lbv2i {
 LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
   solver_(solver),
   bv2int_(new BV2Int(solver, true)),
-  axioms_(solver),
+  axioms_(solver, bv2int_.fbv_and(), bv2int_.fbv_or(), bv2int_.fbv_xor()),
   prepro_(new Preprocessor(solver))
 {}
 
@@ -81,28 +81,34 @@ Term LBV2ISolver::make_term(const std::string val, const Sort & sort, uint64_t b
 
 Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const
 {
-   return solver_->make_term(op, terms);
+  return solver_->make_term(op, terms);
 }
 
-Term LBV2ISolver::make_term(const Op op, const Term & t) const{
-   return solver_->make_term(op, t);
+Term LBV2ISolver::make_term(const Op op, const Term & t) const
+{
+  return solver_->make_term(op, t);
 }
 
-Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term& t1) const {
-   return solver_->make_term(op, t0, t1);
+Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term & t1) const
+{
+  return solver_->make_term(op, t0, t1);
 }
 
-Term LBV2ISolver::make_term(const Op op, const Term & t0, const Term& t1, const Term& t2) const {
-   return solver_->make_term(op, t0, t1, t2);
+Term LBV2ISolver::make_term(const Op op,
+                            const Term & t0,
+                            const Term & t1,
+                            const Term & t2) const
+{
+  return solver_->make_term(op, t0, t1, t2);
 }
 
-Term LBV2ISolver::make_term(const string val, const Sort & sort,
-                            uint64_t base)
+Term LBV2ISolver::make_term(const string val, const Sort & sort, uint64_t base)
 {
   return solver_->make_term(val, sort, base);
 }
 
-Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort) {
+Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort)
+{
   return solver_->make_symbol(name, sort);
 }
 

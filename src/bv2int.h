@@ -10,7 +10,7 @@ namespace lbv2i {
 class BV2Int : smt::IdentityWalker
 {
  public:
-  BV2Int(smt::SmtSolver &solver, bool clear_cache, bool abstract=false);
+  BV2Int(smt::SmtSolver &solver, bool clear_cache, bool lazy_bw=false);
   ~BV2Int();
 
   typedef smt::IdentityWalker super;
@@ -22,7 +22,11 @@ class BV2Int : smt::IdentityWalker
   void push();
   void pop();
 
- private:
+  const smt::Term & fbv_and() const { return fbvand_; }
+  const smt::Term & fbv_or() const { return fbvor_; }
+  const smt::Term & fbv_xor() const { return fbvxor_; }
+
+private:
 
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
@@ -41,7 +45,7 @@ class BV2Int : smt::IdentityWalker
 
 
   bool is_bw_op(smt::Op op);
-  bool abstract_;
+
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
 
@@ -49,7 +53,6 @@ class BV2Int : smt::IdentityWalker
   std::vector<stack_entry_t> stack_;
 
   smt::Sort int_sort_;
-  smt::Sort fbvand_sort_;
 
   smt::Term int_zero_;
 
@@ -57,7 +60,12 @@ class BV2Int : smt::IdentityWalker
   //bitwise operators (and/or/shift/...) 
   //lazily or eagerly.
   bool lazy_bw_;
+
   uint64_t granularity_;
+
+  smt::Term fbvand_;
+  smt::Term fbvor_;
+  smt::Term fbvxor_;
 
 };
 }  // namespace lbv2i
