@@ -49,7 +49,6 @@ class BV2Int : smt::IdentityWalker
   std::vector<stack_entry_t> stack_;
 
   smt::Sort int_sort_;
-  smt::Sort fbvand_sort_;
 
   smt::Term int_zero_;
 
@@ -57,7 +56,12 @@ class BV2Int : smt::IdentityWalker
   //bitwise operators (and/or/shift/...) 
   //lazily or eagerly.
   bool lazy_bw_;
+
   uint64_t granularity_;
+
+  smt::Term fbvand_;
+  smt::Term fbvor_;
+  smt::Term fbvxor_;
 
 };
 }  // namespace lbv2i

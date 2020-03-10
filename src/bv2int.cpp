@@ -40,10 +40,14 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
     : super(solver, clear_cache), lazy_bw_(lazy_bw)
 {
   int_sort_ = solver_->make_sort(INT);
-  fbvand_sort_ = solver_->make_sort(
-      FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
   int_zero_ = solver_->make_term(0, int_sort_);
   granularity_ = 1;
+
+  Sort fbv_sort = solver_->make_sort(
+                                     FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
+  fbvand_ = solver_->make_term("fbv_and", fbv_sort);
+  fbvor_ = solver_->make_term("fbv_or", fbv_sort);
+  fbvxor_ = solver_->make_term("fbv_xor", fbv_sort);
 }
 
 BV2Int::~BV2Int() {}
