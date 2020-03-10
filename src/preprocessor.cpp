@@ -90,10 +90,27 @@ const std::map<RewriteRule, std::function<bool(const Term & t, const TermVec & c
                    return t->get_op() == BVSlt;
                  } },
 
- { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { LshrByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } }
+ { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   return t->get_op() == BVSgt;
+                 } },
+
+ { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   return t->get_op() == BVSge;
+                 } },
+
+ { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s)
+               {
+                 return t->get_op() == BVShl &&
+                   (children[1]->is_value());
+               } },
+
+ { LshrByConst, [](const Term & t, const TermVec & children, SmtSolver & s)
+                {
+                  return t->get_op() == BVLshr &&
+                    (children[1]->is_value());
+                } }
     });
 
 // TODO: implement all of these
@@ -332,10 +349,63 @@ const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & c
                    return s->make_term(BVUlt, a, b);
                  } },
 
- { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { LshrByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } }
+ { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   Term a = children[0];
+                   Term b = children[1];
+                   return s->make_term(BVSlt, b, a);
+                 } },
+
+ { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   Term a = children[0];
+                   Term b = children[1];
+                   return s->make_term(BVSle, b, a);
+                 } },
+
+ { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s)
+               {
+                 // this will throw an exception if the value is not representable
+                 uint64_t amount = children[1]->to_int();
+                 Term a = children[0];
+                 if (amount == 0)
+                 {
+                   return a;
+                 }
+                 uint64_t size = a->get_sort()->get_width();
+
+                 if (amount >= size)
+                 {
+                   // if shifting more than width, return 0
+                   return s->make_term(0, a->get_sort());
+                 }
+
+                 Term left = s->make_term(Op(Extract, size-1-amount, 0), a);
+                 Term right = s->make_term(0, s->make_sort(BV, amount));
+                 return s->make_term(Concat, left, right);
+               } },
+
+ { LshrByConst, [](const Term & t, const TermVec & children, SmtSolver & s)
+                {
+                  // will throw an exception if amount is not representable as uint64_t
+                  uint64_t amount = children[1]->to_int();
+                  Term a = children[0];
+                  if (amount == 0)
+                  {
+                    return a;
+                  }
+                  uint64_t size = a->get_sort()->get_width();
+
+                  if (amount >= size)
+                  {
+                    // if shifting more than width, return 0
+                    return s->make_term(0, a->get_sort());
+                  }
+
+                  Term right = s->make_term(Op(Extract, size-1, amount), a);
+                  Term left = s->make_term(0, s->make_sort(BV, amount));
+                  return s->make_term(Concat, left, right);
+                } }
     });
 
 Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
