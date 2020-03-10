@@ -288,7 +288,7 @@ bool BV2Int::is_bw_op(Op op)
 Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
 {
   if (lazy_bw_) {
-    return handle_bw_op_lazy(t, bv_width);
+    return handle_bw_op_lazy(t, bv_width, cached_children);
   } else {
     return handle_bw_op_eager(t, bv_width, cached_children);
   }
@@ -296,7 +296,7 @@ Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
 
 Term BV2Int::handle_boolean_bw_eager(Term t,
                                      uint64_t bv_width,
-                                     TermVec cached_children)
+                                     const TermVec &cached_children)
 {
   assert(granularity_ > 0);
   uint64_t block_size = granularity_;
@@ -322,7 +322,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
 }
 
 Term BV2Int::gen_block(Op op,
-                       TermVec cached_children,
+                       const TermVec &cached_children,
                        uint64_t i,
                        uint64_t block_size)
 {
@@ -398,15 +398,29 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
   assert(false);
 }
 
-Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width)
+Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
+                               const TermVec &cached_children)
 {
-  assert(false);
+  Op op = t->get_op();
+  Term x = cached_children[0];
+  Term y = cached_children[1];
+
+  if (op == BVAnd) {
+    
+  } else if (op == BVOr) {
+    
+  } else if (op == BVXor) {
+    
+  } else {
+    assert(false);
+  }
+
   return t;
 }
 
 Term BV2Int::handle_bw_op_eager(Term t,
                                 uint64_t bv_width,
-                                TermVec cached_children)
+                                const TermVec &cached_children)
 {
   if (is_shift_op(t->get_op())) {
     return handle_shift_eager(t, bv_width, cached_children);
@@ -419,7 +433,7 @@ bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
 Term BV2Int::handle_shift_eager(Term t,
                                 uint64_t bv_width,
-                                TermVec cached_children)
+                                const TermVec &cached_children)
 {
   Term ite = int_zero_;
   Term x = cached_children[0];

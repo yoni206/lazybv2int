@@ -33,12 +33,17 @@ private:
   smt::Term make_bvnot_term(smt::Term x, uint64_t k);
   smt::Term int_max(uint64_t k);
   smt::Term handle_bw_op(smt::Term t, uint64_t bv_width, smt::TermVec cached_children);
-  smt::Term handle_bw_op_lazy(smt::Term t, uint64_t bv_width);
-  smt::Term handle_bw_op_eager(smt::Term t, uint64_t bv_width, smt::TermVec cached_children);
-  smt::Term handle_shift_eager(smt::Term t, uint64_t bv_width, smt::TermVec cached_children);
-  smt::Term handle_boolean_bw_eager(smt::Term t, uint64_t bv_width, smt::TermVec cached_children);
+  smt::Term handle_bw_op_lazy(smt::Term t, uint64_t bv_width,
+                              const smt::TermVec &cached_children);
+  smt::Term handle_bw_op_eager(smt::Term t, uint64_t bv_width,
+                               const smt::TermVec &cached_children);
+  smt::Term handle_shift_eager(smt::Term t, uint64_t bv_width,
+                               const smt::TermVec &cached_children);
+  smt::Term handle_boolean_bw_eager(smt::Term t, uint64_t bv_width,
+                                    const smt::TermVec &cached_children);
   bool is_shift_op(smt::Op op);
-  smt::Term gen_block(smt::Op op, smt::TermVec cached_children, uint64_t i, uint64_t block_size);
+  smt::Term gen_block(smt::Op op, const smt::TermVec &cached_children,
+                      uint64_t i, uint64_t block_size);
   smt::Term gen_bitwise_int(smt::Op op, uint64_t k, smt::Term a, smt::Term b);
   smt::Term gen_mod(uint64_t bv_width, smt::Term a, smt::Term b);
 
