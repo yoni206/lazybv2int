@@ -214,11 +214,10 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
   }
 
   bool ret = false;
-  TermVec lemmas;
 
-  ret |= refine_bvand(fbvand_terms, lemmas);
-  ret |= refine_bvor(fbvor_terms, lemmas);
-  ret |= refine_bvxor(fbvxor_terms, lemmas);
+  ret |= refine_bvand(fbvand_terms, outlemmas);
+  ret |= refine_bvor(fbvor_terms, outlemmas);
+  ret |= refine_bvxor(fbvxor_terms, outlemmas);
 
   return ret;
 }
