@@ -1,7 +1,8 @@
 #include "bv2int.h"
 
-#include <math.h>
 #include <assert.h>
+#include <math.h>
+
 #include "bw_functions.h"
 
 using namespace std;
@@ -23,9 +24,10 @@ static string pow2_str(uint64_t k)
 
 static bool is_simple_op(Op op)
 {
-  vector<Op> simple_op =
-    {And, Or, Xor, Not, Implies, Iff, Ite, Equal, Distinct, Plus, Minus,
-     Negate, Mult, IntDiv, Lt, Le, Gt, Ge, Mod, Abs, Pow, To_Real};
+  vector<Op> simple_op = { And,  Or,     Xor,      Not,    Implies, Iff,
+                           Ite,  Equal,  Distinct, Plus,   Minus,   Negate,
+                           Mult, IntDiv, Lt,       Le,     Gt,      Ge,
+                           Mod,  Abs,    Pow,      To_Real };
   for (auto o : simple_op) {
     if (o == op) {
       return true;
@@ -34,26 +36,26 @@ static bool is_simple_op(Op op)
   return false;
 }
 
-BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool abstract) :
-  super(solver, clear_cache),
-  abstract_(abstract)
+BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
+    : super(solver, clear_cache), lazy_bw_(lazy_bw)
 {
   int_sort_ = solver_->make_sort(INT);
-  fbvand_sort_ =
-    solver_->make_sort(FUNCTION,
-                       SortVec{int_sort_, int_sort_, int_sort_, int_sort_});
   int_zero_ = solver_->make_term(0, int_sort_);
   granularity_ = 1;
-  lazy_bw_ = false;
+
+  Sort fbv_sort = solver_->make_sort(
+                                     FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
+  fbvand_ = solver_->make_term("fbv_and", fbv_sort);
+  fbvor_ = solver_->make_term("fbv_or", fbv_sort);
+  fbvxor_ = solver_->make_term("fbv_xor", fbv_sort);
 }
 
 BV2Int::~BV2Int() {}
 
 void BV2Int::push()
 {
-  stack_.push_back(stack_entry_t(cache_,
-                                 range_assertions_.size(),
-                                 sigma_vars_.size()));
+  stack_.push_back(stack_entry_t(cache_, range_assertions_.size(),
+                                 sigma_vars_.size(), fterms_.size()));
 }
 
 void BV2Int::pop()
@@ -62,34 +64,36 @@ void BV2Int::pop()
   cache_ = std::get<0>(e);
   range_assertions_.resize(std::get<1>(e));
   sigma_vars_.resize(std::get<2>(e));
+  fterms_.resize(std::get<3>(e));
   stack_.pop_back();
 }
 
-
-Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b) {
-        string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
-        Term sigma0 = solver_->make_symbol(name0, int_sort_);
-        sigma_vars_.push_back(sigma0);
-        string name1 = "sigma_mod_" + to_string(sigma_vars_.size());
-        Term sigma1 = solver_->make_symbol(name1, int_sort_);
-        sigma_vars_.push_back(sigma1);
-        //sigma0 = a mod b
-        //a = b*sigma1 + sigma0
-        Term left = a;
-        Term mul = solver_->make_term(Mult, b, sigma1);
-        Term right = solver_->make_term(Plus, mul, sigma0);
-        Term constraint = solver_->make_term(Equal, left, right);
-        range_assertions_.push_back(make_range_constraint(sigma0, bv_width));
-        range_assertions_.push_back(make_range_constraint(sigma1, bv_width));
-        range_assertions_.push_back(constraint);
-        return sigma0;
+Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b)
+{
+  string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
+  Term sigma0 = solver_->make_symbol(name0, int_sort_);
+  sigma_vars_.push_back(sigma0);
+  string name1 = "sigma_mod_" + to_string(sigma_vars_.size());
+  Term sigma1 = solver_->make_symbol(name1, int_sort_);
+  sigma_vars_.push_back(sigma1);
+  // sigma0 = a mod b
+  // a = b*sigma1 + sigma0
+  Term left = a;
+  Term mul = solver_->make_term(Mult, b, sigma1);
+  Term right = solver_->make_term(Plus, mul, sigma0);
+  Term constraint = solver_->make_term(Equal, left, right);
+  range_assertions_.push_back(make_range_constraint(sigma0, bv_width));
+  range_assertions_.push_back(make_range_constraint(sigma1, bv_width));
+  range_assertions_.push_back(constraint);
+  return sigma0;
 }
 
-WalkerStepResult BV2Int::visit_term(Term& t) {
+WalkerStepResult BV2Int::visit_term(Term & t)
+{
   if (!preorder_) {
     Op op = t->get_op();
     if (!op.is_null()) {
-      //term has children
+      // term has children
       TermVec cached_children;
       for (auto c : t) {
         cached_children.push_back(cache_.at(c));
@@ -101,7 +105,7 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       std::cout << "visiting operator: " << op.to_string() << std::endl;
       if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
-      } 
+      }
 
       else if (op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -130,7 +134,8 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       } else if (op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term div = solver_->make_term(IntDiv, cached_children);
-        Term condition = solver_->make_term(Equal, cached_children[1], int_zero_);
+        Term condition =
+            solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
         cache_[t] = res;
       } else if (op == BVUrem) {
@@ -140,8 +145,9 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       } else if (op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term is_zero = solver_->make_term(Equal, cached_children[0], int_zero_);
-        Term neg = solver_->make_term(Minus, pow2(bv_width), cached_children[0]);
-        Term res = solver_->make_term(Ite, is_zero, int_zero_, neg); 
+        Term neg =
+            solver_->make_term(Minus, pow2(bv_width), cached_children[0]);
+        Term res = solver_->make_term(Ite, is_zero, int_zero_, neg);
         cache_[t] = res;
       } else if (op == BVNot) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -150,14 +156,15 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
       } else if (op == BV_To_Nat) {
         cache_[t] = cached_children[0];
       } else if (op == Concat) {
-         uint64_t bv_width = t->get_sort()->get_width();
-         Term left = solver_->make_term(Mult, cached_children[0], pow2(bv_width));
-         Term res = solver_->make_term(Plus, left, cached_children[1]);
-         cache_[t] = res;
+        uint64_t bv_width = t->get_sort()->get_width();
+        Term left =
+            solver_->make_term(Mult, cached_children[0], pow2(bv_width));
+        Term res = solver_->make_term(Plus, left, cached_children[1]);
+        cache_[t] = res;
       } else if (op == Extract) {
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
-        
+
         Term upper_term = solver_->make_term(upper, int_sort_);
         Term lower_term = solver_->make_term(lower, int_sort_);
 
@@ -178,10 +185,10 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
         Term res = solver_->make_term(Ge, cached_children);
         cache_[t] = res;
       } else if (is_bw_op(op)) {
-         uint64_t bv_width = t->get_sort()->get_width();
+        uint64_t bv_width = t->get_sort()->get_width();
         Term res = handle_bw_op(t, bv_width, cached_children);
         cache_[t] = res;
-      } else  {
+      } else {
         assert(false);
       }
 
@@ -199,18 +206,17 @@ WalkerStepResult BV2Int::visit_term(Term& t) {
           range_assertions_.push_back(make_range_constraint(res, bv_width));
           cache_[t] = res;
         } else {
-          assert(sk == SortKind::BOOL ||
-                 sk == SortKind::FUNCTION);
+          assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
           cache_[t] = t;
         }
-      } else if(t->is_value()) {
+      } else if (t->is_value()) {
         // a constant
         if (sk == SortKind::BV) {
           string smtlib_string = t->to_string();
-          //smtlib_string has the form (_ bv*** k). 
-          //We want to fetch ***
+          // smtlib_string has the form (_ bv*** k).
+          // We want to fetch ***
           size_t last_space_location = smtlib_string.find_last_of(" ");
-          size_t decimal_begin = 5; // "(_ bv" has 5 charecters
+          size_t decimal_begin = 5;  // "(_ bv" has 5 charecters
           size_t decimal_length = last_space_location - decimal_begin;
           string decimal = smtlib_string.substr(5, decimal_length);
           cache_[t] = solver_->make_term(decimal, int_sort_);
@@ -247,7 +253,7 @@ inline Term BV2Int::pow2(uint64_t k)
   string pow_bv_width_str = pow2_str(k);
   return solver_->make_term(pow_bv_width_str, int_sort_);
 }
-  
+
 Term BV2Int::make_range_constraint(Term var, uint64_t bv_width)
 {
   // returns 0<= var < 2^bv_width as a constraint
@@ -257,11 +263,13 @@ Term BV2Int::make_range_constraint(Term var, uint64_t bv_width)
   return solver_->make_term(And, l, u);
 }
 
-Term BV2Int::make_bvnot_term(Term x, uint64_t k) {
+Term BV2Int::make_bvnot_term(Term x, uint64_t k)
+{
   return solver_->make_term(Minus, int_max(k), x);
 }
 
-Term BV2Int::int_max(uint64_t k) {
+Term BV2Int::int_max(uint64_t k)
+{
   assert(k <= 64);
   uint64_t val;
   if (k == 64) {
@@ -272,19 +280,25 @@ Term BV2Int::int_max(uint64_t k) {
   return solver_->make_term(val, int_sort_);
 }
 
-bool BV2Int::is_bw_op(Op op) {
-  return (op == BVAnd || op == BVOr || op == BVXor || op == BVNand || op == BVNor || op == BVXnor|| op == BVLshr || op == BVShl);
+bool BV2Int::is_bw_op(Op op)
+{
+  return (op == BVAnd || op == BVOr || op == BVXor || op == BVNand
+          || op == BVNor || op == BVXnor || op == BVLshr || op == BVShl);
 }
 
-Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children) {
+Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
+{
   if (lazy_bw_) {
-    return handle_bw_op_lazy(t, bv_width);
+    return handle_bw_op_lazy(t, bv_width, cached_children);
   } else {
     return handle_bw_op_eager(t, bv_width, cached_children);
   }
 }
 
-Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+Term BV2Int::handle_boolean_bw_eager(Term t,
+                                     uint64_t bv_width,
+                                     const TermVec &cached_children)
+{
   assert(granularity_ > 0);
   uint64_t block_size = granularity_;
   if (block_size > bv_width) {
@@ -297,7 +311,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_c
 
   Op op = t->get_op();
   Term sum = int_zero_;
-  for (uint64_t i=0; i < num_of_blocks; i++) {
+  for (uint64_t i = 0; i < num_of_blocks; i++) {
     Term block = gen_block(op, cached_children, i, block_size);
     cout << "panda block = " << block << endl;
     Term power_of_two = pow2(i);
@@ -308,88 +322,114 @@ Term BV2Int::handle_boolean_bw_eager(Term t, uint64_t bv_width, TermVec cached_c
   return sum;
 }
 
-Term BV2Int::gen_block(Op op, TermVec cached_children, uint64_t i, uint64_t block_size) {
+Term BV2Int::gen_block(Op op,
+                       const TermVec &cached_children,
+                       uint64_t i,
+                       uint64_t block_size)
+{
   cout << endl;
-  Term left_a = solver_->make_term(IntDiv, cached_children[0], pow2(i*block_size));
+  Term left_a =
+      solver_->make_term(IntDiv, cached_children[0], pow2(i * block_size));
   Term left_b = pow2(block_size);
   Term left = gen_mod(block_size, left_a, left_b);
 
-  Term right_a = solver_->make_term(IntDiv, cached_children[1], pow2(i*block_size));
+  Term right_a =
+      solver_->make_term(IntDiv, cached_children[1], pow2(i * block_size));
   Term right_b = pow2(block_size);
   Term right = gen_mod(block_size, left_a, left_b);
   return gen_bitwise_int(op, block_size, left, right);
 }
 
-Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y) {
+Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
+{
   if (op == BVAnd) {
-        switch (k)
-        {
-          case 1: return int_bvand_1(x, y, solver_);
-          case 2: return int_bvand_2(x, y, solver_);
-          case 3: return int_bvand_3(x, y, solver_);
-          case 4: return int_bvand_4(x, y, solver_);
-          case 5: return int_bvand_5(x, y, solver_);
-          case 6: return int_bvand_6(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvand_1(x, y, solver_);
+      case 2: return int_bvand_2(x, y, solver_);
+      case 3: return int_bvand_3(x, y, solver_);
+      case 4: return int_bvand_4(x, y, solver_);
+      case 5: return int_bvand_5(x, y, solver_);
+      case 6: return int_bvand_6(x, y, solver_);
+      default: assert(false);
+    }
   } else if (op == BVOr) {
-        switch (k)
-        {
-          case 1: return int_bvor_1(x, y, solver_);
-          case 2: return int_bvor_2(x, y, solver_);
-          case 3: return int_bvor_3(x, y, solver_);
-          case 4: return int_bvor_4(x, y, solver_);
-          case 5: return int_bvor_5(x, y, solver_);
-          case 6: return int_bvor_6(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvor_1(x, y, solver_);
+      case 2: return int_bvor_2(x, y, solver_);
+      case 3: return int_bvor_3(x, y, solver_);
+      case 4: return int_bvor_4(x, y, solver_);
+      case 5: return int_bvor_5(x, y, solver_);
+      case 6: return int_bvor_6(x, y, solver_);
+      default: assert(false);
+    }
   } else if (op == BVXor) {
-        switch (k)
-        {
-          case 1: return int_bvxor_1(x, y, solver_);
-          case 2: return int_bvxor_2(x, y, solver_);
-          case 3: return int_bvxor_3(x, y, solver_);
-          case 4: return int_bvxor_4(x, y, solver_);
-          case 5: return int_bvxor_5(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvxor_1(x, y, solver_);
+      case 2: return int_bvxor_2(x, y, solver_);
+      case 3: return int_bvxor_3(x, y, solver_);
+      case 4: return int_bvxor_4(x, y, solver_);
+      case 5: return int_bvxor_5(x, y, solver_);
+      default: assert(false);
+    }
   } else if (op == BVXnor) {
-        switch (k)
-        {
-          case 1: return int_bvxnor_1(x, y, solver_);
-          case 2: return int_bvxnor_2(x, y, solver_);
-          case 3: return int_bvxnor_3(x, y, solver_);
-          case 4: return int_bvxnor_4(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvxnor_1(x, y, solver_);
+      case 2: return int_bvxnor_2(x, y, solver_);
+      case 3: return int_bvxnor_3(x, y, solver_);
+      case 4: return int_bvxnor_4(x, y, solver_);
+      default: assert(false);
+    }
   } else if (op == BVNand) {
-        switch (k)
-        {
-          case 1: return int_bvnand_1(x, y, solver_);
-          case 2: return int_bvnand_2(x, y, solver_);
-          case 3: return int_bvnand_3(x, y, solver_);
-          case 4: return int_bvnand_4(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvnand_1(x, y, solver_);
+      case 2: return int_bvnand_2(x, y, solver_);
+      case 3: return int_bvnand_3(x, y, solver_);
+      case 4: return int_bvnand_4(x, y, solver_);
+      default: assert(false);
+    }
   } else if (op == BVNor) {
-        switch (k)
-        {
-          case 1: return int_bvnor_1(x, y, solver_);
-          case 2: return int_bvnor_2(x, y, solver_);
-          case 3: return int_bvnor_3(x, y, solver_);
-          case 4: return int_bvnor_4(x, y, solver_);
-          default: assert(false);
-        }
+    switch (k) {
+      case 1: return int_bvnor_1(x, y, solver_);
+      case 2: return int_bvnor_2(x, y, solver_);
+      case 3: return int_bvnor_3(x, y, solver_);
+      case 4: return int_bvnor_4(x, y, solver_);
+      default: assert(false);
+    }
   }
   assert(false);
 }
 
-Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width) {
-  assert(false);
-  return t;
+Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
+                               const TermVec &cached_children)
+{
+  Op op = t->get_op();
+  Term x = cached_children[0];
+  Term y = cached_children[1];
+  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
+
+  Term res;
+  if (op == BVAnd) {
+    TermVec args = {fbvand_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else if (op == BVOr) {
+    TermVec args = {fbvor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else if (op == BVXor) {
+    TermVec args = {fbvxor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
+  } else {
+    assert(false);
+  }
+
+  fterms_.push_back(res);
+
+  return res;
 }
 
-Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+Term BV2Int::handle_bw_op_eager(Term t,
+                                uint64_t bv_width,
+                                const TermVec &cached_children)
+{
   if (is_shift_op(t->get_op())) {
     return handle_shift_eager(t, bv_width, cached_children);
   } else {
@@ -397,15 +437,16 @@ Term BV2Int::handle_bw_op_eager(Term t, uint64_t bv_width, TermVec cached_childr
   }
 }
 
-bool BV2Int::is_shift_op(Op op) {
-  return (op == BVShl || op == BVLshr);
-}
+bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
-Term BV2Int::handle_shift_eager(Term t, uint64_t bv_width, TermVec cached_children) {
+Term BV2Int::handle_shift_eager(Term t,
+                                uint64_t bv_width,
+                                const TermVec &cached_children)
+{
   Term ite = int_zero_;
   Term x = cached_children[0];
   Term y = cached_children[1];
-  for (uint64_t i=0; i<bv_width; i++) {
+  for (uint64_t i = 0; i < bv_width; i++) {
     Term i_term = solver_->make_term(i, int_sort_);
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, i_term, ite);
@@ -422,4 +463,4 @@ Term BV2Int::handle_shift_eager(Term t, uint64_t bv_width, TermVec cached_childr
   return res;
 }
 
-}
+}  // namespace lbv2i

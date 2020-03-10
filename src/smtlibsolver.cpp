@@ -4,9 +4,7 @@ using namespace std;
 
 namespace lbv2i {
 
-SmtLibSolver::SmtLibSolver(smt::SmtSolver & solver) :
-  super(solver)
-{}
+SmtLibSolver::SmtLibSolver(smt::SmtSolver & solver) : super(solver) {}
 
 SmtLibSolver::~SmtLibSolver() {}
 

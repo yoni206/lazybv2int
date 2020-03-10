@@ -1,7 +1,7 @@
 #include "axioms.h"
 
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 
 using namespace std;
 using namespace smt;
@@ -12,7 +12,7 @@ static string pow2_minus_one_str(uint64_t k)
 {
   assert(k <= 64);
   assert(k >= 0);
- 
+
   uint64_t p = pow(2, k);
   // make sure there is no overflow
   assert(p > 0);
@@ -20,7 +20,7 @@ static string pow2_minus_one_str(uint64_t k)
   return to_string(p);
 }
 
-static void get_fbv_args(Term f, uint64_t &bv_width, Term &a, Term &b)
+static void get_fbv_args(Term f, uint64_t & bv_width, Term & a, Term & b)
 {
   TermIter it = f->begin();
   Term tmp = *it;
@@ -34,19 +34,21 @@ static void get_fbv_args(Term f, uint64_t &bv_width, Term &a, Term &b)
   b = *it;
 }
 
-Axioms::Axioms(SmtSolver & solver) :
-  solver_(solver)
+Axioms::Axioms(SmtSolver & solver, const Term &fbvand, const Term &fbvor,
+               const Term &fbvxor)
+  : solver_(solver),
+    fbvand_(fbvand),
+    fbvor_(fbvor),
+    fbvxor_(fbvxor)
 {
   int_sort_ = solver_->make_sort(INT);
   false_ = solver_->make_term(false);
   zero_ = solver_->make_term("0", int_sort_);
 }
 
-Axioms::~Axioms()
-{
-}
+Axioms::~Axioms() {}
 
-bool Axioms::check_bvand_base_case(Term t, TermVec &outlemmas)
+bool Axioms::check_bvand_base_case(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -61,7 +63,7 @@ bool Axioms::check_bvand_base_case(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
+bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -69,8 +71,8 @@ bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
 
   Term r = is_max ? make_eq(t, a) : make_eq(t, zero_);
   if (!b->is_value()) {
-    Term pre = is_max ? make_eq(b, pow2_minus_one(bv_width)) :
-      make_eq(b, zero_);
+    Term pre =
+        is_max ? make_eq(b, pow2_minus_one(bv_width)) : make_eq(b, zero_);
     Term l = make_implies(pre, r);
     add_if_voilated(l, outlemmas);
   } else {
@@ -85,7 +87,7 @@ bool Axioms::check_bvand_minmax(Term t, bool is_max, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_idempotence(Term t, TermVec &outlemmas)
+bool Axioms::check_bvand_idempotence(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -102,13 +104,13 @@ bool Axioms::check_bvand_idempotence(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_contradiction(Term t, TermVec &outlemmas)
+bool Axioms::check_bvand_contradiction(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b); 
+  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b);
   Term pre = make_eq(a, not_b);
   Term l = make_implies(pre, make_eq(t, zero_));
   add_if_voilated(l, outlemmas);
@@ -116,7 +118,7 @@ bool Axioms::check_bvand_contradiction(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
+bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec & outlemmas)
 {
   uint64_t bv_width1;
   Term a1, b1;
@@ -127,7 +129,7 @@ bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
 
   assert(bv_width1 == bv_width2);
 
-  Term x, y, z; // same as in the paper
+  Term x, y, z;  // same as in the paper
   if (a1 == a2) {
     z = a1;
     x = b1;
@@ -158,7 +160,7 @@ bool Axioms::check_bvand_difference(Term t1, Term t2, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
+bool Axioms::check_bvand_range(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -186,7 +188,7 @@ bool Axioms::check_bvand_range(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvor_base_case(Term t, TermVec &outlemmas)
+bool Axioms::check_bvor_base_case(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -201,17 +203,16 @@ bool Axioms::check_bvor_base_case(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvor_minmax(Term t, bool is_max, TermVec &outlemmas)
+bool Axioms::check_bvor_minmax(Term t, bool is_max, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  Term r = is_max ? make_eq(t, pow2_minus_one(bv_width))
-    : make_eq(t, a);
+  Term r = is_max ? make_eq(t, pow2_minus_one(bv_width)) : make_eq(t, a);
   if (!b->is_value()) {
-    Term pre = is_max ? make_eq(b, pow2_minus_one(bv_width)) :
-      make_eq(b, zero_);
+    Term pre =
+        is_max ? make_eq(b, pow2_minus_one(bv_width)) : make_eq(b, zero_);
     Term l = make_implies(pre, r);
     add_if_voilated(l, outlemmas);
   } else {
@@ -226,18 +227,18 @@ bool Axioms::check_bvor_minmax(Term t, bool is_max, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvor_idempotence(Term t, TermVec &outlemmas)
+bool Axioms::check_bvor_idempotence(Term t, TermVec & outlemmas)
 {
   return check_bvand_idempotence(t, outlemmas);
 }
 
-bool Axioms::check_bvor_excluded_middle(Term t, TermVec &outlemmas)
+bool Axioms::check_bvor_excluded_middle(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b); 
+  Term not_b = solver_->make_term(Minus, pow2_minus_one(bv_width), b);
   Term pre = make_eq(a, not_b);
   Term l = make_implies(pre, make_eq(t, pow2_minus_one(bv_width)));
   add_if_voilated(l, outlemmas);
@@ -245,12 +246,12 @@ bool Axioms::check_bvor_excluded_middle(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvor_difference(Term t1, Term t2, TermVec &outlemmas)
+bool Axioms::check_bvor_difference(Term t1, Term t2, TermVec & outlemmas)
 {
   return check_bvand_difference(t1, t2, outlemmas);
 }
 
-bool Axioms::check_bvor_range(Term t, TermVec &outlemmas)
+bool Axioms::check_bvor_range(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -277,7 +278,7 @@ bool Axioms::check_bvor_range(Term t, TermVec &outlemmas)
 
   return outlemmas.size() > 0;
 }
-bool Axioms::check_bvxor_base_case(Term t, TermVec &outlemmas)
+bool Axioms::check_bvxor_base_case(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -299,7 +300,7 @@ bool Axioms::check_bvxor_base_case(Term t, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvxor_zero(Term t, bool is_max, TermVec &outlemmas)
+bool Axioms::check_bvxor_zero(Term t, bool is_max, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -317,12 +318,12 @@ bool Axioms::check_bvxor_zero(Term t, bool is_max, TermVec &outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvxor_one(Term t, TermVec &outlemmas)
+bool Axioms::check_bvxor_one(Term t, TermVec & outlemmas)
 {
   return check_bvor_excluded_middle(t, outlemmas);
 }
 
-bool Axioms::check_bvxor_range(Term t, TermVec &outlemmas)
+bool Axioms::check_bvxor_range(Term t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
@@ -365,11 +366,11 @@ inline Term Axioms::make_implies(Term x, Term y)
   return solver_->make_term(Or, nx, y);
 }
 
-inline void Axioms::add_if_voilated(Term l, TermVec &out)
+inline void Axioms::add_if_voilated(Term l, TermVec & out)
 {
   if (solver_->get_value(l) == false_) {
     out.push_back(l);
   }
 }
 
-} // namespace lbv2i
+}  // namespace lbv2i

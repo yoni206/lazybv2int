@@ -1,8 +1,9 @@
+#include "smtlibmsatparser.h"
+
 #include <iostream>
-#include "stdio.h"
 
 #include "msat/include/msat_term.h"
-#include "smtlibmsatparser.h"
+#include "stdio.h"
 
 using namespace smt;
 using namespace std;
