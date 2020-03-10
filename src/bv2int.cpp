@@ -54,8 +54,8 @@ BV2Int::~BV2Int() {}
 
 void BV2Int::push()
 {
-  stack_.push_back(
-      stack_entry_t(cache_, range_assertions_.size(), sigma_vars_.size()));
+  stack_.push_back(stack_entry_t(cache_, range_assertions_.size(),
+                                 sigma_vars_.size(), fterms_.size()));
 }
 
 void BV2Int::pop()
@@ -64,6 +64,7 @@ void BV2Int::pop()
   cache_ = std::get<0>(e);
   range_assertions_.resize(std::get<1>(e));
   sigma_vars_.resize(std::get<2>(e));
+  fterms_.resize(std::get<3>(e));
   stack_.pop_back();
 }
 
@@ -419,6 +420,8 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
   } else {
     assert(false);
   }
+
+  fterms_.push_back(res);
 
   return res;
 }

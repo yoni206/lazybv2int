@@ -53,8 +53,10 @@ private:
 
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
+  // list of abstract (lazy_bv_op) terms
+  smt::TermVec fterms_;
 
-  typedef std::tuple<smt::UnorderedTermMap, size_t, size_t> stack_entry_t;
+  typedef std::tuple<smt::UnorderedTermMap, size_t, size_t, size_t> stack_entry_t;
   std::vector<stack_entry_t> stack_;
 
   smt::Sort int_sort_;
