@@ -537,11 +537,13 @@ WalkerStepResult BitwiseOpDefs::visit_term(Term & term)
         Term def = solver_->make_term(Equal, sym, res);
         definitions_.push_back(def);
         solver_->assert_formula(def);
-        cache_[term] = sym;
+        res = sym;
         break;
       }
       default: break;
     }
+
+    cache_[term] = res;
   }
 
   return Walker_Continue;
