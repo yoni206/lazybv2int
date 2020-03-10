@@ -191,7 +191,45 @@ void LBV2ISolver::assert_formula(const Term& f) const
   solver_->assert_formula(t_f);
 }
 
-bool LBV2ISolver::refine(smt::TermVec & outlemmas) { return false; }
+bool LBV2ISolver::refine(TermVec & outlemmas)
+{
+  const TermVec &fbv_terms = bv2int_->fbv_terms();
+  const Term &fbv_and = bv2int_->fbv_and();
+  const Term &fbv_or = bv2int_->fbv_or();
+  const Term &fbv_xor = bv2int_->fbv_xor();
+
+  TermVec fbvand_terms, fbvor_terms, fbvxor_terms;
+  for (Term f : fbv_terms) {
+    // TODO: check for spurious terms
+    Term fsymbol = *(f->begin());
+    if (fsymbol == fbv_and) {
+      fbvand_terms.push_back(f);
+    } else if (fsymbol == fbv_or) {
+      fbvor_terms.push_back(f);
+    } else if (fsymbol == fbv_xor) {
+      fbvxor_terms.push_back(f);
+    } else {
+      assert(false);
+    }
+  }
+
+  return false;
+}
+
+bool LBV2ISolver::refine_bvand(TermVec &outlemmas)
+{
+  return false;
+}
+
+bool LBV2ISolver::refine_bvor(TermVec &outlemmas)
+{
+  return false;
+}
+
+bool LBV2ISolver::refine_bvxor(TermVec &outlemmas)
+{
+  return false;
+}
 
 void LBV2ISolver::run(string filename)
 {

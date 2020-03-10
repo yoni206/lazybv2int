@@ -67,7 +67,10 @@ class LBV2ISolver : public AbsSmtSolver
   void run(std::string filename);
 
  private:
-  bool refine(TermVec & outlemmas);
+  bool refine(smt::TermVec & outlemmas);
+  bool refine_bvand(smt::TermVec & outlemmas);
+  bool refine_bvor(smt::TermVec & outlemmas);
+  bool refine_bvxor(smt::TermVec & outlemmas);
 
   // BV2Int Translator
   BV2Int * bv2int_;
