@@ -17,7 +17,7 @@ namespace lbv2i {
 class LBV2ISolver : public AbsSmtSolver
 {
  public:
-  LBV2ISolver(SmtSolver & sovler, bool lazy = true);
+  LBV2ISolver(SmtSolver & sovler, bool lazy = false);
   ~LBV2ISolver();
 
   Result solve();
@@ -85,5 +85,7 @@ class LBV2ISolver : public AbsSmtSolver
   
   // smt-switch solver
   smt::SmtSolver & solver_;
+
+  bool lazy_;
 };
 }  // namespace lbv2i

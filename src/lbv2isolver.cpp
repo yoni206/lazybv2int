@@ -7,10 +7,11 @@ using namespace smt;
 namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy ) :
-  solver_(solver),
   bv2int_(new BV2Int(solver, lazy)),
+  prepro_(new Preprocessor(solver)),
   axioms_(solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
-  prepro_(new Preprocessor(solver))
+  solver_(solver),
+  lazy_(lazy)
 {}
 
 LBV2ISolver::~LBV2ISolver() {
@@ -41,7 +42,7 @@ Result LBV2ISolver::solve()
   while (true) {
     Result r = solver_->check_sat();
 
-    if (r.is_unsat()) {
+    if (!lazy_ || r.is_unsat()) {
       return r;
     }
 
