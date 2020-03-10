@@ -458,12 +458,20 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
 {
   if (!preorder_)
   {
-    Term res = term;
+    Op op = term->get_op();
+    if (op.is_null())
+    {
+      cache_[term] = term;
+      return Walker_Continue;
+    }
+
     TermVec children;
     for (auto tt : term)
     {
-      children.push_back(tt);
+      children.push_back(cache_.at(tt));
     }
+    // rebuild it from cached children before rewriting
+    Term res = solver_->make_term(term->get_op(), children);
 
     bool fixpoint;
     do
@@ -487,6 +495,8 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
         }
       }
     } while(!fixpoint);
+
+    cache_[term] = res;
   }
   return Walker_Continue;
 }
