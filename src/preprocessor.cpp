@@ -501,8 +501,8 @@ Preprocessor::~Preprocessor() {}
 Term Preprocessor::process(Term t)
 {
   Term res = bin_.process(t);
-  // TODO: Call OpEliminator here
-  return t;
+  res = opelim_.process(res);
+  return res;
 }
 
 }  // namespace lbv2i
