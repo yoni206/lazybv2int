@@ -213,20 +213,27 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
     }
   }
 
-  return false;
+  bool ret = false;
+  TermVec lemmas;
+
+  ret |= refine_bvand(fbvand_terms, lemmas);
+  ret |= refine_bvor(fbvor_terms, lemmas);
+  ret |= refine_bvxor(fbvxor_terms, lemmas);
+
+  return ret;
 }
 
-bool LBV2ISolver::refine_bvand(TermVec &outlemmas)
+bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
 {
   return false;
 }
 
-bool LBV2ISolver::refine_bvor(TermVec &outlemmas)
+bool LBV2ISolver::refine_bvor(const TermVec &fterms, TermVec &outlemmas)
 {
   return false;
 }
 
-bool LBV2ISolver::refine_bvxor(TermVec &outlemmas)
+bool LBV2ISolver::refine_bvxor(const TermVec &fterms, TermVec &outlemmas)
 {
   return false;
 }
