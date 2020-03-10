@@ -10,7 +10,7 @@ namespace lbv2i {
 class BV2Int : smt::IdentityWalker
 {
  public:
-  BV2Int(smt::SmtSolver &solver, bool clear_cache, bool abstract=false);
+  BV2Int(smt::SmtSolver &solver, bool clear_cache, bool lazy_bw=false);
   ~BV2Int();
 
   typedef smt::IdentityWalker super;
@@ -41,7 +41,7 @@ class BV2Int : smt::IdentityWalker
 
 
   bool is_bw_op(smt::Op op);
-  bool abstract_;
+
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
 
