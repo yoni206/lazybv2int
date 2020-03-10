@@ -8,13 +8,11 @@ struct Options
 {
   uint32_t granularity;
   bool use_sum_bvops;
-  bool introduce_bvop_symbols;
 
   Options()
   {
     granularity = 1;
     use_sum_bvops = true;
-    introduce_bvop_symbols = false;
   }
 };
 

@@ -22,8 +22,6 @@ void set_opt(string option)
     opts.granularity = granularity;
   } else if (option == "--use-boolcomp-bvops") {
     opts.use_sum_bvops = false;
-  } else if (option == "--introduce-bvop-symbols") {
-    opts.introduce_bvop_symbols = true;
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();
@@ -37,7 +35,6 @@ void help_msg(string bin_name)
        << "\n\t--granularity=[1-8] : sets granularity of int blocks"
        << "\n\t--use-boolcomp-bvops : use comparisons between integer "
           "representation of bits instead of a sum"
-       << "\n\t--introduce-bvop-symbols : introduce a new symbol for each bv op"
        << endl;
 }
 
