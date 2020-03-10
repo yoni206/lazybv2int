@@ -404,18 +404,23 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
   Op op = t->get_op();
   Term x = cached_children[0];
   Term y = cached_children[1];
+  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
 
+  Term res;
   if (op == BVAnd) {
-    
+    TermVec args = {fbvand_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
   } else if (op == BVOr) {
-    
+    TermVec args = {fbvor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
   } else if (op == BVXor) {
-    
+    TermVec args = {fbvxor_, bv_width_term, x, y};
+    res = solver_->make_term(Apply, args);
   } else {
     assert(false);
   }
 
-  return t;
+  return res;
 }
 
 Term BV2Int::handle_bw_op_eager(Term t,
