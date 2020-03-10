@@ -29,7 +29,6 @@ enum RewriteRule
  NUM_REWRITE_RULES
 };
 
-// TODO: implement all of these
 const std::map<RewriteRule, std::function<bool(const Term & t, const TermVec & c, SmtSolver & s)>> rr_applies({
 
  { UdivZero, [](const Term & t, const TermVec& children, SmtSolver & s)
@@ -115,7 +114,6 @@ const std::map<RewriteRule, std::function<bool(const Term & t, const TermVec & c
                 } }
     });
 
-// TODO: implement all of these
 const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & children, SmtSolver & s)>> rr_apply({
 
  { UdivZero, [](const Term & t, const TermVec & children, SmtSolver & s)
