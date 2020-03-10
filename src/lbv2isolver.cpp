@@ -6,9 +6,9 @@ using namespace smt;
 
 namespace lbv2i {
 
-LBV2ISolver::LBV2ISolver(SmtSolver & solver) :
+LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy ) :
   solver_(solver),
-  bv2int_(new BV2Int(solver, true)),
+  bv2int_(new BV2Int(solver, lazy)),
   axioms_(solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
   prepro_(new Preprocessor(solver))
 {}
@@ -186,8 +186,6 @@ void LBV2ISolver::assert_formula(const Term& f) const
 
   // translate
   Term t_f = bv2int_->convert(pre_f);
-  cout << "panda pre" << pre_f << endl;
-  cout << "panda post" << t_f << endl;
   solver_->assert_formula(t_f);
 }
 
@@ -243,7 +241,8 @@ void LBV2ISolver::run(string filename)
   FILE * f = fopen(filename.c_str(), "r");
   Term assert_term = parse_smt2(f, tr);
   assert_formula(assert_term);
-  check_sat();
+  Result res = check_sat();
+  cout << res << endl;
 }
 
 }  // namespace lbv2i

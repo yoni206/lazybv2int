@@ -17,7 +17,7 @@ namespace lbv2i {
 class LBV2ISolver : public AbsSmtSolver
 {
  public:
-  LBV2ISolver(SmtSolver & sovler);
+  LBV2ISolver(SmtSolver & sovler, bool lazy = true);
   ~LBV2ISolver();
 
   Result solve();

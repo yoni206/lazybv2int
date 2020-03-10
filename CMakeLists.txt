@@ -17,6 +17,7 @@ add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/smtlibsolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bw_functions.cpp"
   "${PROJECT_SOURCE_DIR}/src/smtlibmsatparser.cpp"
+  "${PROJECT_SOURCE_DIR}/src/main.cpp"
   )
 
 if (APPLE)
@@ -66,7 +67,7 @@ target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/l
 target_link_libraries(lazybv2int PUBLIC gmp)
 
 add_executable(lazybv2int-bin
-  "${PROJECT_SOURCE_DIR}/main.cpp"
+  "${PROJECT_SOURCE_DIR}/src/main.cpp"
 )
 set_target_properties(lazybv2int-bin PROPERTIES OUTPUT_NAME lazybv2int)
 target_link_libraries(lazybv2int-bin lazybv2int)

@@ -313,9 +313,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
   Term sum = int_zero_;
   for (uint64_t i = 0; i < num_of_blocks; i++) {
     Term block = gen_block(op, cached_children, i, block_size);
-    cout << "panda block = " << block << endl;
     Term power_of_two = pow2(i);
-    cout << "panda ppp = " << block << endl;
     Term sum_part = solver_->make_term(Mult, block, power_of_two);
     sum = solver_->make_term(Plus, sum, sum_part);
   }
