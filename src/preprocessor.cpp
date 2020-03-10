@@ -7,6 +7,7 @@ using namespace smt;
 
 namespace lbv2i {
 
+// Using simplification and op elimination rewrite rules from CVC4: https://github.com/CVC4/CVC4/tree/master/src/theory/bv
 enum RewriteRule
 {
  UdivZero=0,
