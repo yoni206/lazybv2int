@@ -51,14 +51,45 @@ const std::map<RewriteRule, std::function<bool(const Term & t, const TermVec & c
                     return t->get_op() == BVSmod;
                   } },
 
- { RepeatEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { ZeroExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { SignExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { RotateRightEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { RotateLeftEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { CompEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { SleEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
- { SltEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
+ { RepeatEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                    {
+                      return t->get_op().prim_op == Repeat;
+                    } },
+
+ { ZeroExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          return t->get_op().prim_op == Zero_Extend;
+                        } },
+
+ { SignExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          return t->get_op().prim_op == Sign_Extend;
+                        } },
+
+ { RotateRightEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                         {
+                           return t->get_op().prim_op == Rotate_Right;
+                         } },
+
+ { RotateLeftEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          return t->get_op().prim_op == Rotate_Left;
+                        } },
+
+ { CompEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                  {
+                    return t->get_op() == BVComp;
+                  } },
+ { SleEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   return t->get_op() == BVSle;
+                 } },
+
+ { SltEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   return t->get_op() == BVSlt;
+                 } },
+
  { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
  { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
  { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { return false; } },
@@ -185,14 +216,122 @@ const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & c
                                                                     neg_u))));
                     return res;
                   } },
- { RepeatEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { ZeroExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { SignExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { RotateRightEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { RotateLeftEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { CompEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { SleEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
- { SltEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
+
+ { RepeatEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                    {
+                      Term a = children[0];
+                      Term res = t;
+                      size_t amount = t->get_op().idx0;
+
+                      if (amount == 1)
+                      {
+                        return res;
+                      }
+
+                      for (size_t i = 1; i < amount; ++i)
+                      {
+                        res = s->make_term(Concat, res, t);
+                      }
+
+                      return res;
+                    } },
+
+ { ZeroExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          Term bv = children[0];
+                          size_t amount = t->get_op().idx0;
+                          if (amount == 0)
+                          {
+                            return bv;
+                          }
+
+                          Term zeros = s->make_term(0, s->make_sort(BV, amount));
+                          return s->make_term(Concat, zeros, bv);
+                        } },
+
+ { SignExtendEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          Term bv = children[0];
+                          size_t amount = t->get_op().idx0;
+                          if (amount == 0)
+                          {
+                            return bv;
+                          }
+
+                          size_t size = t->get_sort()->get_width();
+                          Term sign_bit = s->make_term(Op(Extract, size-1, size-1), bv);
+                          Term extension = sign_bit;
+                          for (size_t i = 1; i < amount; ++i)
+                          {
+                            extension = s->make_term(Concat, extension, sign_bit);
+                          }
+                          return s->make_term(Concat, extension, bv);
+                        } },
+
+ { RotateRightEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                         {
+                           Term a = children[0];
+                           size_t amount = t->get_op().idx0;
+                           if (amount == 0)
+                           {
+                             return a;
+                           }
+
+                           Term left = s->make_term(Op(Extract, amount-1, 0), a);
+                           Term right = s->make_term(Op(Extract,
+                                                        t->get_sort()->get_width()-1,
+                                                        amount),
+                                                     a);
+                           return s->make_term(Concat, left, right);
+                         } },
+
+ { RotateLeftEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                        {
+                          Term a = children[0];
+                          size_t amount = t->get_op().idx0;
+                          size_t size = t->get_sort()->get_width();
+                          amount = amount % size;
+
+                          if (amount == 0)
+                          {
+                            return a;
+                          }
+
+                          Term left = s->make_term(Op(Extract, size-1-amount, 0), a);
+                          Term right = s->make_term(Op(Extract, size-1, size-amount), a);
+                          return s->make_term(Concat, left, right);
+                        } },
+
+ { CompEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                  {
+                    Term comp = s->make_term(Equal, children[0], children[1]);
+                    Sort bvsort1 = s->make_sort(BV, 1);
+                    Term one = s->make_term(1, bvsort1);
+                    Term zero = s->make_term(0, bvsort1);
+                    return s->make_term(Ite, comp, one, zero);
+                  } },
+
+ { SleEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   Term a = children[0];
+                   Term b = children[1];
+                   Term b_slt_a = s->make_term(BVSlt, b, a);
+                   return s->make_term(Not, b_slt_a);
+                 } },
+
+ { SltEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                 {
+                   Term a = children[0];
+                   Term b = children[1];
+                   size_t size = a->get_sort()->get_width();
+                   std::string val("1");
+                   val += std::string(size-1, '0');
+                   Term pow_two = s->make_term(val, a->get_sort(), 2);
+                   a = s->make_term(BVAdd, a, pow_two);
+                   b = s->make_term(BVAdd, b, pow_two);
+                   return s->make_term(BVUlt, a, b);
+                 } },
+
  { SgtEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
  { SgeEliminate, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
  { ShlByConst, [](const Term & t, const TermVec & children, SmtSolver & s) { Term res; return res; } },
