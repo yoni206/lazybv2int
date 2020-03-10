@@ -162,16 +162,14 @@ WalkerStepResult BV2Int::visit_term(Term & t)
             solver_->make_term(Mult, cached_children[0], pow2(bv_width));
         Term res = solver_->make_term(Plus, left, cached_children[1]);
         cache_[t] = res;
-      } else if (op == Extract) {
+      } else if (op.prim_op == Extract) {
+        // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
 
-        Term upper_term = solver_->make_term(upper, int_sort_);
-        Term lower_term = solver_->make_term(lower, int_sort_);
-
-        Term div = solver_->make_term(IntDiv, cached_children[0], lower_term);
+        Term div = solver_->make_term(IntDiv, cached_children[0], pow2(lower));
         uint64_t interval = upper - lower;
-        Term res = solver_->make_term(Mod, div, pow2(interval));
+        Term res = solver_->make_term(Mod, div, pow2(interval + 1));
         cache_[t] = res;
       } else if (op == BVUlt) {
         Term res = solver_->make_term(Lt, cached_children);
