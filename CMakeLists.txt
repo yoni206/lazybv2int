@@ -17,6 +17,7 @@ add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/smtlibsolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bw_functions.cpp"
   "${PROJECT_SOURCE_DIR}/src/smtlibmsatparser.cpp"
+  "${PROJECT_SOURCE_DIR}/src/opts.cpp"
   "${PROJECT_SOURCE_DIR}/src/main.cpp"
   )
 

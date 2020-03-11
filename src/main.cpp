@@ -1,3 +1,4 @@
+#include "opts.h"
 #include "smtlibsolver.h"
 
 #include "smt-switch/msat_factory.h"
@@ -8,8 +9,31 @@ using namespace smt;
 
 int main(int argc, char ** argv)
 {
-  string filename = string(argv[1]);
+  string filename;
+  size_t num_files = 0;
+  string opt;
+  for (size_t i = 1; i < argc; i++) {
+    cout << "processing " << argv[i] << endl;
+    opt = argv[i];
+    if (opt == "--help" || opt == "-h") {
+      help_msg(argv[0]);
+      return 0;
+    } else if (opt.rfind("--", 0) == 0) {
+      set_opt(opt);
+    } else {
+      if (num_files > 0) {
+        cout << "Got more than one non-option arguments: " << filename << ", "
+             << argv[i] << endl;
+        cout << "usage: " << argv[0] << "[--options] <filename>" << endl;
+        return 0;
+      }
+      filename = argv[i];
+      num_files++;
+    }
+  }
+
   smt::SmtSolver underlying_solver = smt::MsatSolverFactory::create();
   LBV2ISolver solver = LBV2ISolver(underlying_solver, false);
   solver.run(filename);
+  return 0;
 }
