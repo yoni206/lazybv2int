@@ -242,10 +242,19 @@ bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
   }
 
   if (outlemmas.size() == n) {
-    for (size_t i = 0; i+1 < fterms.size(); ++i) {
-      for (size_t j = i+1; j < fterms.size(); ++j) {
-        const Term &f1 = fterms[i];
-        const Term &f2 = fterms[j];
+    const TermVec &fbv_terms = bv2int_->fbv_terms();
+    const Term &fbv_and = bv2int_->fbv_and();
+
+    TermVec all_fbvand_terms;
+    for (const Term &f : fbv_terms) {
+      Term fsymbol = *(f->begin());
+      if (fsymbol == fbv_and) {
+        all_fbvand_terms.push_back(f);
+      }
+    }
+
+    for (const Term &f1 : fterms) {
+      for (const Term &f2 : all_fbvand_terms) {
         bool found = axioms_.check_bvand_difference(f1, f2, outlemmas);
         if (found) {
           break;

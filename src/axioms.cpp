@@ -134,7 +134,9 @@ bool Axioms::check_bvand_difference(const Term & t1,
   Term a2, b2;
   get_fbv_args(t2, bv_width2, a2, b2);
 
-  assert(bv_width1 == bv_width2);
+  if (bv_width1 != bv_width2) {
+    return false;
+  }
 
   Term x, y, z;  // same as in the paper
   if (a1 == a2) {
@@ -154,7 +156,7 @@ bool Axioms::check_bvand_difference(const Term & t1,
     x = a1;
     y = a2;
   } else {
-    assert(false);
+    return false;
   }
 
   Term pre = make_neq(x, y);
