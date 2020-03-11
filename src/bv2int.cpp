@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <gmpxx.h>
 
 #include "bw_functions.h"
 #include "opts.h"
@@ -13,14 +14,13 @@ namespace lbv2i {
 
 static string pow2_str(uint64_t k)
 {
-  assert(k <= 64);
-  assert(k >= 0);
+  mpz_t base, p;
+  mpz_set_str(base, "2", 10);
+  mpz_pow_ui(p, base, k);
 
-  uint64_t p = pow(2, k);
-  // make sure there is no overflow
-  assert(p > 0);
+  mpz_class res(p);
 
-  return to_string(p);
+  return res.get_str();
 }
 
 static bool is_simple_op(Op op)
@@ -272,14 +272,14 @@ Term BV2Int::make_bvnot_term(Term x, uint64_t k)
 
 Term BV2Int::int_max(uint64_t k)
 {
-  assert(k <= 64);
-  uint64_t val;
-  if (k == 64) {
-    val = -1;
-  } else {
-    val = pow(2, k) - 1;
-  }
-  return solver_->make_term(val, int_sort_);
+  mpz_t base, p;
+  mpz_set_str(base, "2", 10);
+  mpz_pow_ui(p, base, k);
+
+  mpz_class res(p);
+  res--;
+
+  return solver_->make_term(res.get_str(), int_sort_);
 }
 
 bool BV2Int::is_bw_op(Op op)

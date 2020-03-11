@@ -11,15 +11,13 @@ namespace lbv2i {
 
 static string pow2_minus_one_str(uint64_t k)
 {
-  assert(k >= 0);
-
   mpz_t base, p;
   mpz_set_str(base, "2", 10);
   mpz_pow_ui(p, base, k);
 
   mpz_class res(p);
   res--;
-  
+
   return res.get_str();
 }
 
