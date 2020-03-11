@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
   size_t num_files = 0;
   string opt;
   for (size_t i = 1; i < argc; i++) {
-    cout << "processing " << argv[i] << endl;
+    //cout << "processing " << argv[i] << endl;
     opt = argv[i];
     if (opt == "--help" || opt == "-h") {
       help_msg(argv[0]);
@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
   }
 
   smt::SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
-  LBV2ISolver solver = LBV2ISolver(underlying_solver, true);
+  LBV2ISolver solver = LBV2ISolver(underlying_solver, false);
   solver.run(filename);
   return 0;
 }

@@ -4,6 +4,7 @@
 #include "preprocessor.h"
 
 using namespace smt;
+using namespace std;
 
 namespace lbv2i {
 
@@ -277,7 +278,9 @@ const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & c
                           }
 
                           size_t size = t->get_sort()->get_width();
+                          cout << "panda 11" << endl;
                           Term sign_bit = s->make_term(Op(Extract, size-1, size-1), bv);
+                          cout << "panda 22" << endl;
                           Term extension = sign_bit;
                           for (size_t i = 1; i < amount; ++i)
                           {
@@ -421,9 +424,7 @@ Term Binarizer::process(Term t) {
 WalkerStepResult Binarizer::visit_term(Term & t)
 {
   if (!preorder_) {
-    std::cout << "panda 2 " << t << std::endl;
     Op o = t->get_op();
-    std::cout << "panda 2.5 " << t << std::endl;
     PrimOp po = o.prim_op;
     Term res = t;
 
