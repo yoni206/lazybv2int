@@ -224,7 +224,37 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
 
 bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
 {
-  return false;
+  size_t n = outlemmas.size();
+  for (const Term &f : fterms) {
+    bool found = axioms_.check_bvand_base_case(f, outlemmas);
+    if (!found) {
+      found = axioms_.check_bvand_range(f, outlemmas);
+    }
+    if (!found) {
+      found = axioms_.check_bvand_idempotence(f, outlemmas);
+    }
+    if (!found) {
+      found = axioms_.check_bvand_minmax(f, false, outlemmas);
+    }
+    if (!found) {
+      found = axioms_.check_bvand_minmax(f, true, outlemmas);
+    }
+  }
+
+  if (outlemmas.size() == n) {
+    for (size_t i = 0; i+1 < fterms.size(); ++i) {
+      for (size_t j = i+1; j < fterms.size(); ++j) {
+        const Term &f1 = fterms[i];
+        const Term &f2 = fterms[j];
+        bool found = axioms_.check_bvand_difference(f1, f2, outlemmas);
+        if (found) {
+          break;
+        }
+      }
+    }
+  }
+
+  return outlemmas.size() > n;
 }
 
 bool LBV2ISolver::refine_bvor(const TermVec &fterms, TermVec &outlemmas)
