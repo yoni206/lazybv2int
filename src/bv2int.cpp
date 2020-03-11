@@ -102,12 +102,12 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       Term zero = solver_->make_term(string("0"), int_sort_);
       Term one = solver_->make_term(string("1"), int_sort_);
 
-      std::cout << "visiting operator: " << op.to_string() << std::endl;
+      //std::cout << "visiting operator: " << op.to_string() << std::endl;
       if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
       }
 
-      else if (op == BVAdd) {
+      else if (op.prim_op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_add_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
@@ -119,7 +119,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         range_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
-      } else if (op == BVMul) {
+      } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_mul_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
@@ -131,37 +131,37 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         range_assertions_.push_back(make_range_constraint(sigma, bv_width));
         range_assertions_.push_back(make_range_constraint(res, bv_width));
         cache_[t] = res;
-      } else if (op == BVUdiv) {
+      } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term div = solver_->make_term(IntDiv, cached_children);
         Term condition =
             solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
         cache_[t] = res;
-      } else if (op == BVUrem) {
+      } else if (op.prim_op == BVUrem) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term sigma0 = gen_mod(bv_width, cached_children[0], cached_children[1]);
         cache_[t] = sigma0;
-      } else if (op == BVNeg) {
+      } else if (op.prim_op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term is_zero = solver_->make_term(Equal, cached_children[0], int_zero_);
         Term neg =
             solver_->make_term(Minus, pow2(bv_width), cached_children[0]);
         Term res = solver_->make_term(Ite, is_zero, int_zero_, neg);
         cache_[t] = res;
-      } else if (op == BVNot) {
+      } else if (op.prim_op == BVNot) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term res = make_bvnot_term(cached_children[0], bv_width);
         cache_[t] = res;
-      } else if (op == BV_To_Nat) {
+      } else if (op.prim_op == BV_To_Nat) {
         cache_[t] = cached_children[0];
-      } else if (op == Concat) {
+      } else if (op.prim_op == Concat) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term left =
             solver_->make_term(Mult, cached_children[0], pow2(bv_width));
         Term res = solver_->make_term(Plus, left, cached_children[1]);
         cache_[t] = res;
-      } else if (op == Extract) {
+      } else if (op.prim_op == Extract) {
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
 
@@ -170,18 +170,18 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 
         Term div = solver_->make_term(IntDiv, cached_children[0], lower_term);
         uint64_t interval = upper - lower;
-        Term res = solver_->make_term(Mod, div, pow2(interval));
+        Term res = gen_mod(interval, div, pow2(interval));
         cache_[t] = res;
-      } else if (op == BVUlt) {
+      } else if (op.prim_op == BVUlt) {
         Term res = solver_->make_term(Lt, cached_children);
         cache_[t] = res;
-      } else if (op == BVUle) {
+      } else if (op.prim_op == BVUle) {
         Term res = solver_->make_term(Le, cached_children);
         cache_[t] = res;
-      } else if (op == BVUgt) {
+      } else if (op.prim_op == BVUgt) {
         Term res = solver_->make_term(Gt, cached_children);
         cache_[t] = res;
-      } else if (op == BVUge) {
+      } else if (op.prim_op == BVUge) {
         Term res = solver_->make_term(Ge, cached_children);
         cache_[t] = res;
       } else if (is_bw_op(op)) {
@@ -340,7 +340,7 @@ Term BV2Int::gen_block(Op op,
 
 Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
 {
-  if (op == BVAnd) {
+  if (op.prim_op == BVAnd) {
     switch (k) {
       case 1: return int_bvand_1(x, y, solver_);
       case 2: return int_bvand_2(x, y, solver_);
@@ -350,7 +350,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
       case 6: return int_bvand_6(x, y, solver_);
       default: assert(false);
     }
-  } else if (op == BVOr) {
+  } else if (op.prim_op == BVOr) {
     switch (k) {
       case 1: return int_bvor_1(x, y, solver_);
       case 2: return int_bvor_2(x, y, solver_);
@@ -360,7 +360,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
       case 6: return int_bvor_6(x, y, solver_);
       default: assert(false);
     }
-  } else if (op == BVXor) {
+  } else if (op.prim_op == BVXor) {
     switch (k) {
       case 1: return int_bvxor_1(x, y, solver_);
       case 2: return int_bvxor_2(x, y, solver_);
@@ -369,7 +369,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
       case 5: return int_bvxor_5(x, y, solver_);
       default: assert(false);
     }
-  } else if (op == BVXnor) {
+  } else if (op.prim_op == BVXnor) {
     switch (k) {
       case 1: return int_bvxnor_1(x, y, solver_);
       case 2: return int_bvxnor_2(x, y, solver_);
@@ -377,7 +377,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
       case 4: return int_bvxnor_4(x, y, solver_);
       default: assert(false);
     }
-  } else if (op == BVNand) {
+  } else if (op.prim_op == BVNand) {
     switch (k) {
       case 1: return int_bvnand_1(x, y, solver_);
       case 2: return int_bvnand_2(x, y, solver_);
@@ -385,7 +385,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term x, Term y)
       case 4: return int_bvnand_4(x, y, solver_);
       default: assert(false);
     }
-  } else if (op == BVNor) {
+  } else if (op.prim_op == BVNor) {
     switch (k) {
       case 1: return int_bvnor_1(x, y, solver_);
       case 2: return int_bvnor_2(x, y, solver_);
@@ -406,13 +406,13 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
   Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
   
   Term res;
-  if (op == BVAnd) {
+  if (op.prim_op == BVAnd) {
     TermVec args = {fbvand_, bv_width_term, x, y};
     res = solver_->make_term(Apply, args);
-  } else if (op == BVOr) {
+  } else if (op.prim_op == BVOr) {
     TermVec args = {fbvor_, bv_width_term, x, y};
     res = solver_->make_term(Apply, args);
-  } else if (op == BVXor) {
+  } else if (op.prim_op == BVXor) {
     TermVec args = {fbvxor_, bv_width_term, x, y};
     res = solver_->make_term(Apply, args);
   } else {
@@ -451,7 +451,7 @@ Term BV2Int::handle_shift_eager(Term t,
   }
   Term res;
   Op op = t->get_op();
-  if (op == BVShl) {
+  if (op.prim_op == BVShl) {
     res = solver_->make_term(Mult, x, ite);
   } else {
     assert(op == BVLshr);
