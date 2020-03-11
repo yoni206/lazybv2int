@@ -413,12 +413,18 @@ Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
 
 Binarizer::~Binarizer() {}
 
-Term Binarizer::process(Term t) { return visit(t); }
+Term Binarizer::process(Term t) { 
+  Term res = visit(t);
+  return res;
+}
 
 WalkerStepResult Binarizer::visit_term(Term & t)
 {
   if (!preorder_) {
-    PrimOp po = t->get_op().prim_op;
+    std::cout << "panda 2 " << t << std::endl;
+    Op o = t->get_op();
+    std::cout << "panda 2.5 " << t << std::endl;
+    PrimOp po = o.prim_op;
     Term res = t;
 
     TermVec children;
