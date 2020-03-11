@@ -12,6 +12,7 @@ namespace lbv2i {
 static string pow2_minus_one_str(uint64_t k)
 {
   mpz_t base, p;
+  mpz_inits(base, p, NULL);
   mpz_set_str(base, "2", 10);
   mpz_pow_ui(p, base, k);
 

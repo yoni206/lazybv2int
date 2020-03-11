@@ -15,6 +15,7 @@ namespace lbv2i {
 static string pow2_str(uint64_t k)
 {
   mpz_t base, p;
+  mpz_inits(base, p, NULL);
   mpz_set_str(base, "2", 10);
   mpz_pow_ui(p, base, k);
 
@@ -273,6 +274,7 @@ Term BV2Int::make_bvnot_term(Term x, uint64_t k)
 Term BV2Int::int_max(uint64_t k)
 {
   mpz_t base, p;
+  mpz_inits(base, p, NULL);
   mpz_set_str(base, "2", 10);
   mpz_pow_ui(p, base, k);
 
