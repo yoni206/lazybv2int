@@ -2,12 +2,11 @@
 
 #include <iostream>
 
+#include "axioms.h"
 #include "bv2int.h"
 #include "preprocessor.h"
-#include "axioms.h"
-
-#include "smt-switch/smt.h"
 #include "smt-switch/result.h"
+#include "smt-switch/smt.h"
 
 namespace lbv2i {
 
@@ -19,8 +18,8 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
   smt::Result solve();
 
-  void push(uint64_t num=1);
-  void pop(uint64_t num=1);
+  void push(uint64_t num = 1);
+  void pop(uint64_t num = 1);
   void reset();
   void reset_assertions();
   void set_logic(const std::string logic_name) const;
@@ -67,9 +66,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
  private:
   bool refine(smt::TermVec & outlemmas);
-  bool refine_bvand(const smt::TermVec &fterms, smt::TermVec & outlemmas);
-  bool refine_bvor(const smt::TermVec &fterms, smt::TermVec & outlemmas);
-  bool refine_bvxor(const smt::TermVec &fterms, smt::TermVec & outlemmas);
+  bool refine_bvand(const smt::TermVec & fterms, smt::TermVec & outlemmas);
+  bool refine_bvor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
+  bool refine_bvxor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
 
   // BV2Int Translator
   BV2Int * bv2int_;

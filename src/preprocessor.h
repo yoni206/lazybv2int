@@ -1,7 +1,7 @@
 #pragma once
 
-#include "smt-switch/smt.h"
 #include "smt-switch/identity_walker.h"
+#include "smt-switch/smt.h"
 
 namespace lbv2i {
 

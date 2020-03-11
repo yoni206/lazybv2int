@@ -1,34 +1,36 @@
 #include "lbv2isolver.h"
-#include "smtlibmsatparser.h"
+
 #include <assert.h>
+
+#include "smtlibmsatparser.h"
 
 using namespace smt;
 using namespace std;
 
 namespace lbv2i {
 
-LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy ) :
-  bv2int_(new BV2Int(solver, lazy)),
-  prepro_(new Preprocessor(solver)),
-  axioms_(solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
-  solver_(solver),
-  lazy_(lazy)
-{}
+LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
+    : bv2int_(new BV2Int(solver, lazy)),
+      prepro_(new Preprocessor(solver)),
+      axioms_(
+          solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
+      solver_(solver),
+      lazy_(lazy)
+{
+}
 
-LBV2ISolver::~LBV2ISolver() {
+LBV2ISolver::~LBV2ISolver()
+{
   delete bv2int_;
   delete prepro_;
 }
 
-Result LBV2ISolver::check_sat() {
-  return solve();
-}
+Result LBV2ISolver::check_sat() { return solve(); }
 
 Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 {
   push();
-  for (auto a : assumptions)
-  {
+  for (auto a : assumptions) {
     assert_formula(a);
   }
   Result r = check_sat();
@@ -58,30 +60,33 @@ Result LBV2ISolver::solve()
   }
 }
 
-void LBV2ISolver::set_logic(const string logic_name) const {solver_->set_logic(logic_name); }
-
-void LBV2ISolver::reset_assertions() {
-  solver_->reset_assertions();
+void LBV2ISolver::set_logic(const string logic_name) const
+{
+  solver_->set_logic(logic_name);
 }
 
-Term LBV2ISolver::make_term(bool b) const {
-  return solver_->make_term(b);
-}
+void LBV2ISolver::reset_assertions() { solver_->reset_assertions(); }
 
-Term LBV2ISolver::make_term(int64_t i, const Sort & sort) const {
+Term LBV2ISolver::make_term(bool b) const { return solver_->make_term(b); }
+
+Term LBV2ISolver::make_term(int64_t i, const Sort & sort) const
+{
   return solver_->make_term(i, sort);
 }
 
-Term LBV2ISolver::make_term(const Term & val, const Sort & sort) const {
+Term LBV2ISolver::make_term(const Term & val, const Sort & sort) const
+{
   return solver_->make_term(val, sort);
 }
 
-Term LBV2ISolver::make_term(const std::string val, const Sort & sort, uint64_t base) const
+Term LBV2ISolver::make_term(const std::string val,
+                            const Sort & sort,
+                            uint64_t base) const
 {
   return solver_->make_term(val, sort, base);
 }
 
-Term LBV2ISolver::make_term(const Op op, const TermVec & terms)const
+Term LBV2ISolver::make_term(const Op op, const TermVec & terms) const
 {
   return solver_->make_term(op, terms);
 }
@@ -114,74 +119,76 @@ Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort)
   return solver_->make_symbol(name, sort);
 }
 
-Sort LBV2ISolver::make_sort(const std::string name, uint64_t arity) const {
+Sort LBV2ISolver::make_sort(const std::string name, uint64_t arity) const
+{
   return solver_->make_sort(name, arity);
 }
 
-Sort LBV2ISolver::make_sort(const SortKind sk) const {
+Sort LBV2ISolver::make_sort(const SortKind sk) const
+{
   return solver_->make_sort(sk);
 }
 
-Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const {
+Sort LBV2ISolver::make_sort(const SortKind sk, uint64_t size) const
+{
   return solver_->make_sort(sk, size);
 }
 
-Sort LBV2ISolver::make_sort(const SortKind sk, const Sort & sort1) const {
+Sort LBV2ISolver::make_sort(const SortKind sk, const Sort & sort1) const
+{
   return solver_->make_sort(sk, sort1);
 }
 
-
 Sort LBV2ISolver::make_sort(const SortKind sk,
-                         const Sort & sort1,
-                         const Sort & sort2) const {
+                            const Sort & sort1,
+                            const Sort & sort2) const
+{
   return solver_->make_sort(sk, sort1, sort2);
 }
 
 Sort LBV2ISolver::make_sort(const SortKind sk,
-                         const Sort & sort1,
-                         const Sort & sort2,
-                         const Sort & sort3) const {
+                            const Sort & sort1,
+                            const Sort & sort2,
+                            const Sort & sort3) const
+{
   return solver_->make_sort(sk, sort1, sort2, sort3);
 }
 
-
-Sort LBV2ISolver::make_sort(const SortKind sk, const SortVec & sorts) const {
+Sort LBV2ISolver::make_sort(const SortKind sk, const SortVec & sorts) const
+{
   return solver_->make_sort(sk, sorts);
 }
 
-
-void LBV2ISolver::set_opt(string op, string value) {
+void LBV2ISolver::set_opt(string op, string value)
+{
   solver_->set_opt(op, value);
 }
 
-Term LBV2ISolver::get_value(Term& t) const {
-  //Need to do this by translating back to bv...
+Term LBV2ISolver::get_value(Term & t) const
+{
+  // Need to do this by translating back to bv...
   assert(false);
 }
 
 void LBV2ISolver::push(uint64_t num)
 {
-  for (size_t i = 0; i < num; i++)
-  {
+  for (size_t i = 0; i < num; i++) {
     bv2int_->push();
   }
   solver_->push(num);
 }
 
-void LBV2ISolver::pop(uint64_t num) {
-  for (size_t i = 0; i < num; i++)
-  {
+void LBV2ISolver::pop(uint64_t num)
+{
+  for (size_t i = 0; i < num; i++) {
     bv2int_->pop();
   }
   solver_->pop(num);
 }
 
-void LBV2ISolver::reset()
-{
-  solver_->reset();
-}
+void LBV2ISolver::reset() { solver_->reset(); }
 
-void LBV2ISolver::assert_formula(const Term& f) const
+void LBV2ISolver::assert_formula(const Term & f) const
 {
   // preprocess the formula
   Term pre_f = prepro_->process(f);
@@ -193,10 +200,10 @@ void LBV2ISolver::assert_formula(const Term& f) const
 
 bool LBV2ISolver::refine(TermVec & outlemmas)
 {
-  const TermVec &fbv_terms = bv2int_->fbv_terms();
-  const Term &fbv_and = bv2int_->fbv_and();
-  const Term &fbv_or = bv2int_->fbv_or();
-  const Term &fbv_xor = bv2int_->fbv_xor();
+  const TermVec & fbv_terms = bv2int_->fbv_terms();
+  const Term & fbv_and = bv2int_->fbv_and();
+  const Term & fbv_or = bv2int_->fbv_or();
+  const Term & fbv_xor = bv2int_->fbv_xor();
 
   TermVec fbvand_terms, fbvor_terms, fbvxor_terms;
   for (Term f : fbv_terms) {
@@ -222,11 +229,11 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
   return ret;
 }
 
-bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
+bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
 {
   size_t n = outlemmas.size();
 
-  for (const Term &f : fterms) {
+  for (const Term & f : fterms) {
     bool found = axioms_.check_bvand_base_case(f, outlemmas);
     if (!found) {
       found = axioms_.check_bvand_range(f, outlemmas);
@@ -246,19 +253,19 @@ bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
   }
 
   if (outlemmas.size() == n) {
-    const TermVec &fbv_terms = bv2int_->fbv_terms();
-    const Term &fbv_and = bv2int_->fbv_and();
+    const TermVec & fbv_terms = bv2int_->fbv_terms();
+    const Term & fbv_and = bv2int_->fbv_and();
 
     TermVec all_fbvand_terms;
-    for (const Term &f : fbv_terms) {
+    for (const Term & f : fbv_terms) {
       Term fsymbol = *(f->begin());
       if (fsymbol == fbv_and) {
         all_fbvand_terms.push_back(f);
       }
     }
 
-    for (const Term &f1 : fterms) {
-      for (const Term &f2 : all_fbvand_terms) {
+    for (const Term & f1 : fterms) {
+      for (const Term & f2 : all_fbvand_terms) {
         if (f1 == f2) {
           continue;
         }
@@ -273,11 +280,11 @@ bool LBV2ISolver::refine_bvand(const TermVec &fterms, TermVec &outlemmas)
   return outlemmas.size() > n;
 }
 
-bool LBV2ISolver::refine_bvor(const TermVec &fterms, TermVec &outlemmas)
+bool LBV2ISolver::refine_bvor(const TermVec & fterms, TermVec & outlemmas)
 {
   size_t n = outlemmas.size();
 
-  for (const Term &f : fterms) {
+  for (const Term & f : fterms) {
     bool found = axioms_.check_bvor_base_case(f, outlemmas);
     if (!found) {
       found = axioms_.check_bvor_range(f, outlemmas);
@@ -297,19 +304,19 @@ bool LBV2ISolver::refine_bvor(const TermVec &fterms, TermVec &outlemmas)
   }
 
   if (outlemmas.size() == n) {
-    const TermVec &fbv_terms = bv2int_->fbv_terms();
-    const Term &fbv_or = bv2int_->fbv_and();
+    const TermVec & fbv_terms = bv2int_->fbv_terms();
+    const Term & fbv_or = bv2int_->fbv_and();
 
     TermVec all_fbvor_terms;
-    for (const Term &f : fbv_terms) {
+    for (const Term & f : fbv_terms) {
       Term fsymbol = *(f->begin());
       if (fsymbol == fbv_or) {
         all_fbvor_terms.push_back(f);
       }
     }
 
-    for (const Term &f1 : fterms) {
-      for (const Term &f2 : all_fbvor_terms) {
+    for (const Term & f1 : fterms) {
+      for (const Term & f2 : all_fbvor_terms) {
         if (f1 == f2) {
           continue;
         }
@@ -324,11 +331,11 @@ bool LBV2ISolver::refine_bvor(const TermVec &fterms, TermVec &outlemmas)
   return outlemmas.size() > n;
 }
 
-bool LBV2ISolver::refine_bvxor(const TermVec &fterms, TermVec &outlemmas)
+bool LBV2ISolver::refine_bvxor(const TermVec & fterms, TermVec & outlemmas)
 {
   size_t n = outlemmas.size();
 
-  for (const Term &f : fterms) {
+  for (const Term & f : fterms) {
     bool found = axioms_.check_bvxor_base_case(f, outlemmas);
     if (!found) {
       found = axioms_.check_bvxor_zero(f, outlemmas);

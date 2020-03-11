@@ -1,7 +1,6 @@
 #include "opts.h"
-#include "smtlibsolver.h"
-
 #include "smt-switch/cvc4_factory.h"
+#include "smtlibsolver.h"
 
 using namespace lbv2i;
 using namespace std;
@@ -13,7 +12,7 @@ int main(int argc, char ** argv)
   size_t num_files = 0;
   string opt;
   for (size_t i = 1; i < argc; i++) {
-    //cout << "processing " << argv[i] << endl;
+    // cout << "processing " << argv[i] << endl;
     opt = argv[i];
     if (opt == "--help" || opt == "-h") {
       help_msg(argv[0]);

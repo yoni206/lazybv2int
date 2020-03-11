@@ -19,10 +19,9 @@ class SmtLibSolver : public LBV2ISolver
   ~SmtLibSolver();
 
   typedef LBV2ISolver super;
-  
+
   // main method. it will read the file and prints the results on the standard
   // output.
   void run(std::string filename);
-
 };
 }  // namespace lbv2i

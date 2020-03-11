@@ -7,8 +7,10 @@ namespace lbv2i {
 class Axioms
 {
  public:
-  Axioms(smt::SmtSolver &solver, const smt::Term &fbvand,
-         const smt::Term &fbvor, const smt::Term &fbvxor);
+  Axioms(smt::SmtSolver & solver,
+         const smt::Term & fbvand,
+         const smt::Term & fbvor,
+         const smt::Term & fbvxor);
   ~Axioms();
 
   // we assume that the term t looks like "fbvand(x, y)"
@@ -54,7 +56,6 @@ class Axioms
   bool check_bvxor_range(const smt::Term & t, smt::TermVec & outlemmas);
 
  private:
-
   smt::Term pow2_minus_one(uint64_t k);
 
   smt::Term make_eq(const smt::Term & x, const smt::Term & y);
@@ -63,7 +64,7 @@ class Axioms
 
   void add_if_voilated(smt::Term & l, smt::TermVec & out);
 
-  smt::SmtSolver &solver_;
+  smt::SmtSolver & solver_;
 
   smt::Term fbvand_;
   smt::Term fbvor_;
@@ -74,6 +75,6 @@ class Axioms
   smt::Term false_;
   smt::Term zero_;
 
-}; // class axioms
+};  // class axioms
 
-} // namespace lbv2i
+}  // namespace lbv2i

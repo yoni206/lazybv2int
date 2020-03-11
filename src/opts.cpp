@@ -14,9 +14,9 @@ void set_opt(string option)
 {
   if (option.rfind("--granularity=", 0) == 0) {
     uint32_t granularity = stoi(option.substr(14, option.length() - 14));
-    if (granularity > 8)
-    {
-      cout << "granularity value " << granularity << " is too large and is unsupported." << endl;
+    if (granularity > 8) {
+      cout << "granularity value " << granularity
+           << " is too large and is unsupported." << endl;
       throw std::exception();
     }
     opts.granularity = granularity;

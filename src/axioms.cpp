@@ -1,8 +1,8 @@
 #include "axioms.h"
 
 #include <assert.h>
-#include <math.h>
 #include <gmpxx.h>
+#include <math.h>
 
 using namespace std;
 using namespace smt;
@@ -21,7 +21,7 @@ static string pow2_minus_one_str(uint64_t k)
 
   mpz_clear(p);
   mpz_clear(base);
-  
+
   return res.get_str();
 }
 
@@ -42,12 +42,11 @@ static void get_fbv_args(const Term & f,
   b = *it;
 }
 
-Axioms::Axioms(SmtSolver & solver, const Term &fbvand, const Term &fbvor,
-               const Term &fbvxor)
-  : solver_(solver),
-    fbvand_(fbvand),
-    fbvor_(fbvor),
-    fbvxor_(fbvxor)
+Axioms::Axioms(SmtSolver & solver,
+               const Term & fbvand,
+               const Term & fbvor,
+               const Term & fbvxor)
+    : solver_(solver), fbvand_(fbvand), fbvor_(fbvor), fbvxor_(fbvxor)
 {
   int_sort_ = solver_->make_sort(INT);
   false_ = solver_->make_term(false);
