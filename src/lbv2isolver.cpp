@@ -188,6 +188,9 @@ void LBV2ISolver::assert_formula(const Term& f) const
 
   // translate
   Term t_f = bv2int_->convert(pre_f);
+  cout << "panda pre: " << pre_f << endl;
+  cout << "panda post: " << t_f << endl;
+
   solver_->assert_formula(t_f);
 }
 

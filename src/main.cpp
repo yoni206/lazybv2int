@@ -1,7 +1,7 @@
 #include "opts.h"
 #include "smtlibsolver.h"
 
-#include "smt-switch/msat_factory.h"
+#include "smt-switch/cvc4_factory.h"
 
 using namespace lbv2i;
 using namespace std;
@@ -32,8 +32,8 @@ int main(int argc, char ** argv)
     }
   }
 
-  smt::SmtSolver underlying_solver = smt::MsatSolverFactory::create();
-  LBV2ISolver solver = LBV2ISolver(underlying_solver, false);
+  smt::SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
+  LBV2ISolver solver = LBV2ISolver(underlying_solver, true);
   solver.run(filename);
   return 0;
 }
