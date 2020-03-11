@@ -47,9 +47,7 @@ class Axioms
 
   /* bvxor */
   bool check_bvxor_base_case(const smt::Term & t, smt::TermVec & outlemmas);
-  bool check_bvxor_zero(const smt::Term & t,
-                        bool is_max,
-                        smt::TermVec & outlemmas);
+  bool check_bvxor_zero(const smt::Term & t, smt::TermVec & outlemmas);
   bool check_bvxor_one(const smt::Term & t, smt::TermVec & outlemmas);
   // we don't need symmetry if we sort the arguments
 

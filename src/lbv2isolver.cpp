@@ -329,7 +329,16 @@ bool LBV2ISolver::refine_bvxor(const TermVec &fterms, TermVec &outlemmas)
   size_t n = outlemmas.size();
 
   for (const Term &f : fterms) {
-
+    bool found = axioms_.check_bvxor_base_case(f, outlemmas);
+    if (!found) {
+      found = axioms_.check_bvxor_zero(f, outlemmas);
+    }
+    if (!found) {
+      found = axioms_.check_bvxor_one(f, outlemmas);
+    }
+    if (!found) {
+      found = axioms_.check_bvxor_range(f, outlemmas);
+    }
   }
 
   return outlemmas.size() > n;

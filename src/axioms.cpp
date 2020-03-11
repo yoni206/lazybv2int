@@ -311,7 +311,7 @@ bool Axioms::check_bvxor_base_case(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > 0;
 }
 
-bool Axioms::check_bvxor_zero(const Term & t, bool is_max, TermVec & outlemmas)
+bool Axioms::check_bvxor_zero(const Term & t, TermVec & outlemmas)
 {
   uint64_t bv_width;
   Term a, b;
