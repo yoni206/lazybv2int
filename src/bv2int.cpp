@@ -85,12 +85,16 @@ Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b)
   sigma_vars_.push_back(sigma1);
   // sigma0 = a mod b
   // a = b*sigma1 + sigma0
+  // AI: abs(sigma0) < abs(b)
+  //     Because b >= 0, we can assert the property that sigma0 < b
   Term left = a;
   Term mul = solver_->make_term(Mult, b, sigma1);
   Term right = solver_->make_term(Plus, mul, sigma0);
   Term constraint = solver_->make_term(Equal, left, right);
-  range_assertions_.push_back(make_range_constraint(sigma0, bv_width));
-  range_assertions_.push_back(make_range_constraint(sigma1, bv_width));
+  Term zero = solver_->make_term("0", int_sort_);
+  range_assertions_.push_back(solver_->make_term(Ge, sigma0, zero));
+  range_assertions_.push_back(solver_->make_term(Ge, sigma1, zero));
+  range_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
   range_assertions_.push_back(constraint);
   return sigma0;
   */
