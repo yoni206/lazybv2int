@@ -1,6 +1,9 @@
 #include <functional>
 #include <map>
+#include <assert.h>
+#include <math.h>
 
+#include "preprocessor.h"
 #include "preprocessor.h"
 
 using namespace smt;
@@ -12,6 +15,7 @@ namespace lbv2i {
 enum RewriteRule
 {
  UdivZero=0,
+ AshrEliminate,
  SdivEliminate,
  SremEliminate,
  SmodEliminate,
@@ -38,6 +42,11 @@ const std::map<RewriteRule, std::function<bool(const Term & t, const TermVec & c
                return t->get_op() == BVUdiv &&
                  children[1] == s->make_term(0, s->make_sort(BV, 1));
              } },
+
+ { AshrEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                  {
+                    return t->get_op() == BVAshr;
+                  } },
 
  { SdivEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
                   {
@@ -124,6 +133,29 @@ const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & c
                                        t->get_sort(), 2);
                return res;
              } },
+
+ { AshrEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
+                  {
+                  /*
+                   * Equivalently:
+                   *  (bvashr x y) abbreviates
+                   *      (ite (bvult x 100000...)
+                   *           (bvlshr x y)
+                   *           (bvnot (bvlshr (bvnot x) y)))
+                   */
+                    size_t size = t->get_sort()->get_width();
+                    assert(size > 0 && size <= 64);
+                    Term x = children[0];
+                    Term y = children[1];
+                    Term constant = s->make_term(pow(2, size-1), s->make_sort(BV, size));
+                    Term condition = s->make_term(BVUlt, x, constant);
+                    Term first = s->make_term(BVLshr, x, y);
+                    Term not_x = s->make_term(BVNot, x);
+                    Term sh = s->make_term(BVLshr, not_x, y);
+                    Term second = s->make_term(BVNot, sh);
+                    Term res = s->make_term(Ite, condition, first, second);
+                    return res;
+                  } },
 
  { SdivEliminate, [](const Term & t, const TermVec & children, SmtSolver & s)
                   {
