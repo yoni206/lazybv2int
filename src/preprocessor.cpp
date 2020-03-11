@@ -277,10 +277,8 @@ const std::map<RewriteRule, std::function<Term(const Term & t, const TermVec & c
                             return bv;
                           }
 
-                          size_t size = t->get_sort()->get_width();
-                          cout << "panda 11" << endl;
+                          size_t size = bv->get_sort()->get_width();
                           Term sign_bit = s->make_term(Op(Extract, size-1, size-1), bv);
-                          cout << "panda 22" << endl;
                           Term extension = sign_bit;
                           for (size_t i = 1; i < amount; ++i)
                           {
