@@ -438,7 +438,14 @@ Term BV2Int::handle_bw_op_lazy(Term t, uint64_t bv_width,
   Term x = cached_children[0];
   Term y = cached_children[1];
   Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
-  
+
+  // sort args (to handle symmetry)
+  if (x->hash() > y->hash()) {
+    Term tmp = x;
+    x = y;
+    y = x;
+  }
+
   Term res;
   if (op == BVAnd) {
     TermVec args = {fbvand_, bv_width_term, x, y};
