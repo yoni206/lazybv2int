@@ -19,6 +19,9 @@ static string pow2_minus_one_str(uint64_t k)
   mpz_class res(p);
   res--;
 
+  mpz_clear(p);
+  mpz_clear(base);
+  
   return res.get_str();
 }
 

@@ -21,6 +21,9 @@ static string pow2_str(uint64_t k)
 
   mpz_class res(p);
 
+  mpz_clear(p);
+  mpz_clear(base);
+
   return res.get_str();
 }
 
@@ -280,6 +283,9 @@ Term BV2Int::int_max(uint64_t k)
 
   mpz_class res(p);
   res--;
+
+  mpz_clear(p);
+  mpz_clear(base);
 
   return solver_->make_term(res.get_str(), int_sort_);
 }
