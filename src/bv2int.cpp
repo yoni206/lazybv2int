@@ -362,7 +362,6 @@ Term BV2Int::gen_block(Op op,
                        uint64_t i,
                        uint64_t block_size)
 {
-  cout << endl;
   Term left_a =
       solver_->make_term(IntDiv, cached_children[0], pow2(i * block_size));
   Term left_b = pow2(block_size);
