@@ -249,6 +249,8 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
+  cout << "panda t " << t << endl;
+  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
@@ -509,16 +511,16 @@ Term BV2Int::handle_shift_eager(Term t,
   // all other cases
   for (uint64_t i = 1; i < bv_width; i++) {
     Term i_term = solver_->make_term(i, int_sort_);
-    Term div_mod_term;
+    Term div_mul_term;
     Op op = t->get_op();
     if (op.prim_op == BVShl) {
-      div_mod_term = solver_->make_term(Mult, x, i_term);
+      div_mul_term = solver_->make_term(Mult, x, i_term);
     } else {
       assert(op == BVLshr);
-      div_mod_term = solver_->make_term(IntDiv, x, i_term);
+      div_mul_term = solver_->make_term(IntDiv, x, i_term);
     }
     Term condition = solver_->make_term(Equal, y, i_term);
-    ite = solver_->make_term(Ite, condition, div_mod_term, ite);
+    ite = solver_->make_term(Ite, condition, div_mul_term, ite);
   }
   Term res = gen_mod(bv_width, ite, pow2(bv_width));
   return res;
