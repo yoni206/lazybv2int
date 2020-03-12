@@ -168,9 +168,14 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       } else if (op.prim_op == BV_To_Nat) {
         cache_[t] = cached_children[0];
       } else if (op.prim_op == Concat) {
-        uint64_t bv_width = t->get_sort()->get_width();
+        TermVec original_children;
+        for (auto c : t) {
+          original_children.push_back(c);
+        }
+        //the extra width is that of the second argument
+        uint64_t extra_width = original_children[1]->get_sort()->get_width();
         Term left =
-            solver_->make_term(Mult, cached_children[0], pow2(bv_width));
+            solver_->make_term(Mult, cached_children[0], pow2(extra_width));
         Term res = solver_->make_term(Plus, left, cached_children[1]);
         cache_[t] = res;
       } else if (op.prim_op == Extract) {
