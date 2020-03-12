@@ -249,6 +249,8 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
+//  cout << "panda t " << t << endl;
+//  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
@@ -386,7 +388,7 @@ Term BV2Int::gen_block(Op op,
   Term right_a =
       solver_->make_term(IntDiv, cached_children[1], pow2(i * block_size));
   Term right_b = pow2(block_size);
-  Term right = gen_mod(block_size, left_a, left_b);
+  Term right = gen_mod(block_size, right_a, right_b);
   return gen_bitwise_int(op, block_size, left, right);
 }
 

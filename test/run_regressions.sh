@@ -27,9 +27,9 @@ if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ]
   fi
 
 #Assertion failures, run-time exceptions, etc.
-#  if [ "$lazy_res" != "sat" -a "$lazy_res" != "unsat" ]
-#  then
-#    echo $f $lazy_res FAIL
-#  fi
+  if [ "$lazy_res" != "sat" -a "$lazy_res" != "unsat" ]
+  then
+    echo $f $lazy_res FAIL
+  fi
 done
 echo If you do not see any FAIL above, then you are good.
