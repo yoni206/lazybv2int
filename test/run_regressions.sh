@@ -7,8 +7,8 @@ SMTLIB_FILES_DIR=$MY_DIR/smtlib_files
 
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
-  cvc4_res=`runlim -t 1 --output-file=tmp1.log $CVC4_PATH $f`
-  lazy_res=`runlim -t 1 --output-file=tmp2.log $LAZY_PATH $f`
+  cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
+  lazy_res=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f`
 
 #soundness issues 1
 if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ] 

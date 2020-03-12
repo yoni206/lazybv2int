@@ -32,6 +32,7 @@ int main(int argc, char ** argv)
   }
 
   smt::SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
+  underlying_solver->set_opt("nl-ext-tplanes", "true");
   LBV2ISolver solver = LBV2ISolver(underlying_solver, false);
   solver.run(filename);
   return 0;
