@@ -9,13 +9,16 @@ for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
   cvc4_res=`runlim -t 1 --output-file=tmp1.log $CVC4_PATH $f`
   lazy_res=`runlim -t 1 --output-file=tmp2.log $LAZY_PATH $f`
-  if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ] 
+
+#soundness issues 1
+if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ] 
   then
     echo $f FAIL
 #  else
 #    echo $f PASS
   fi
   
+#soundness issues 1
   if [ "$cvc4_res" = "unsat" -a "$lazy_res" = "sat" ] 
   then
     echo $f FAIL
@@ -23,9 +26,10 @@ do
 #    echo $f PASS
   fi
 
-  if [ "$lazy_res" != "sat" -a "$lazy_res" != "unsat" ]
-  then
-    echo $f $lazy_res FAIL
-  fi
+#Assertion failures, run-time exceptions, etc.
+#  if [ "$lazy_res" != "sat" -a "$lazy_res" != "unsat" ]
+#  then
+#    echo $f $lazy_res FAIL
+#  fi
 done
 echo If you do not see any FAIL above, then you are good.
