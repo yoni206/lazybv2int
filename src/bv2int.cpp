@@ -249,8 +249,6 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
-  cout << "panda t " << t << endl;
-  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
