@@ -10,7 +10,7 @@ using namespace std;
 namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
-    : bv2int_(new BV2Int(solver, lazy)),
+    : bv2int_(new BV2Int(solver, true, lazy)),
       prepro_(new Preprocessor(solver)),
       axioms_(
           solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
