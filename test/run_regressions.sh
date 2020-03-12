@@ -33,3 +33,4 @@ if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ]
   fi
 done
 echo If you do not see any FAIL above, then you are good.
+echo Otherwise, you may have good intentions, but thats about it.
