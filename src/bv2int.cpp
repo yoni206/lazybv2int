@@ -136,7 +136,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         string name = "sigma_mul_" + to_string(sigma_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
         sigma_vars_.push_back(sigma);
-        Term mul = solver_->make_term(Plus, cached_children);
+        Term mul = solver_->make_term(Mult, cached_children);
         Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
         Term res = solver_->make_term(Minus, mul, multSig);
 
