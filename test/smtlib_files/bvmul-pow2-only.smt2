@@ -1,5 +1,5 @@
 (set-logic QF_BV)
-(set-info :status sat)
+
 (declare-fun x () (_ BitVec 4))
 
 (assert (= x #b1000))

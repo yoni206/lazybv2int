@@ -1,10 +1,10 @@
 ; SCRUBBER: sed -e 's/(error \"Error.in.option.parsing.*$/Error in option parsing/'
-; EXPECT: Error in option parsing
+
 ; COMMAND-LINE: --check-proofs --bv-inequality-solver
 ; EXIT: 1
 (set-logic QF_BV)
-(set-info :smt-lib-version 2.0)
-(set-info :category "crafted")
+
+
 (declare-fun v0 () (_ BitVec 16))
 (declare-fun v1 () (_ BitVec 16))
 (declare-fun v2 () (_ BitVec 16))

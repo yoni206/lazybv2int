@@ -1,6 +1,6 @@
 (set-logic  QF_BV)
 
-(set-info :status unsat)
+
 
 (define-fun bvsmod_def ((s (_ BitVec 13)) (t (_ BitVec 13))) (_ BitVec 13)
      (let ((msb_s ((_ extract 12 12) s))

@@ -8,20 +8,20 @@
 
 (assert (bvult a (bvadd b c)))
 (check-sat)
-; EXPECT: sat
+
 
 (push 1)
 (assert (bvult c b))
 (check-sat)
-; EXPECT: sat
+
 
 
 (push 1)
 (assert (bvugt c b))
 (check-sat)
-; EXPECT: unsat
+
 (pop 2)
 
 (check-sat)
-; EXPECT: sat
+
 (exit)

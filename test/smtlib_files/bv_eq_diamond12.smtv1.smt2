@@ -4,9 +4,9 @@ Ofer Strichman and Mirron Rozanov,
 SMT Workshop 2005.
 
 Translator: Leonardo de Moura.")
-(set-info :status unsat)
-(set-info :category "crafted")
-(set-info :difficulty "0")
+
+
+
 (set-logic QF_BV)
 (declare-fun x0 () (_ BitVec 32))
 (declare-fun y0 () (_ BitVec 32))

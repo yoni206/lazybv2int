@@ -1,10 +1,10 @@
 ; SCRUBBER: sed -e 's/unsat.*/unsat/'
-; EXPECT: unsat
+
 ; COMMAND-LINE: --check-proofs 
 ; EXIT: 0
 (set-logic QF_BV)
-(set-info :smt-lib-version 2.0)
-(set-info :category "crafted")
+
+
 (declare-fun v0 () (_ BitVec 16))
 (declare-fun v1 () (_ BitVec 16))
 (declare-fun v2 () (_ BitVec 16))

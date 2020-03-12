@@ -1,6 +1,6 @@
 ; COMMAND-LINE: --bv-abstraction
 (set-logic QF_BV)
-(set-info :status sat)
+
 (declare-fun x0 () (_ BitVec 8))
 (declare-fun x1 () (_ BitVec 8))
 (declare-fun y0 () (_ BitVec 8))

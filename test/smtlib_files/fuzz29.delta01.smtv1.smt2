@@ -1,5 +1,5 @@
 (set-option :incremental false)
-(set-info :status sat)
+
 (set-logic QF_BV)
 (declare-fun v1 () (_ BitVec 4))
 (declare-fun v0 () (_ BitVec 4))

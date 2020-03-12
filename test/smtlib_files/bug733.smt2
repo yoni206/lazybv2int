@@ -1,4 +1,4 @@
-; EXPECT: sat
+
 (set-logic QF_BV)
 (declare-fun x2 () (_ BitVec 3))
 (declare-fun x1 () (_ BitVec 3))

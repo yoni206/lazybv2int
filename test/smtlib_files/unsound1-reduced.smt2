@@ -1,5 +1,5 @@
 (set-logic QF_BV)
-(set-info :status sat)
+
 (declare-fun v0 () (_ BitVec 2))
 (assert
 	(xor

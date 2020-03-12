@@ -7,9 +7,9 @@ by M. Schulte et al.
 Bit-width: 4
 
 Contributed by Robert Brummayer (robert.brummayer@gmail.com).")
-(set-info :status unsat)
-(set-info :category "industrial")
-(set-info :difficulty "0")
+
+
+
 (set-logic QF_BV)
 (declare-fun v1 () (_ BitVec 4))
 (declare-fun v2 () (_ BitVec 4))

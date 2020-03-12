@@ -1,5 +1,5 @@
 (set-logic QF_BV)
-(set-info :status sat)
+
 (declare-fun v0 () (_ BitVec 4))
 (assert (let ((e1(_ bv0 1)))
 (let ((e2(_ bv11134 16)))

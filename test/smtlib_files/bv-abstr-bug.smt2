@@ -2,7 +2,7 @@
 ;
 ; BV-abstraction should not be applied
 (set-logic QF_BV)
-(set-info :status sat)
+
 (declare-const a Bool)
 (declare-const b Bool)
 (declare-const c Bool)

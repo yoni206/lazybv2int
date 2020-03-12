@@ -1,5 +1,5 @@
 ; COMMAND-LINE: --ext-rew-prep
-; EXPECT: sat
+
 (set-logic QF_BV)
 (declare-fun a () (_ BitVec 4))
 (assert (let ((a!1 ((_ sign_extend 3)
