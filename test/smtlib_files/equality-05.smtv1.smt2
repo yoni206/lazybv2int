@@ -6,4 +6,5 @@
 (assert (= x (_ bv0 1)))
 (assert (= y (_ bv1 1)))
 (assert (= x y))
-(check-sat-assuming ( true ))
+(assert  true )
+(check-sat)

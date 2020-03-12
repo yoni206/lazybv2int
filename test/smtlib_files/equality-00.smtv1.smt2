@@ -6,4 +6,5 @@
 (declare-fun z () (_ BitVec 32))
 (assert (= x y))
 (assert (= y z))
-(check-sat-assuming ( (not (= x z)) ))
+(assert  (not (= x z)) )
+(check-sat)

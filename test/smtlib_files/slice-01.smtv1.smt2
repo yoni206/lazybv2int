@@ -5,4 +5,5 @@
 (declare-fun y () (_ BitVec 32))
 (declare-fun z () (_ BitVec 32))
 (assert (= x (concat y z)))
-(check-sat-assuming ( (not (= ((_ extract 63 32) x) y)) ))
+(assert  (not (= ((_ extract 63 32) x) y)) )
+(check-sat)

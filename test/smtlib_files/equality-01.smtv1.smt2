@@ -8,4 +8,5 @@
 (assert (= x y))
 (assert (= y z))
 (assert (= z w))
-(check-sat-assuming ( (not (= x w)) ))
+(assert  (not (= x w)) )
+(check-sat)

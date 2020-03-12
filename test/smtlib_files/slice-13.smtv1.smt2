@@ -9,4 +9,5 @@
 (assert (= z2 (concat (concat (concat ((_ extract 7 7) y) ((_ extract 5 5) y)) ((_ extract 3 3) y)) ((_ extract 1 1) y))))
 (assert (= x (_ bv85 8)))
 (assert (= y (_ bv170 8)))
-(check-sat-assuming ( (not (= z1 z2)) ))
+(assert  (not (= z1 z2)) )
+(check-sat)

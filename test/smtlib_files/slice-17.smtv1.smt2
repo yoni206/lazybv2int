@@ -7,4 +7,5 @@
 (assert (= y ((_ extract 15 4) x)))
 (assert (= ((_ extract 3 1) y) ((_ extract 2 0) y)))
 (assert (= ((_ extract 0 0) x) (_ bv1 1)))
-(check-sat-assuming ( (not (= x (_ bv65535 16))) ))
+(assert  (not (= x (_ bv65535 16))) )
+(check-sat)

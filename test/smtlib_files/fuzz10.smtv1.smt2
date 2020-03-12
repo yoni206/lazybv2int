@@ -2,4 +2,5 @@
 (set-info :status unsat)
 (set-logic QF_BV)
 (declare-fun v0 () (_ BitVec 1))
-(check-sat-assuming ( (bvsgt v0 v0) ))
+(assert  (bvsgt v0 v0) )
+(check-sat)

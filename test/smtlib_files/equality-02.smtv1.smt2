@@ -16,4 +16,5 @@
 (assert (= y1 y2))
 (assert (= y2 y3))
 (assert (= x0 y0))
-(check-sat-assuming ( (not (= x3 y3)) ))
+(assert  (not (= x3 y3)) )
+(check-sat)

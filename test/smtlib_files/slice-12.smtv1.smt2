@@ -15,4 +15,5 @@
 (assert (= y (_ bv170 8)))
 (assert (= z1 (concat (concat (concat ((_ extract 0 0) x) ((_ extract 2 2) x)) ((_ extract 4 4) x)) ((_ extract 6 6) x))))
 (assert (= z2 (concat (concat (concat ((_ extract 7 7) y) ((_ extract 5 5) y)) ((_ extract 3 3) y)) ((_ extract 1 1) y))))
-(check-sat-assuming ( (not (= z1 z2)) ))
+(assert  (not (= z1 z2)) )
+(check-sat)

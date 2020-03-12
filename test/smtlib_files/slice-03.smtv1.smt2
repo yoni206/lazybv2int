@@ -8,4 +8,5 @@
 (assert (= x1 (concat y z)))
 (assert (= ((_ extract 63 32) x2) y))
 (assert (= ((_ extract 31 0) x2) z))
-(check-sat-assuming ( (not (= x1 x2)) ))
+(assert  (not (= x1 x2)) )
+(check-sat)

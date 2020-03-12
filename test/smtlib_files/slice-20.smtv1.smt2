@@ -12,4 +12,5 @@
 (assert (= x2 (concat x3 x3)))
 (assert (= y1 (concat y2 y2)))
 (assert (= y2 (concat y3 y3)))
-(check-sat-assuming ( (not (= x3 y3)) ))
+(assert  (not (= x3 y3)) )
+(check-sat)

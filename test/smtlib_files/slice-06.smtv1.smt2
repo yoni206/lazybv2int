@@ -14,4 +14,5 @@
 (assert (= x4 (concat x5 x5)))
 (assert (= x5 (concat x6 x6)))
 (assert (= x6 (concat x7 x7)))
-(check-sat-assuming ( (not (= ((_ extract 63 63) x1) ((_ extract 0 0) x1))) ))
+(assert  (not (= ((_ extract 63 63) x1) ((_ extract 0 0) x1))) )
+(check-sat)
