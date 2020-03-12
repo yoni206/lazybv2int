@@ -503,6 +503,7 @@ Term BV2Int::handle_shift_eager(Term t,
                                 uint64_t bv_width,
                                 const TermVec & cached_children)
 {
+  Op op = t->get_op();
   Term x = cached_children[0];
   Term y = cached_children[1];
   // this will be the case where y is geq the bitwidth or is equal to zero.
@@ -512,17 +513,19 @@ Term BV2Int::handle_shift_eager(Term t,
   for (uint64_t i = 1; i < bv_width; i++) {
     Term i_term = solver_->make_term(i, int_sort_);
     Term div_mul_term;
-    Op op = t->get_op();
     if (op.prim_op == BVShl) {
-      div_mul_term = solver_->make_term(Mult, x, i_term);
+      div_mul_term = solver_->make_term(Mult, x, pow2(i));
     } else {
       assert(op == BVLshr);
-      div_mul_term = solver_->make_term(IntDiv, x, i_term);
+      div_mul_term = solver_->make_term(IntDiv, x, pow2(i));
     }
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, div_mul_term, ite);
   }
-  Term res = gen_mod(bv_width, ite, pow2(bv_width));
+  Term res =  ite;
+  if (op.prim_op == BVShl) {
+    res = gen_mod(bv_width, res, pow2(bv_width));
+  }
   return res;
 }
 
