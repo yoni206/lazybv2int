@@ -249,7 +249,6 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
-
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
