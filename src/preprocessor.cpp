@@ -32,6 +32,9 @@ enum RewriteRule
   SltEliminate,
   SgtEliminate,
   SgeEliminate,
+  NandEliminate,
+  NorEliminate,
+  XnorEliminate,
   ShlByConst,
   LshrByConst,
   // Not meant to be used except for iteration
@@ -118,6 +121,21 @@ const std::map<
             return t->get_op() == BVSge;
           } },
 
+        { NandEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVNand;
+          } },
+        
+        { NorEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVNor;
+          } },
+        
+        { XnorEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVXnor;
+          } },
+        
         { ShlByConst,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVShl && (children[1]->is_value());
@@ -369,6 +387,29 @@ const std::map<RewriteRule,
             Term a = children[0];
             Term b = children[1];
             return s->make_term(BVSle, b, a);
+          } },
+
+        { NandEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term a = children[0];
+            Term b = children[1];
+            Term and_term = s->make_term(BVAnd, a, b);
+            return s->make_term(BVNot, and_term);
+          } },
+
+        { NorEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term a = children[0];
+            Term b = children[1];
+            Term or_term = s->make_term(BVAnd, a, b);
+            return s->make_term(BVNot, or_term);
+          } },
+
+        { XnorEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term a = children[0];
+            Term b = children[1];
+            return s->make_term(Equal, b, a);
           } },
 
         { ShlByConst,
