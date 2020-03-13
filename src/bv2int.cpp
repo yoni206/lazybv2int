@@ -75,8 +75,8 @@ void BV2Int::pop()
 
 Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b)
 {
-  return solver_->make_term(Mod, a, b);
-  /** old, complicated
+  //return solver_->make_term(Mod, a, b);
+  ///** old, complicated
   string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
   Term sigma0 = solver_->make_symbol(name0, int_sort_);
   sigma_vars_.push_back(sigma0);
@@ -97,7 +97,7 @@ Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b)
   range_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
   range_assertions_.push_back(constraint);
   return sigma0;
-  */
+  //*/
 }
 
 WalkerStepResult BV2Int::visit_term(Term & t)
