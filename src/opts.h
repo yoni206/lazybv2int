@@ -8,11 +8,13 @@ struct Options
 {
   uint32_t granularity;
   bool use_sum_bvops;
+  bool lazy;
 
   Options()
   {
     granularity = 1;
     use_sum_bvops = true;
+    lazy = false;
   }
 };
 
