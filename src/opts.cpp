@@ -24,6 +24,8 @@ void set_opt(string option)
     opts.use_sum_bvops = false;
   } else if (option == "--lazy") {
     opts.lazy = true;
+  } else if (option == "--cvc4" || option == "--msat") {
+    opts.solver = option.erase(0, 2);
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();
@@ -37,7 +39,9 @@ void help_msg(string bin_name)
        << "\n\t--granularity=[1-8] : sets granularity of int blocks"
        << "\n\t--use-boolcomp-bvops : use comparisons between integer "
           "representation of bits instead of a sum"
-       << "\n\t--lazy : lazily handle bitwise operators " << endl;
+       << "\n\t--lazy : lazily handle bitwise operators "
+       << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "
+       << "\n\t--msat : use mathsat as the underlying solver " << endl;
 }
 
 }  // namespace lbv2i

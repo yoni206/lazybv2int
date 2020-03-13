@@ -9,12 +9,14 @@ struct Options
   uint32_t granularity;
   bool use_sum_bvops;
   bool lazy;
+  std::string solver;
 
   Options()
   {
     granularity = 1;
     use_sum_bvops = true;
     lazy = false;
+    solver = "cvc4";
   }
 };
 

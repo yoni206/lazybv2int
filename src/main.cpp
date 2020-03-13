@@ -1,5 +1,8 @@
+#include <assert.h>
+
 #include "opts.h"
 #include "smt-switch/cvc4_factory.h"
+#include "smt-switch/msat_factory.h"
 #include "smtlibsolver.h"
 
 using namespace lbv2i;
@@ -31,9 +34,18 @@ int main(int argc, char ** argv)
     }
   }
 
-  smt::SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
-  underlying_solver->set_opt("nl-ext-tplanes", "true");
+  smt::SmtSolver underlying_solver;
+  if (opts.solver == "cvc4") {
+    underlying_solver = smt::CVC4SolverFactory::create();
+    underlying_solver->set_opt("nl-ext-tplanes", "true");
+  } else if (opts.solver == "msat") {
+    underlying_solver = smt::MsatSolverFactory::create();
+  } else {
+    assert(false);
+  }
+
   LBV2ISolver solver = LBV2ISolver(underlying_solver, opts.lazy);
   solver.run(filename);
+
   return 0;
 }
