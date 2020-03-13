@@ -31,13 +31,15 @@ static void get_fbv_args(const Term & f,
                          Term & b)
 {
   TermIter it = f->begin();
-  const Term & tmp = *it;
+  ++it;// first child is the function name
 
+  const Term & tmp = *it;
   assert(tmp->is_value());
   bv_width = tmp->to_int();
-  ++it;
 
+  ++it;
   a = *it;
+
   ++it;
   b = *it;
 }
