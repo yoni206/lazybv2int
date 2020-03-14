@@ -355,6 +355,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
         "sigma_" + op.to_string() + "_" + to_string(sigma_vars_.size());
     Term sigma = solver_->make_symbol(name, intsort);
     sigma_vars_.push_back(sigma);
+    range_assertions_.push_back(make_range_constraint(sigma, bv_width));
 
     Term block;
     Term sigma_i;
