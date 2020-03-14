@@ -364,8 +364,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
       // now extract the corresponding bit of sigma
       // ((_ extract i i) sigma) is sigma / 2^i mod 2
       sigma_i = solver_->make_term(IntDiv, sigma, pow2(i));
-      sigma_i =
-          solver_->make_term(Mod, sigma_i, solver_->make_term(2, intsort));
+      sigma_i = gen_mod(sigma_i, solver_->make_term(2, intsort));
       // now we assert that the two are equal
       solver_->assert_formula(solver_->make_term(Equal, sigma_i, block));
     }
