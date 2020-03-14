@@ -76,7 +76,8 @@ void BV2Int::pop()
 Term BV2Int::gen_mod(Term a, Term b)
 {
   //return solver_->make_term(Mod, a, b);
-  ///** old, complicated
+
+  /** old, complicated
   string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
   Term sigma0 = solver_->make_symbol(name0, int_sort_);
   sigma_vars_.push_back(sigma0);
@@ -97,7 +98,22 @@ Term BV2Int::gen_mod(Term a, Term b)
   range_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
   range_assertions_.push_back(constraint);
   return sigma0;
-  //*/
+  */
+
+  // another implementation without extra variables
+  Term a_div_b = gen_intdiv(a, b);
+  return solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
+}
+
+Term BV2Int::gen_intdiv(Term a, Term b)
+{
+  // this is specific intdiv
+  // it assumes b to be positive
+  if (b == solver_->make_term(string("1"), int_sort_)) {
+    return a;
+  }
+  Term div = solver_->make_term(Div, a, b);
+  return solver_->make_term(To_Int, div);
 }
 
 WalkerStepResult BV2Int::visit_term(Term & t)
@@ -145,7 +161,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         cache_[t] = res;
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term div = solver_->make_term(IntDiv, cached_children);
+        Term div = gen_intdiv(cached_children[0], cached_children[1]);
         Term condition =
             solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
@@ -183,9 +199,14 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
 
-        Term div = solver_->make_term(IntDiv, cached_children[0], pow2(lower));
-        uint64_t interval = upper - lower;
-        Term res = solver_->make_term(Mod, div, pow2(interval + 1));
+        Term div = lower > 0 ? gen_intdiv(cached_children[0], pow2(lower))
+          : cached_children[0];
+        uint64_t interval = upper - lower + 1;
+        // this is the only place where we are using the solver Mod operator
+        // (not our own encoding). If we use our encoding one test benchmark
+        // 'bitvec0.delta01.smtv1.smt2' is not solved.
+        Term res = solver_->make_term(Mod, div, pow2(interval));
+
         cache_[t] = res;
       } else if (op.prim_op == BVUlt) {
         Term res = solver_->make_term(Lt, cached_children);
@@ -363,7 +384,7 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
       block = gen_block(op, cached_children, i, block_size);
       // now extract the corresponding bit of sigma
       // ((_ extract i i) sigma) is sigma / 2^i mod 2
-      sigma_i = solver_->make_term(IntDiv, sigma, pow2(i));
+      sigma_i = gen_intdiv(sigma, pow2(i));
       sigma_i = gen_mod(sigma_i, solver_->make_term(2, intsort));
       // now we assert that the two are equal
       solver_->assert_formula(solver_->make_term(Equal, sigma_i, block));
@@ -381,13 +402,11 @@ Term BV2Int::gen_block(Op op,
                        uint64_t i,
                        uint64_t block_size)
 {
-  Term left_a =
-      solver_->make_term(IntDiv, cached_children[0], pow2(i * block_size));
+  Term left_a = gen_intdiv(cached_children[0], pow2(i * block_size));
   Term left_b = pow2(block_size);
   Term left = gen_mod(left_a, left_b);
 
-  Term right_a =
-      solver_->make_term(IntDiv, cached_children[1], pow2(i * block_size));
+  Term right_a = gen_intdiv(cached_children[1], pow2(i * block_size));
   Term right_b = pow2(block_size);
   Term right = gen_mod(right_a, right_b);
   return gen_bitwise_int(op, block_size, left, right);
@@ -518,7 +537,7 @@ Term BV2Int::handle_shift_eager(Term t,
       div_mul_term = solver_->make_term(Mult, x, pow2(i));
     } else {
       assert(op == BVLshr);
-      div_mul_term = solver_->make_term(IntDiv, x, pow2(i));
+      div_mul_term = gen_intdiv(x, pow2(i));
     }
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, div_mul_term, ite);
