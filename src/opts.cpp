@@ -24,6 +24,10 @@ void set_opt(string option)
     opts.use_sum_bvops = false;
   } else if (option == "--lazy") {
     opts.lazy = true;
+  } else if (option == "--print-values") {
+    opts.print_values = true;
+  } else if (option == "--print-sigma-values") {
+    opts.print_sigma_values = true;
   } else if (option == "--cvc4" || option == "--msat") {
     opts.solver = option.erase(0, 2);
   } else {
@@ -34,14 +38,17 @@ void set_opt(string option)
 
 void help_msg(string bin_name)
 {
-  cout << "usage: " << bin_name << " [options] <filename>"
-       << "\noptions:"
-       << "\n\t--granularity=[1-8] : sets granularity of int blocks"
-       << "\n\t--use-boolcomp-bvops : use comparisons between integer "
-          "representation of bits instead of a sum"
-       << "\n\t--lazy : lazily handle bitwise operators "
-       << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "
-       << "\n\t--msat : use mathsat as the underlying solver " << endl;
+  cout
+      << "usage: " << bin_name << " [options] <filename>"
+      << "\noptions:"
+      << "\n\t--granularity=[1-8] : sets granularity of int blocks"
+      << "\n\t--use-boolcomp-bvops : use comparisons between integer "
+         "representation of bits instead of a sum"
+      << "\n\t--lazy : lazily handle bitwise operators "
+      << "\nt\t--print-values : print values of integer variables"
+      << "\n\t--print-sigma-values : print values of introduced sigma variables"
+      << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "
+      << "\n\t--msat : use mathsat as the underlying solver " << endl;
 }
 
 }  // namespace lbv2i

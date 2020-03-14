@@ -26,6 +26,9 @@ class BV2Int : smt::IdentityWalker
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
+  const smt::TermVec & get_sigma_vars() const { return sigma_vars_; }
+  const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
+
  private:
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(smt::Term var, uint64_t bv_width);
@@ -58,6 +61,7 @@ class BV2Int : smt::IdentityWalker
 
   smt::TermVec range_assertions_;
   smt::TermVec sigma_vars_;
+  smt::UnorderedTermSet int_vars_;  ///< integer versions of bv vars
   // list of abstract (lazy_bv_op) terms
   smt::TermVec fterms_;
 

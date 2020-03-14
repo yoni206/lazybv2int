@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "opts.h"
 #include "smtlibmsatparser.h"
 
 using namespace smt;
@@ -17,6 +18,9 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       solver_(solver),
       lazy_(lazy)
 {
+  if (opts.print_values || opts.print_sigma_values) {
+    solver_->set_opt("produce-models", "true");
+  }
 }
 
 LBV2ISolver::~LBV2ISolver()
@@ -359,6 +363,19 @@ void LBV2ISolver::run(string filename)
   assert_formula(assert_term);
   Result res = check_sat();
   cout << res << endl;
+
+  if (res.is_sat()) {
+    if (opts.print_values) {
+      for (auto s : bv2int_->get_int_vars()) {
+        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+      }
+    }
+    if (opts.print_sigma_values) {
+      for (auto s : bv2int_->get_sigma_vars()) {
+        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+      }
+    }
+  }
 }
 
 }  // namespace lbv2i

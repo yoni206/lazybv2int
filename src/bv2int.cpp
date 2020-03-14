@@ -217,6 +217,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           uint64_t bv_width = t->get_sort()->get_width();
           string name = "bv2int_" + t->to_string();
           Term res = solver_->make_symbol(name, int_sort_);
+          int_vars_.insert(res);
 
           range_assertions_.push_back(make_range_constraint(res, bv_width));
           cache_[t] = res;
