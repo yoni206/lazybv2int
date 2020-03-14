@@ -55,7 +55,7 @@ class BV2Int : smt::IdentityWalker
                       uint64_t i,
                       uint64_t block_size);
   smt::Term gen_bitwise_int(smt::Op op, uint64_t k, smt::Term a, smt::Term b);
-  smt::Term gen_mod(uint64_t bv_width, smt::Term a, smt::Term b);
+  smt::Term gen_mod(smt::Term a, smt::Term b);
 
   bool is_bw_op(smt::Op op);
 

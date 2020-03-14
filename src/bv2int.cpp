@@ -73,7 +73,7 @@ void BV2Int::pop()
   stack_.pop_back();
 }
 
-Term BV2Int::gen_mod(uint64_t bv_width, Term a, Term b)
+Term BV2Int::gen_mod(Term a, Term b)
 {
   //return solver_->make_term(Mod, a, b);
   ///** old, complicated
@@ -152,7 +152,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         cache_[t] = res;
       } else if (op.prim_op == BVUrem) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term sigma0 = gen_mod(bv_width, cached_children[0], cached_children[1]);
+        Term sigma0 = gen_mod(cached_children[0], cached_children[1]);
         cache_[t] = sigma0;
       } else if (op.prim_op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -385,12 +385,12 @@ Term BV2Int::gen_block(Op op,
   Term left_a =
       solver_->make_term(IntDiv, cached_children[0], pow2(i * block_size));
   Term left_b = pow2(block_size);
-  Term left = gen_mod(block_size, left_a, left_b);
+  Term left = gen_mod(left_a, left_b);
 
   Term right_a =
       solver_->make_term(IntDiv, cached_children[1], pow2(i * block_size));
   Term right_b = pow2(block_size);
-  Term right = gen_mod(block_size, right_a, right_b);
+  Term right = gen_mod(right_a, right_b);
   return gen_bitwise_int(op, block_size, left, right);
 }
 
@@ -526,7 +526,7 @@ Term BV2Int::handle_shift_eager(Term t,
   }
   Term res =  ite;
   if (op.prim_op == BVShl) {
-    res = gen_mod(bv_width, res, pow2(bv_width));
+    res = gen_mod(res, pow2(bv_width));
   }
   return res;
 }
