@@ -171,8 +171,8 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         cache_[t] = res;
       } else if (op.prim_op == BVUrem) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term sigma0 = gen_mod(cached_children[0], cached_children[1]);
-        cache_[t] = sigma0;
+        Term res = gen_mod(cached_children[0], cached_children[1]);
+        cache_[t] = res;
       } else if (op.prim_op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term is_zero = solver_->make_term(Equal, cached_children[0], int_zero_);
