@@ -31,7 +31,7 @@ static void get_fbv_args(const Term & f,
                          Term & b)
 {
   TermIter it = f->begin();
-  ++it;// first child is the function name
+  ++it;  // first child is the function name
 
   const Term & tmp = *it;
   assert(tmp->is_value());

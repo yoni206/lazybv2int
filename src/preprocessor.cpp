@@ -125,17 +125,17 @@ const std::map<
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVNand;
           } },
-        
+
         { NorEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVNor;
           } },
-        
+
         { XnorEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVXnor;
           } },
-        
+
         { ShlByConst,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVShl && (children[1]->is_value());

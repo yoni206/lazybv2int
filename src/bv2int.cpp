@@ -78,7 +78,7 @@ Term BV2Int::gen_mod(Term a, Term b)
   if (b == solver_->make_term(string("1"), int_sort_)) {
     return a;
   }
-  //return solver_->make_term(Mod, a, b);
+  // return solver_->make_term(Mod, a, b);
 
   /** old, complicated
   string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
@@ -191,7 +191,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         for (auto c : t) {
           original_children.push_back(c);
         }
-        //the extra width is that of the second argument
+        // the extra width is that of the second argument
         uint64_t extra_width = original_children[1]->get_sort()->get_width();
         Term left =
             solver_->make_term(Mult, cached_children[0], pow2(extra_width));
@@ -203,7 +203,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t lower = op.idx1;
 
         Term div = lower > 0 ? gen_intdiv(cached_children[0], pow2(lower))
-          : cached_children[0];
+                             : cached_children[0];
         uint64_t interval = upper - lower + 1;
         // this is the only place where we are using the solver Mod operator
         // (not our own encoding). If we use our encoding one test benchmark
@@ -274,8 +274,8 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
-//  cout << "panda t " << t << endl;
-//  cout << "panda res " << res << endl;
+  //  cout << "panda t " << t << endl;
+  //  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
@@ -545,7 +545,7 @@ Term BV2Int::handle_shift_eager(Term t,
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, div_mul_term, ite);
   }
-  Term res =  ite;
+  Term res = ite;
   if (op.prim_op == BVShl) {
     res = gen_mod(res, pow2(bv_width));
   }
