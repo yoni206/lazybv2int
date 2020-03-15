@@ -8,28 +8,44 @@ SMTLIB_FILES_DIR=$MY_DIR/smtlib_files
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
   cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
-  lazy_res=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f`
+  lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f`
+  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy $f`
+  lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f`
 
-#soundness issues 1
-if [ "$cvc4_res" = "sat" -a "$lazy_res" = "unsat" ] 
+  #consistency issues 1
+  if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" ]
+  then
+    echo $f FAIL -- eager vs. lazy
+  fi
+
+  #consistency issue 2
+  if [ "$lbv2int_res_eager" != "$lbv2int_res_eager_boolcomp" ]
+  then
+    echo $f FAIL -- eager vs. bool_comp
+  fi
+
+#  #consistency issue 2
+#  if [ "$lbv2int_res_lazy" != "$lbv2int_res_eager_boolcomp" ]
+#  then
+#    echo $f FAIL -- lazy vs. bool_comp
+#  fi
+
+  #soundness issues 1
+  if [ "$cvc4_res" = "sat" -a "$lbv2int_res_eager" = "unsat" ] 
   then
     echo $f FAIL
-#  else
-#    echo $f PASS
   fi
   
-#soundness issues 1
-  if [ "$cvc4_res" = "unsat" -a "$lazy_res" = "sat" ] 
+  #soundness issues 1
+  if [ "$cvc4_res" = "unsat" -a "$lbv2int_res_eager" = "sat" ] 
   then
     echo $f FAIL
-#  else
-#    echo $f PASS
   fi
 
-#Assertion failures, run-time exceptions, etc.
-  if [ "$lazy_res" != "sat" -a "$lazy_res" != "unsat" ]
+  #Assertion failures, run-time exceptions, etc.
+  if [ "$lbv2int_res_eager" != "sat" -a "$lbv2int_res_eager" != "unsat" ]
   then
-    echo $f $lazy_res FAIL
+    echo $f $lbv2int_res_eager FAIL
   fi
 done
 echo If you do not see any FAIL above, then you are good.

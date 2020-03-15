@@ -38,6 +38,7 @@ int main(int argc, char ** argv)
   if (opts.solver == "cvc4") {
     underlying_solver = smt::CVC4SolverFactory::create();
     underlying_solver->set_opt("nl-ext-tplanes", "true");
+    underlying_solver->set_opt("produce-models", "true");
   } else if (opts.solver == "msat") {
     underlying_solver = smt::MsatSolverFactory::create();
   } else {
