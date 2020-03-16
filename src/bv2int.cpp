@@ -333,7 +333,7 @@ bool BV2Int::is_bw_op(Op op)
 
 Term BV2Int::handle_bw_op(Term t, uint64_t bv_width, TermVec cached_children)
 {
-  if (lazy_bw_) {
+  if (lazy_bw_ && !is_shift_op(t->get_op())) {
     return handle_bw_op_lazy(t, bv_width, cached_children);
   } else {
     return handle_bw_op_eager(t, bv_width, cached_children);
