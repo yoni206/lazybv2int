@@ -205,15 +205,11 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
-
         Term div = lower > 0 ? gen_intdiv(cached_children[0], pow2(lower))
                              : cached_children[0];
         uint64_t interval = upper - lower + 1;
-        // this is the only place where we are using the solver Mod operator
-        // (not our own encoding). If we use our encoding one test benchmark
-        // 'bitvec0.delta01.smtv1.smt2' is not solved.
-        Term res = solver_->make_term(Mod, div, pow2(interval));
-
+        Term pwinterval = pow2(interval);
+        Term res = gen_mod(div, pwinterval);
         cache_[t] = res;
       } else if (op.prim_op == BVUlt) {
         Term res = solver_->make_term(Lt, cached_children);

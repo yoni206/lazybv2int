@@ -4,13 +4,15 @@ MY_DIR=`realpath $MY_DIR`
 CVC4_PATH=$MY_DIR/../deps/smt-switch/deps/CVC4/build/bin/cvc4
 LAZY_PATH=$MY_DIR/../build/lazybv2int
 SMTLIB_FILES_DIR=$MY_DIR/smtlib_files
+#SMTLIB_FILES_DIR=$MY_DIR/build/tmp
 
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
+  echo $f
   cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
-  lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f`
-  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy $f`
-  lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f`
+  lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f --msat`
+  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy $f --msat`
+  lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
 
   #consistency issues 1
   if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" ]
@@ -33,19 +35,19 @@ do
   #soundness issues 1
   if [ "$cvc4_res" = "sat" -a "$lbv2int_res_eager" = "unsat" ] 
   then
-    echo $f FAIL
+    echo $f FAIL -- saying unsat instead of sat
   fi
   
   #soundness issues 1
   if [ "$cvc4_res" = "unsat" -a "$lbv2int_res_eager" = "sat" ] 
   then
-    echo $f FAIL
+    echo $f FAIL -- saying sat instead of unsat
   fi
 
   #Assertion failures, run-time exceptions, etc.
   if [ "$lbv2int_res_eager" != "sat" -a "$lbv2int_res_eager" != "unsat" ]
   then
-    echo $f $lbv2int_res_eager FAIL
+    echo $f $lbv2int_res_eager FAIL -- not saying sat nor unsat. 
   fi
 done
 echo If you do not see any FAIL above, then you are good.
