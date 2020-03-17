@@ -38,7 +38,7 @@ class BV2Int : smt::IdentityWalker
   smt::Term int_max(uint64_t k);
   smt::Term handle_bw_op(smt::Term t,
                          uint64_t bv_width,
-                         smt::TermVec cached_children);
+                         const smt::TermVec & cached_children);
   smt::Term handle_bw_op_lazy(smt::Term t,
                               uint64_t bv_width,
                               const smt::TermVec & cached_children);
