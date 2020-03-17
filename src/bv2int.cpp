@@ -478,6 +478,7 @@ Term BV2Int::handle_bw_op_lazy(Term t,
                                const TermVec & cached_children)
 {
   Op op = t->get_op();
+  assert(cached_children.size() == 2);
   Term x = cached_children[0];
   Term y = cached_children[1];
   Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
@@ -486,7 +487,7 @@ Term BV2Int::handle_bw_op_lazy(Term t,
   if (x->hash() > y->hash()) {
     Term tmp = x;
     x = y;
-    y = x;
+    y = tmp;
   }
 
   Term res;
