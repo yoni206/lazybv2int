@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fstream>
 
 #include "opts.h"
 #include "smt-switch/cvc4_factory.h"
@@ -46,6 +47,12 @@ int main(int argc, char ** argv)
   }
 
   LBV2ISolver solver = LBV2ISolver(underlying_solver, opts.lazy);
+  ifstream ifile(filename);
+  if (!ifile) {
+    cout << "file does not exist" << endl;
+    return 1;
+  }
+
   solver.run(filename);
 
   return 0;
