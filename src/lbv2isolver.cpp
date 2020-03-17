@@ -44,18 +44,27 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 
 Result LBV2ISolver::solve()
 {
+  if (!lazy_) {
+    return solver_->check_sat();
+  }
+
+  // lazy version
   TermVec lemmas;
 
   while (true) {
     Result r = solver_->check_sat();
 
-    if (!lazy_ || r.is_unsat()) {
+    if (r.is_unsat()) {
       return r;
     }
 
     lemmas.clear();
     if (!refine(lemmas)) {
-      return r;
+      if (bv2int_->fbv_terms().size() > 0) {
+        return Result(ResultType::UNKNOWN, "Refinement Failure");
+      } else {
+        return r;
+      }
     }
 
     for (auto l : lemmas) {
