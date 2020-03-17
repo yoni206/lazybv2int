@@ -302,7 +302,7 @@ inline Term BV2Int::pow2(uint64_t k)
   return solver_->make_term(pow_bv_width_str, int_sort_);
 }
 
-Term BV2Int::make_range_constraint(Term &var, uint64_t bv_width)
+Term BV2Int::make_range_constraint(const Term & var, uint64_t bv_width)
 {
   // returns 0<= var < 2^bv_width as a constraint
   Term zero = solver_->make_term("0", int_sort_);
@@ -312,7 +312,7 @@ Term BV2Int::make_range_constraint(Term &var, uint64_t bv_width)
   return solver_->make_term(And, l, u);
 }
 
-Term BV2Int::make_bvnot_term(Term &x, uint64_t k)
+Term BV2Int::make_bvnot_term(const Term & x, uint64_t k)
 {
   return solver_->make_term(Minus, int_max(k), x);
 }
@@ -339,7 +339,7 @@ bool BV2Int::is_bw_op(Op op)
           || op == BVNor || op == BVXnor || op == BVLshr || op == BVShl);
 }
 
-Term BV2Int::handle_bw_op(Term &t,
+Term BV2Int::handle_bw_op(const Term & t,
                           uint64_t bv_width,
                           const TermVec & cached_children)
 {
@@ -350,7 +350,7 @@ Term BV2Int::handle_bw_op(Term &t,
   }
 }
 
-Term BV2Int::handle_boolean_bw_eager(Term &t,
+Term BV2Int::handle_boolean_bw_eager(const Term & t,
                                      uint64_t bv_width,
                                      const TermVec & cached_children)
 {
@@ -427,7 +427,7 @@ Term BV2Int::gen_block(Op op,
   return gen_bitwise_int(op, block_size, left, right);
 }
 
-Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term &x, Term &y)
+Term BV2Int::gen_bitwise_int(Op op, uint64_t k, const Term & x, const Term & y)
 {
   if (op.prim_op == BVAnd) {
     switch (k) {
@@ -486,7 +486,7 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, Term &x, Term &y)
   assert(false);
 }
 
-Term BV2Int::handle_bw_op_lazy(Term &t,
+Term BV2Int::handle_bw_op_lazy(const Term & t,
                                uint64_t bv_width,
                                const TermVec & cached_children)
 {
@@ -522,7 +522,7 @@ Term BV2Int::handle_bw_op_lazy(Term &t,
   return res;
 }
 
-Term BV2Int::handle_bw_op_eager(Term &t,
+Term BV2Int::handle_bw_op_eager(const Term & t,
                                 uint64_t bv_width,
                                 const TermVec & cached_children)
 {
@@ -535,7 +535,7 @@ Term BV2Int::handle_bw_op_eager(Term &t,
 
 bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
-Term BV2Int::handle_shift_eager(Term &t,
+Term BV2Int::handle_shift_eager(const Term & t,
                                 uint64_t bv_width,
                                 const TermVec & cached_children)
 {
