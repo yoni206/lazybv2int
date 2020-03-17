@@ -8,14 +8,13 @@ SMTLIB_FILES_DIR=$MY_DIR/smtlib_files
 
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
-  echo $f
   cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
   lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f --msat`
   lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy $f --msat`
   lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
 
   #consistency issues 1
-  if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" ]
+  if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" -a "$lbv2int_res_lazy" != "unknown" ]
   then
     echo $f FAIL -- eager vs. lazy
   fi
@@ -26,8 +25,8 @@ do
     echo $f FAIL -- eager vs. bool_comp
   fi
 
-  #consistency issue 2
-  if [ "$lbv2int_res_lazy" != "$lbv2int_res_eager_boolcomp" ]
+  #consistency issue 3
+  if [ "$lbv2int_res_lazy" != "$lbv2int_res_eager_boolcomp" -a "$lbv2int_res_lazy" != "unknown" ]
   then
     echo $f FAIL -- lazy vs. bool_comp
   fi
