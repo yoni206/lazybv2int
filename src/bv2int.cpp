@@ -53,6 +53,8 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
   fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
+  fbvlshift_ = solver_->make_symbol("fbv_lsfhit", fbv_sort);
+  fbvrshift_ = solver_->make_symbol("fbv_rsfhit", fbv_sort);
 }
 
 BV2Int::~BV2Int() {}

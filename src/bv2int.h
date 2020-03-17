@@ -23,6 +23,8 @@ class BV2Int : smt::IdentityWalker
   const smt::Term & fbv_and() const { return fbvand_; }
   const smt::Term & fbv_or() const { return fbvor_; }
   const smt::Term & fbv_xor() const { return fbvxor_; }
+  const smt::Term & fbv_lshift() const { return fbvlshift_; }
+  const smt::Term & fbv_rshift() const { return fbvrshift_; }
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
@@ -84,5 +86,7 @@ class BV2Int : smt::IdentityWalker
   smt::Term fbvand_;
   smt::Term fbvor_;
   smt::Term fbvxor_;
+  smt::Term fbvlshift_;
+  smt::Term fbvrshift_;
 };
 }  // namespace lbv2i
