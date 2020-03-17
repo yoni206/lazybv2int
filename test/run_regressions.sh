@@ -24,11 +24,11 @@ do
     echo $f FAIL -- eager vs. bool_comp
   fi
 
-#  #consistency issue 2
-#  if [ "$lbv2int_res_lazy" != "$lbv2int_res_eager_boolcomp" ]
-#  then
-#    echo $f FAIL -- lazy vs. bool_comp
-#  fi
+  #consistency issue 2
+  if [ "$lbv2int_res_lazy" != "$lbv2int_res_eager_boolcomp" ]
+  then
+    echo $f FAIL -- lazy vs. bool_comp
+  fi
 
   #soundness issues 1
   if [ "$cvc4_res" = "sat" -a "$lbv2int_res_eager" = "unsat" ] 
