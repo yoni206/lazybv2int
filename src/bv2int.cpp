@@ -105,16 +105,20 @@ Term BV2Int::gen_mod(Term a, Term b)
 
   // another implementation without extra variables
   Term a_div_b = gen_intdiv(a, b);
-  return solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
+  Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
+  range_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
+  return res;
 }
 
 Term BV2Int::gen_intdiv(Term a, Term b)
 {
   // this is specific intdiv
   // it assumes b to be positive
-  if (b == solver_->make_term(string("1"), int_sort_)) {
+  Term one = solver_->make_term(string("1"), int_sort_);
+  if (b == one) {
     return a;
   }
+
   Term div = solver_->make_term(Div, a, b);
   return solver_->make_term(To_Int, div);
 }
