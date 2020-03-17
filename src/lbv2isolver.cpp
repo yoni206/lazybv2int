@@ -371,7 +371,7 @@ void LBV2ISolver::run(string filename)
       }
     }
     if (opts.print_sigma_values) {
-      for (auto s : bv2int_->get_sigma_vars()) {
+      for (auto s : bv2int_->get_extra_vars()) {
         cout << "\t" << s << " := " << solver_->get_value(s) << endl;
       }
     }

@@ -26,7 +26,7 @@ class BV2Int : smt::IdentityWalker
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
-  const smt::TermVec & get_sigma_vars() const { return sigma_vars_; }
+  const smt::TermVec & get_extra_vars() const { return extra_vars_; }
   const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
 
  private:
@@ -60,8 +60,8 @@ class BV2Int : smt::IdentityWalker
 
   bool is_bw_op(smt::Op op);
 
-  smt::TermVec range_assertions_;
-  smt::TermVec sigma_vars_;
+  smt::TermVec extra_assertions_;
+  smt::TermVec extra_vars_;
   smt::UnorderedTermSet int_vars_;  ///< integer versions of bv vars
   // list of abstract (lazy_bv_op) terms
   smt::TermVec fterms_;

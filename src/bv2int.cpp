@@ -60,15 +60,15 @@ BV2Int::~BV2Int() {}
 void BV2Int::push()
 {
   stack_.push_back(stack_entry_t(
-      cache_, range_assertions_.size(), sigma_vars_.size(), fterms_.size()));
+      cache_, extra_assertions_.size(), extra_vars_.size(), fterms_.size()));
 }
 
 void BV2Int::pop()
 {
   stack_entry_t e = stack_.back();
   cache_ = std::get<0>(e);
-  range_assertions_.resize(std::get<1>(e));
-  sigma_vars_.resize(std::get<2>(e));
+  extra_assertions_.resize(std::get<1>(e));
+  extra_vars_.resize(std::get<2>(e));
   fterms_.resize(std::get<3>(e));
   stack_.pop_back();
 }
@@ -81,12 +81,12 @@ Term BV2Int::gen_mod(Term a, Term b)
   // return solver_->make_term(Mod, a, b);
 
   /** old, complicated
-  string name0 = "sigma_mod_" + to_string(sigma_vars_.size());
+  string name0 = "sigma_mod_" + to_string(extra_vars_.size());
   Term sigma0 = solver_->make_symbol(name0, int_sort_);
-  sigma_vars_.push_back(sigma0);
-  string name1 = "sigma_mod_" + to_string(sigma_vars_.size());
+  extra_vars_.push_back(sigma0);
+  string name1 = "sigma_mod_" + to_string(extra_vars_.size());
   Term sigma1 = solver_->make_symbol(name1, int_sort_);
-  sigma_vars_.push_back(sigma1);
+  extra_vars_.push_back(sigma1);
   // sigma0 = a mod b
   // a = b*sigma1 + sigma0
   // AI: abs(sigma0) < abs(b)
@@ -96,17 +96,17 @@ Term BV2Int::gen_mod(Term a, Term b)
   Term right = solver_->make_term(Plus, mul, sigma0);
   Term constraint = solver_->make_term(Equal, left, right);
   Term zero = solver_->make_term("0", int_sort_);
-  range_assertions_.push_back(solver_->make_term(Ge, sigma0, zero));
-  range_assertions_.push_back(solver_->make_term(Ge, sigma1, zero));
-  range_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
-  range_assertions_.push_back(constraint);
+  extra_assertions_.push_back(solver_->make_term(Ge, sigma0, zero));
+  extra_assertions_.push_back(solver_->make_term(Ge, sigma1, zero));
+  extra_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
+  extra_assertions_.push_back(constraint);
   return sigma0;
   */
 
   // another implementation without extra variables
   Term a_div_b = gen_intdiv(a, b);
   Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
-  range_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
+  extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
   return res;
 }
 
@@ -144,27 +144,27 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 
       else if (op.prim_op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_add_" + to_string(sigma_vars_.size());
+        string name = "sigma_add_" + to_string(extra_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
-        sigma_vars_.push_back(sigma);
+        extra_vars_.push_back(sigma);
         Term plus = solver_->make_term(Plus, cached_children);
         Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
         Term res = solver_->make_term(Minus, plus, multSig);
-        range_assertions_.push_back(make_range_constraint(sigma, 1));
-        range_assertions_.push_back(make_range_constraint(res, bv_width));
+        extra_assertions_.push_back(make_range_constraint(sigma, 1));
+        extra_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
       } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_mul_" + to_string(sigma_vars_.size());
+        string name = "sigma_mul_" + to_string(extra_vars_.size());
         Term sigma = solver_->make_symbol(name, int_sort_);
-        sigma_vars_.push_back(sigma);
+        extra_vars_.push_back(sigma);
         Term mul = solver_->make_term(Mult, cached_children);
         Term multSig = solver_->make_term(Mult, sigma, pow2(bv_width));
         Term res = solver_->make_term(Minus, mul, multSig);
 
-        range_assertions_.push_back(make_range_constraint(sigma, bv_width));
-        range_assertions_.push_back(make_range_constraint(res, bv_width));
+        extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
+        extra_assertions_.push_back(make_range_constraint(res, bv_width));
         cache_[t] = res;
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -243,7 +243,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           Term res = solver_->make_symbol(name, int_sort_);
           int_vars_.insert(res);
 
-          range_assertions_.push_back(make_range_constraint(res, bv_width));
+          extra_assertions_.push_back(make_range_constraint(res, bv_width));
           cache_[t] = res;
         } else {
           assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
@@ -282,8 +282,8 @@ Term BV2Int::convert(Term & t)
     size_t r_begin_idx = std::get<1>(e);
   }
 
-  for (size_t i = r_begin_idx; i < range_assertions_.size(); ++i) {
-    res = solver_->make_term(And, res, range_assertions_[i]);
+  for (size_t i = r_begin_idx; i < extra_assertions_.size(); ++i) {
+    res = solver_->make_term(And, res, extra_assertions_[i]);
   }
 
   return res;
@@ -372,10 +372,10 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
     // and assert bvand_x_y[i] = min(x[i], y[i]) for each i up to width-1
     // using division and mod to extract bits
     string name =
-        "sigma_" + op.to_string() + "_" + to_string(sigma_vars_.size());
+        "sigma_" + op.to_string() + "_" + to_string(extra_vars_.size());
     Term sigma = solver_->make_symbol(name, intsort);
-    sigma_vars_.push_back(sigma);
-    range_assertions_.push_back(make_range_constraint(sigma, bv_width));
+    extra_vars_.push_back(sigma);
+    extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
 
     uint64_t i, j;
     Term block;
