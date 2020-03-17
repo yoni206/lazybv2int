@@ -365,10 +365,6 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
     }
     return sum;
   } else {
-    // only supporting granularity 1
-    // probably not strictly necessary, but it's simpler
-    assert(granularity_ == 1);
-
     Sort intsort = solver_->make_sort(INT);
 
     // add bitwise equality assertions over integers
@@ -381,16 +377,19 @@ Term BV2Int::handle_boolean_bw_eager(Term t,
     sigma_vars_.push_back(sigma);
     range_assertions_.push_back(make_range_constraint(sigma, bv_width));
 
+    uint64_t i, j;
     Term block;
-    Term sigma_i;
-    for (uint64_t i = 0; i < num_of_blocks; i++) {
-      block = gen_block(op, cached_children, i, block_size);
-      // now extract the corresponding bit of sigma
-      // ((_ extract i i) sigma) is sigma / 2^i mod 2
-      sigma_i = gen_intdiv(sigma, pow2(i));
-      sigma_i = gen_mod(sigma_i, solver_->make_term(2, intsort));
+    Term sigma_ext;
+    for (uint64_t n = 0; n < num_of_blocks; n++) {
+      block = gen_block(op, cached_children, n, block_size);
+      j = n * block_size;
+      i = j + block_size - 1;
+      // now extract the corresponding bits of sigma
+      // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
+      sigma_ext = gen_intdiv(sigma, pow2(j));
+      sigma_ext = gen_mod(sigma_ext, pow2(i - j + 1));
       // now we assert that the two are equal
-      solver_->assert_formula(solver_->make_term(Equal, sigma_i, block));
+      solver_->assert_formula(solver_->make_term(Equal, sigma_ext, block));
     }
 
     // sigma is the new symbol for this bitwise operator
