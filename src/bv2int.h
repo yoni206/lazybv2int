@@ -31,7 +31,11 @@ class BV2Int : smt::IdentityWalker
   const smt::TermVec & get_extra_vars() const { return extra_vars_; }
   const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
 
- private:
+  smt::Term handle_boolean_bw_eager(smt::Op op,
+                                    uint64_t bv_width,
+                                    const smt::TermVec & cached_children);
+
+private:
   smt::Term pow2(uint64_t k);
   smt::Term make_range_constraint(const smt::Term & var, uint64_t bv_width);
   smt::Term make_bvnot_term(const smt::Term & x, uint64_t k);
@@ -48,9 +52,6 @@ class BV2Int : smt::IdentityWalker
   smt::Term handle_shift_eager(const smt::Term & t,
                                uint64_t bv_width,
                                const smt::TermVec & cached_children);
-  smt::Term handle_boolean_bw_eager(const smt::Term & t,
-                                    uint64_t bv_width,
-                                    const smt::TermVec & cached_children);
   bool is_shift_op(smt::Op op);
   smt::Term gen_block(smt::Op op,
                       const smt::TermVec & cached_children,

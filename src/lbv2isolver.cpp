@@ -60,7 +60,7 @@ Result LBV2ISolver::solve()
 
     lemmas.clear();
     if (!refine(lemmas)) {
-      if (bv2int_->fbv_terms().size() > 0) {
+      if (bv2int_->fbv_terms().size() > 0 && !opts.full_refinement) {
         return Result(ResultType::UNKNOWN, "Refinement Failure");
       } else {
         return r;
@@ -208,6 +208,7 @@ void LBV2ISolver::assert_formula(const Term & f) const
 
   // translate
   Term t_f = bv2int_->convert(pre_f);
+  //cout << pre_f << endl << t_f << endl;
   solver_->assert_formula(t_f);
 }
 
@@ -290,6 +291,10 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
     }
   }
 
+  if (opts.full_refinement && outlemmas.size() == n) {
+    refine_final(BVAnd, fterms, outlemmas);
+  }
+
   return outlemmas.size() > n;
 }
 
@@ -341,6 +346,10 @@ bool LBV2ISolver::refine_bvor(const TermVec & fterms, TermVec & outlemmas)
     }
   }
 
+  if (opts.full_refinement && outlemmas.size() == n) {
+    refine_final(BVOr, fterms, outlemmas);
+  }
+
   return outlemmas.size() > n;
 }
 
@@ -358,6 +367,50 @@ bool LBV2ISolver::refine_bvxor(const TermVec & fterms, TermVec & outlemmas)
     }
     if (!found) {
       found = axioms_.check_bvxor_range(f, outlemmas);
+    }
+  }
+
+  if (opts.full_refinement && outlemmas.size() == n) {
+    refine_final(BVXor, fterms, outlemmas);
+  }
+
+  return outlemmas.size() > n;
+}
+
+static void get_fbv_args(const Term & f,
+                         uint64_t & bv_width,
+                         Term & a,
+                         Term & b)
+{
+  TermIter it = f->begin();
+  ++it;  // first child is the function name
+
+  const Term & tmp = *it;
+  assert(tmp->is_value());
+  bv_width = tmp->to_int();
+
+  ++it;
+  a = *it;
+
+  ++it;
+  b = *it;
+}
+
+bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
+{
+  size_t n = outlemmas.size();
+
+  Term false_term = solver_->make_term(false);
+  for (const Term & f : fterms) {
+    Term a, b;
+    uint64_t bv_width;
+    get_fbv_args(f, bv_width, a, b);
+
+    TermVec children = {a, b};
+    Term full_def = bv2int_->handle_boolean_bw_eager(BVAnd, bv_width, children);
+    Term l = solver_->make_term(Equal, f, full_def);
+    if (solver_->get_value(l) == false_term) {
+      outlemmas.push_back(l);
     }
   }
 

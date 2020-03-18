@@ -108,7 +108,7 @@ Term BV2Int::gen_mod(const Term &a, const Term &b)
   // another implementation without extra variables
   Term a_div_b = gen_intdiv(a, b);
   Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
-  extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
+  //extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
   return res;
 }
 
@@ -157,6 +157,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         extra_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
+
       } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_mul_" + to_string(extra_vars_.size());
@@ -167,9 +168,20 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, mul, multSig);
 
-        extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
         extra_assertions_.push_back(make_range_constraint(res, bv_width));
+
+        if (cached_children[0]->is_value() || cached_children[1]->is_value()) {
+          // linear multiplication optimization
+          Term c = cached_children[0]->is_value() ? cached_children[0]
+                                                  : cached_children[1];
+          extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
+          extra_assertions_.push_back(solver_->make_term(Lt, sigma, c));
+        } else {
+          extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
+        }
+
         cache_[t] = res;
+
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term div = gen_intdiv(cached_children[0], cached_children[1]);
@@ -350,7 +362,7 @@ Term BV2Int::handle_bw_op(const Term & t,
   }
 }
 
-Term BV2Int::handle_boolean_bw_eager(const Term & t,
+Term BV2Int::handle_boolean_bw_eager(Op op,
                                      uint64_t bv_width,
                                      const TermVec & cached_children)
 {
@@ -363,7 +375,6 @@ Term BV2Int::handle_boolean_bw_eager(const Term & t,
     block_size = block_size - 1;
   }
   uint64_t num_of_blocks = bv_width / block_size;
-  Op op = t->get_op();
 
   if (opts.use_sum_bvops) {
     Term sum = int_zero_;
@@ -529,7 +540,7 @@ Term BV2Int::handle_bw_op_eager(const Term & t,
   if (is_shift_op(t->get_op())) {
     return handle_shift_eager(t, bv_width, cached_children);
   } else {
-    return handle_boolean_bw_eager(t, bv_width, cached_children);
+    return handle_boolean_bw_eager(t->get_op(), bv_width, cached_children);
   }
 }
 
