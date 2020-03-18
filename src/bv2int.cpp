@@ -157,6 +157,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         extra_assertions_.push_back(make_range_constraint(res, bv_width));
 
         cache_[t] = res;
+
       } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_mul_" + to_string(extra_vars_.size());
@@ -167,9 +168,20 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, mul, multSig);
 
-        extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
         extra_assertions_.push_back(make_range_constraint(res, bv_width));
+
+        if (cached_children[0]->is_value() || cached_children[1]->is_value()) {
+          // linear multiplication optimization
+          Term c = cached_children[0]->is_value() ? cached_children[0]
+                                                  : cached_children[1];
+          extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
+          extra_assertions_.push_back(solver_->make_term(Lt, sigma, c));
+        } else {
+          extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
+        }
+
         cache_[t] = res;
+
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term div = gen_intdiv(cached_children[0], cached_children[1]);
