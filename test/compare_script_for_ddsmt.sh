@@ -1,9 +1,8 @@
 #!/bin/sh
-#minimize difference from cvc4
-MY_DIR="`dirname \"$0\"`"
-MY_DIR=`realpath $MY_DIR`
-CVC4_PATH=$MY_DIR/../deps/smt-switch/deps/CVC4/build/bin/cvc4
-LAZY_PATH=$MY_DIR/../build/lazybv2int
+#Change full paths yourself. I am too lazy for a general script.
+
+CVC4_PATH=/home/yoniz/git/lazybv2int/deps/smt-switch/deps/CVC4/build/bin/cvc4
+LAZY_PATH=/home/yoniz/git/lazybv2int/build/lazybv2int
 f=$1
 
 #store the result of cvc4
