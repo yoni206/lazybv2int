@@ -53,8 +53,8 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
   fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
-  fbvlshift_ = solver_->make_symbol("fbv_lsfhit", fbv_sort);
-  fbvrshift_ = solver_->make_symbol("fbv_rsfhit", fbv_sort);
+  fbvlshift_ = solver_->make_symbol("fbv_lshift", fbv_sort);
+  fbvrshift_ = solver_->make_symbol("fbv_rshift", fbv_sort);
 }
 
 BV2Int::~BV2Int() {}
@@ -549,19 +549,20 @@ Term BV2Int::handle_shift_eager(const Term & t,
   for (uint64_t i = 1; i < bv_width; i++) {
     Term i_term = solver_->make_term(i, int_sort_);
     Term div_mul_term;
+    Term p = pow2(i);
     if (op.prim_op == BVShl) {
-      Term p = pow2(i);
       div_mul_term = solver_->make_term(Mult, x, p);
     } else {
       assert(op == BVLshr);
-      div_mul_term = gen_intdiv(x, pow2(i));
+      div_mul_term = gen_intdiv(x, p);
     }
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, div_mul_term, ite);
   }
   Term res = ite;
   if (op.prim_op == BVShl) {
-    res = gen_mod(res, pow2(bv_width));
+    Term p = pow2(bv_width);
+    res = gen_mod(res, p);
   }
   return res;
 }
