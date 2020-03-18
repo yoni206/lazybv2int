@@ -108,7 +108,7 @@ Term BV2Int::gen_mod(const Term &a, const Term &b)
   // another implementation without extra variables
   Term a_div_b = gen_intdiv(a, b);
   Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
-  extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
+  //extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
   return res;
 }
 
