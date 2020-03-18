@@ -362,7 +362,7 @@ Term BV2Int::handle_bw_op(const Term & t,
   }
 }
 
-Term BV2Int::handle_boolean_bw_eager(const Term & t,
+Term BV2Int::handle_boolean_bw_eager(Op op,
                                      uint64_t bv_width,
                                      const TermVec & cached_children)
 {
@@ -375,7 +375,6 @@ Term BV2Int::handle_boolean_bw_eager(const Term & t,
     block_size = block_size - 1;
   }
   uint64_t num_of_blocks = bv_width / block_size;
-  Op op = t->get_op();
 
   if (opts.use_sum_bvops) {
     Term sum = int_zero_;
@@ -541,7 +540,7 @@ Term BV2Int::handle_bw_op_eager(const Term & t,
   if (is_shift_op(t->get_op())) {
     return handle_shift_eager(t, bv_width, cached_children);
   } else {
-    return handle_boolean_bw_eager(t, bv_width, cached_children);
+    return handle_boolean_bw_eager(t->get_op(), bv_width, cached_children);
   }
 }
 

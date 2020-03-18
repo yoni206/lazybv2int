@@ -48,7 +48,7 @@ class BV2Int : smt::IdentityWalker
   smt::Term handle_shift_eager(const smt::Term & t,
                                uint64_t bv_width,
                                const smt::TermVec & cached_children);
-  smt::Term handle_boolean_bw_eager(const smt::Term & t,
+  smt::Term handle_boolean_bw_eager(smt::Op op,
                                     uint64_t bv_width,
                                     const smt::TermVec & cached_children);
   bool is_shift_op(smt::Op op);
