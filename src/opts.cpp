@@ -24,6 +24,8 @@ void set_opt(string option)
     opts.use_sum_bvops = false;
   } else if (option == "--lazy") {
     opts.lazy = true;
+  } else if (option == "--full-refinement") {
+    opts.full_refinement = true;
   } else if (option == "--print-values") {
     opts.print_values = true;
   } else if (option == "--print-sigma-values") {
@@ -45,6 +47,7 @@ void help_msg(string bin_name)
       << "\n\t--use-boolcomp-bvops : use comparisons between integer "
          "representation of bits instead of a sum"
       << "\n\t--lazy : lazily handle bitwise operators "
+      << "\n\t--full-refinement : fallback to the eager translation if the lazy lemmas fail "
       << "\nt\t--print-values : print values of integer variables"
       << "\n\t--print-sigma-values : print values of introduced sigma variables"
       << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "
