@@ -1,0 +1,8 @@
+(set-logic QF_BV)
+(declare-fun _substvar_242_ () (_ BitVec 32))
+(declare-fun _substvar_612_ () (_ BitVec 32))
+(declare-fun T4_10598 () (_ BitVec 32))
+(declare-fun T4_2354 () (_ BitVec 32))
+(assert (and (= T4_2354 (bvor (_ bv8 32) _substvar_612_)) (= (_ bv143555613 32) _substvar_242_) (= T4_2354 T4_10598) (= _substvar_242_ T4_10598)))
+(check-sat)
+(exit)
