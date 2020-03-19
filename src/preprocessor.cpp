@@ -505,7 +505,6 @@ Term OpEliminator::process(Term t) { return visit(t); }
 
 WalkerStepResult OpEliminator::visit_term(Term & term)
 {
-  cout << "panda " << term->get_op() << endl;
   if (!preorder_) {
     Op op = term->get_op();
     if (op.is_null()) {
@@ -515,14 +514,19 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
 
     TermVec children;
     for (auto tt : term) {
-      cout << "panda tt " << tt << endl;
-      cout << "panda cache[tt] " << cache_.at(tt) << endl;
       children.push_back(cache_.at(tt));
     }
     // rebuild it from cached children before rewriting
-    cout << "panda 1 " << endl;
     Term res = solver_->make_term(term->get_op(), children);
-    cout << "panda 2 " << endl;
+
+    // now we need to update the op and children (in case the solver
+    // rewrote the term internally)
+    op = res->get_op();
+    children.clear();
+    for (auto tt : res)
+    {
+      children.push_back(tt);
+    }
 
     bool fixpoint;
     do {
