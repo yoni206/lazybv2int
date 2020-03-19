@@ -68,12 +68,14 @@ Result LBV2ISolver::solve()
     }
 
     for (auto l : lemmas) {
+      //cout << "<--------> " << endl;
+      //cout << "LAZY LEMMA : " << l << endl;
       solver_->assert_formula(l);
     }
   }
 }
 
-void LBV2ISolver::set_logic(const string logic_name) const
+void LBV2ISolver::set_logic(const string logic_name)
 {
   solver_->set_logic(logic_name);
 }
@@ -208,7 +210,7 @@ void LBV2ISolver::assert_formula(const Term & f) const
 
   // translate
   Term t_f = bv2int_->convert(pre_f);
-  //cout << pre_f << endl << t_f << endl;
+  //cout << t_f << endl;
   solver_->assert_formula(t_f);
 }
 
@@ -437,7 +439,7 @@ void LBV2ISolver::run(string filename)
         cout << "\t" << s << " := " << solver_->get_value(s) << endl;
       }
     }
-  }
+  } 
 }
 
 }  // namespace lbv2i
