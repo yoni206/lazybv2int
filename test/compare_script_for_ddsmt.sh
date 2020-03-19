@@ -1,7 +1,8 @@
 #!/bin/sh
 #Change full paths yourself. I am too lazy for a general script.
 
-CVC4_PATH=/home/yoniz/git/lazybv2int/deps/smt-switch/deps/CVC4/build/bin/cvc4
+#CVC4_PATH=/home/yoniz/git/lazybv2int/deps/smt-switch/deps/CVC4/build/bin/cvc4
+CVC4_PATH=/home/yoniz/CVC4-2019/bin/starexec_run_default
 LAZY_PATH=/home/yoniz/git/lazybv2int/build/lazybv2int
 f=$1
 

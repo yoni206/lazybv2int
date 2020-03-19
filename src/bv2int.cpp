@@ -27,6 +27,21 @@ static string pow2_str(uint64_t k)
   return res.get_str();
 }
 
+static Term evaluate(Op o, TermVec int_children, uint64_t bv_width) {
+
+}
+
+static bool cached_children_are_constants(TermVec children) {
+  bool result = true;
+  for (Term child : children) {
+    if (child->is_value()) {
+      result = false;
+      break;
+    }
+  }
+  return result;
+}
+
 static bool is_simple_op(Op op)
 {
   vector<Op> simple_op = { And,  Or,     Xor,      Not,    Implies, Iff,
@@ -140,7 +155,11 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       Term one = solver_->make_term(string("1"), int_sort_);
 
       // std::cout << "visiting operator: " << op.to_string() << std::endl;
-      if (is_simple_op(op)) {
+      if (cached_children.size() != 0 && cached_children_are_constants(cached_children)) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        cache_t[t] = evaluate(op, cached_children, bv_width);
+      }
+      else if (is_simple_op(op)) {
         cache_[t] = solver_->make_term(op, cached_children);
       }
 
