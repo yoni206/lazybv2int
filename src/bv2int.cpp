@@ -51,11 +51,14 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
 
   Sort fbv_sort = solver_->make_sort(
       FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
+  Sort euclid_sort = solver_->make_sort(
+      FUNCTION, SortVec{int_sort_, int_sort_, int_sort_ }
+      );
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
   fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
-  fbvlshift_ = solver_->make_symbol("fbv_lshift", fbv_sort);
-  fbvrshift_ = solver_->make_symbol("fbv_rshift", fbv_sort);
+  fintdiv_ = solver_->make_symbol("fint_div", euclid_sort);
+  fintmod_ = solver_->make_symbol("fint_mod", euclid_sort);
 }
 
 BV2Int::~BV2Int() {}
@@ -107,9 +110,27 @@ Term BV2Int::gen_mod(const Term &a, const Term &b)
   */
 
   // another implementation without extra variables
-  Term a_div_b = gen_intdiv(a, b);
-  Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
+  //Term a_div_b = gen_intdiv(a, b);
+  //Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
   //extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
+
+
+  TermVec args = { fintmod_, a, b };
+  Term res = solver_->make_term(Apply, args);
+  
+  //Important! We don't really care about div vs. mod.
+  //We only need to store the pair a,b.
+  //A sueful way to do this is always store them under a div.
+  //So, even though we are constructing a mod node,
+  //we are storing a div node.
+  TermVec euclid_args = { fintdiv_, a, b };
+  Term euclid_res = solver_->make_term(APPLY, euclid_args);
+  if (euclid_terms.find(euclid_res) == euclid_terms.end()) {
+    euclid_terms.insert(euclid_res);
+    Term euclid = gen_euclid(a,b);
+    extra_assertions_.push_back(euclid);
+    
+  }
   return res;
 }
 
@@ -121,8 +142,17 @@ Term BV2Int::gen_intdiv(const Term &a, const Term &b)
     return a;
   }
 
-  Term div = solver_->make_term(Div, a, b);
-  return solver_->make_term(To_Int, div);
+ // Term div = solver_->make_term(Div, a, b);
+ // return solver_->make_term(To_Int, div);
+  
+  TermVec args = { fintdiv_, a, b };
+  Term res = solver_->make_term(Apply, args);
+  if (euclid_terms_.find(euclid_res) == euclid_terms_.end()) {
+    euclid_terms.insert(res);
+    Term euclid = gen_euclid(a,b);
+    extra_assertions_.push_back(euclid);
+  }
+  return res;
 }
 
 WalkerStepResult BV2Int::visit_term(Term & t)

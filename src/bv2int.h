@@ -94,5 +94,16 @@ private:
   smt::Term fbvxor_;
   smt::Term fbvlshift_;
   smt::Term fbvrshift_;
+  smt::Term fintdiv_;
+  smt::Term fintmod_;
+
+  //set of terms of the form 
+  //fintdiv_(m,n) or fintmod_(m,n)
+  //For each such term, we should assert euclid's equation:
+  // (=> (distinct n 0)
+  //        (let ((q (div m n)) (r (mod m n)))
+  //          (and (= m (+ (* n q) r))
+  //               (<= 0 r (- (abs n) 1))))))
+  smt::UnorderedTermSet euclid_terms;
 };
 }  // namespace lbv2i
