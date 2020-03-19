@@ -46,6 +46,7 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
 {
   int_sort_ = solver_->make_sort(INT);
   int_zero_ = solver_->make_term(0, int_sort_);
+  int_one_ = solver_->make_term(0, int_sort_);
   granularity_ = opts.granularity;
 
   Sort fbv_sort = solver_->make_sort(
@@ -116,8 +117,7 @@ Term BV2Int::gen_intdiv(const Term &a, const Term &b)
 {
   // this is specific intdiv
   // it assumes b to be positive
-  Term one = solver_->make_term(string("1"), int_sort_);
-  if (b == one) {
+  if (b == int_one_) {
     return a;
   }
 
@@ -135,9 +135,6 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       for (auto c : t) {
         cached_children.push_back(cache_.at(c));
       }
-
-      Term zero = solver_->make_term(string("0"), int_sort_);
-      Term one = solver_->make_term(string("1"), int_sort_);
 
       // std::cout << "visiting operator: " << op.to_string() << std::endl;
       if (is_simple_op(op)) {
@@ -317,8 +314,7 @@ inline Term BV2Int::pow2(uint64_t k)
 Term BV2Int::make_range_constraint(const Term & var, uint64_t bv_width)
 {
   // returns 0<= var < 2^bv_width as a constraint
-  Term zero = solver_->make_term("0", int_sort_);
-  Term l = solver_->make_term(Le, zero, var);
+  Term l = solver_->make_term(Le, int_zero_, var);
   Term p = pow2(bv_width);
   Term u = solver_->make_term(Lt, var, p);
   return solver_->make_term(And, l, u);

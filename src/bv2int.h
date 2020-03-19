@@ -79,6 +79,8 @@ private:
   smt::Sort int_sort_;
 
   smt::Term int_zero_;
+  smt::Term int_one_;
+
 
   // flag that determines if we handle
   // bitwise operators (and/or/shift/...)
