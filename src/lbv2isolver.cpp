@@ -51,19 +51,21 @@ Result LBV2ISolver::solve()
   // lazy version
   TermVec lemmas;
 
+  Result r = Result(ResultType::UNKNOWN);
+
   while (true) {
-    Result r = solver_->check_sat();
+    r = solver_->check_sat();
 
     if (r.is_unsat()) {
-      return r;
+      break;
     }
 
     lemmas.clear();
     if (!refine(lemmas)) {
       if (bv2int_->fbv_terms().size() > 0 && !opts.full_refinement) {
-        return Result(ResultType::UNKNOWN, "Refinement Failure");
+        r = Result(ResultType::UNKNOWN, "Refinement Failure");
       } else {
-        return r;
+        break;
       }
     }
 
@@ -73,6 +75,14 @@ Result LBV2ISolver::solve()
       solver_->assert_formula(l);
     }
   }
+
+  if (opts.solver == "msat") {
+    FILE * f = fopen("tmp.smt2", "w");
+    solver_->dump_smt2(f);
+    fclose(f);
+  }
+
+  return r;
 }
 
 void LBV2ISolver::set_logic(const string logic_name)
