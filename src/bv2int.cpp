@@ -405,8 +405,7 @@ Term BV2Int::int_max(uint64_t k)
 
 bool BV2Int::is_bw_op(Op op)
 {
-  return (op == BVAnd || op == BVOr || op == BVXor || op == BVNand
-          || op == BVNor || op == BVXnor || op == BVLshr || op == BVShl);
+  return (op == BVAnd || op == BVOr || op == BVXor || op == BVLshr || op == BVShl);
 }
 
 Term BV2Int::handle_bw_op(const Term & t,
@@ -525,30 +524,6 @@ Term BV2Int::gen_bitwise_int(Op op, uint64_t k, const Term & x, const Term & y)
       case 3: return int_bvxor_3(x, y, solver_);
       case 4: return int_bvxor_4(x, y, solver_);
       case 5: return int_bvxor_5(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVXnor) {
-    switch (k) {
-      case 1: return int_bvxnor_1(x, y, solver_);
-      case 2: return int_bvxnor_2(x, y, solver_);
-      case 3: return int_bvxnor_3(x, y, solver_);
-      case 4: return int_bvxnor_4(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVNand) {
-    switch (k) {
-      case 1: return int_bvnand_1(x, y, solver_);
-      case 2: return int_bvnand_2(x, y, solver_);
-      case 3: return int_bvnand_3(x, y, solver_);
-      case 4: return int_bvnand_4(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVNor) {
-    switch (k) {
-      case 1: return int_bvnor_1(x, y, solver_);
-      case 2: return int_bvnor_2(x, y, solver_);
-      case 3: return int_bvnor_3(x, y, solver_);
-      case 4: return int_bvnor_4(x, y, solver_);
       default: assert(false);
     }
   }
