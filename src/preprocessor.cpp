@@ -7,6 +7,7 @@
 #include <map>
 
 #include "preprocessor.h"
+#include "gmp_utils.h"
 
 using namespace smt;
 using namespace std;
@@ -168,11 +169,10 @@ const std::map<RewriteRule,
              *           (bvnot (bvlshr (bvnot x) y)))
              */
             size_t size = t->get_sort()->get_width();
-            assert(size > 0 && size <= 64);
             Term x = children[0];
             Term y = children[1];
             Term constant =
-                s->make_term(pow(2, size - 1), s->make_sort(BV, size));
+                s->make_term(utils::pow2_str(size-1), s->make_sort(BV, size));
             Term condition = s->make_term(BVUlt, x, constant);
             Term first = s->make_term(BVLshr, x, y);
             Term not_x = s->make_term(BVNot, x);

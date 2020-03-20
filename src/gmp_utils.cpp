@@ -3,7 +3,7 @@
 using namespace smt;
 using namespace std;
 namespace utils {
-static string pow2_str(uint64_t k)
+string pow2_str(uint64_t k)
 {
   mpz_t base, p;
   mpz_inits(base, p, NULL);
