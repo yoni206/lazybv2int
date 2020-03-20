@@ -61,6 +61,7 @@ private:
                             uint64_t k,
                             const smt::Term & a,
                             const smt::Term & b);
+  smt::Term gen_euclid(smt::Term m, smt::Term n);
   smt::Term gen_mod(const smt::Term &a, const smt::Term &b);
   smt::Term gen_intdiv(const smt::Term &a, const smt::Term &b);
 
@@ -104,6 +105,6 @@ private:
   //        (let ((q (div m n)) (r (mod m n)))
   //          (and (= m (+ (* n q) r))
   //               (<= 0 r (- (abs n) 1))))))
-  smt::UnorderedTermSet euclid_terms;
+  smt::UnorderedTermSet euclid_terms_;
 };
 }  // namespace lbv2i
