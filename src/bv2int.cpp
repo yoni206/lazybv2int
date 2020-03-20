@@ -85,14 +85,13 @@ Term BV2Int::gen_euclid(Term m, Term n) {
   TermVec mod_args = {fintmod_, m, n};
   Term q = solver_->make_term(Apply, div_args);
   Term r = solver_->make_term(Apply, mod_args);
-  //we know that n != 0 whenever we introduce div or mod.
-  //This is an invariant that i hope and believe we maintain :)
   
+  Term ne = solver_->make_term(Distinct, n, int_zero_);
   Term mul = solver_->make_term(Mult, n, q);
   Term plus = solver_->make_term(Plus, mul, r);
   Term eq = solver_->make_term(Equal, m, plus);
   Term le1 = solver_->make_term(Le, int_zero_, r);
-  //we actually know n > 0. All int terms are supposed to be.
+  //we actually know n >= 0. All int terms are supposed to be.
   Term minus = solver_->make_term(Minus, n, int_one_);
   Term le2 = solver_->make_term(Le, r, minus);
   Term le3 = solver_->make_term(Le, int_zero_, q);
@@ -100,7 +99,9 @@ Term BV2Int::gen_euclid(Term m, Term n) {
   Term le = solver_->make_term(And, le1, le2);
   le = solver_->make_term(And, le, le3);
   le = solver_->make_term(And, le, le4);
-  Term res = solver_->make_term(And, eq, le);
+  Term left = ne;
+  Term right = solver_->make_term(And, eq, le); 
+  Term res = solver_->make_term(Implies, left, right);
   return res;
 }
 
