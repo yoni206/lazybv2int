@@ -79,7 +79,7 @@ void BV2Int::pop()
 Term BV2Int::gen_mod(const Term &a, const Term &b)
 {
   if (b == int_one_) {
-    return a;
+    return int_zero_;
   }
   // return solver_->make_term(Mod, a, b);
 
