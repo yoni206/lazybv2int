@@ -47,7 +47,7 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
 {
   int_sort_ = solver_->make_sort(INT);
   int_zero_ = solver_->make_term(0, int_sort_);
-  int_one_ = solver_->make_term(0, int_sort_);
+  int_one_ = solver_->make_term(1, int_sort_);
   granularity_ = opts.granularity;
 
   Sort fbv_sort = solver_->make_sort(
@@ -95,7 +95,11 @@ Term BV2Int::gen_euclid(Term m, Term n) {
   //we actually know n > 0. All int terms are supposed to be.
   Term minus = solver_->make_term(Minus, n, int_one_);
   Term le2 = solver_->make_term(Le, r, minus);
+  Term le3 = solver_->make_term(Le, int_zero_, q);
+  Term le4 = solver_->make_term(Le, q, m);
   Term le = solver_->make_term(And, le1, le2);
+  le = solver_->make_term(And, le, le3);
+  le = solver_->make_term(And, le, le4);
   Term res = solver_->make_term(And, eq, le);
   return res;
 }
@@ -340,18 +344,25 @@ Term BV2Int::convert(Term & t)
 {
   visit(t);
   Term res = cache_[t];
-    cout << "panda t " << t << endl;
-    cout << "panda res " << res << endl;
+  //  cout << "panda t " << t << endl;
+  //  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
     size_t r_begin_idx = std::get<1>(e);
   }
-
+  
   for (size_t i = r_begin_idx; i < extra_assertions_.size(); ++i) {
     res = solver_->make_term(And, res, extra_assertions_[i]);
   }
 
+ // cout << "panda with extra: " << res << endl;
+  if (opts.solver == "msat") {
+    solver_->assert_formula(res);
+    FILE * f = fopen("tmp.smt2", "w");
+    solver_->dump_smt2(f);
+    fclose(f);
+  }
   return res;
 }
 
