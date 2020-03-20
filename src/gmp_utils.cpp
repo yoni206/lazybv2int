@@ -18,7 +18,7 @@ static string pow2_str(uint64_t k)
   return res.get_str();
 }
 
-static Term pow2(uint64_t k, SmtSolver s) {
+Term pow2(uint64_t k, SmtSolver s) {
   string pow_bv_width_str = pow2_str(k);
   Sort int_sort = s->make_sort(INT);
   return s->make_term(pow_bv_width_str, int_sort);
