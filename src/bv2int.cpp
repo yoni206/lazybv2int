@@ -41,6 +41,7 @@ static bool is_simple_op(Op op)
   return false;
 }
 
+
 BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
     : super(solver, clear_cache), lazy_bw_(lazy_bw)
 {
@@ -77,6 +78,26 @@ void BV2Int::pop()
   extra_vars_.resize(std::get<2>(e));
   fterms_.resize(std::get<3>(e));
   stack_.pop_back();
+}
+
+BV2Int::Term gen_euclid(Term m, Term n) {
+  TermVec div_args = {fintdiv_, m, n};
+  TermVec mod_args = {fintmod_, m, n};
+  Term q = solver_->make_term(Apply, div_args);
+  Term r = solver_->make_term(Apply, mod_args);
+  //we know that n != 0 whenever we introduce div or mod.
+  //This is an invariant that i hope and believe we maintain :)
+  
+  Term mul = solver_->make_term(Mult, n, q);
+  Term plus = solver_->make_term(Plus, mul, r);
+  Term eq = solver_->make_term(Equal, m, plus);
+  Term le1 = solver_->make_term(Le, int_zero_, r);
+  //we actually know n > 0. All int terms are supposed to be.
+  Term minus = solver_->make_term(Minus, n, 1);
+  Term le2 = solver_->make_term(Le, r, minus);
+  Term le = solver_->make_term(And, le1, le2);
+  Term res = solver_->make_term(And, eq, le);
+  return res;
 }
 
 Term BV2Int::gen_mod(const Term &a, const Term &b)
@@ -125,11 +146,10 @@ Term BV2Int::gen_mod(const Term &a, const Term &b)
   //we are storing a div node.
   TermVec euclid_args = { fintdiv_, a, b };
   Term euclid_res = solver_->make_term(APPLY, euclid_args);
-  if (euclid_terms.find(euclid_res) == euclid_terms.end()) {
-    euclid_terms.insert(euclid_res);
+  if (euclid_terms_.find(euclid_res) == euclid_terms_.end()) {
+    euclid_terms_.insert(euclid_res);
     Term euclid = gen_euclid(a,b);
     extra_assertions_.push_back(euclid);
-    
   }
   return res;
 }
@@ -148,7 +168,7 @@ Term BV2Int::gen_intdiv(const Term &a, const Term &b)
   TermVec args = { fintdiv_, a, b };
   Term res = solver_->make_term(Apply, args);
   if (euclid_terms_.find(euclid_res) == euclid_terms_.end()) {
-    euclid_terms.insert(res);
+    euclid_terms_.insert(res);
     Term euclid = gen_euclid(a,b);
     extra_assertions_.push_back(euclid);
   }
