@@ -1,7 +1,7 @@
 import sys
 import os
 
-OPS = ["bvand", "bvor", "bvxor", "bvxnor", "bvnand", "bvnor"]
+OPS = ["bvand", "bvor", "bvxor"]
 GRANULARITIES = range(1, 9) #actually 1..8
 
 skeleton = """
@@ -64,17 +64,6 @@ def evaluate(op, x, y, k):
         return x|y
     elif op == "bvxor":
         return x^y
-    elif op == "bvxnor":
-        return (x|bvnot(y,k))&(bvnot(x,k)|y)
-    elif op == "bvnand":
-        return bvnot(x&y,k)
-    elif op == "bvnor":
-        return bvnot(x|y, k)
-
-
-
-
-
 
 def save_data_to_path(problem, path):
     with open(path, "w") as f:
