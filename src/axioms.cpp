@@ -87,10 +87,9 @@ bool Axioms::check_bvand_minmax(const Term & t,
     Term l = make_implies(pre, r);
     add_if_voilated(l, outlemmas);
   } else {
-    uint64_t b_val = b->to_int();
-    if (is_max && b_val == (pow(2, bv_width) - 1)) {
+    if (is_max && b == pow2_minus_one(bv_width)) {
       add_if_voilated(r, outlemmas);
-    } else if (!is_max && b_val == 0) {
+    } else if (!is_max && b == zero_) {
       add_if_voilated(r, outlemmas);
     }
   }
@@ -231,10 +230,9 @@ bool Axioms::check_bvor_minmax(const Term & t, bool is_max, TermVec & outlemmas)
     Term l = make_implies(pre, r);
     add_if_voilated(l, outlemmas);
   } else {
-    uint64_t b_val = b->to_int();
-    if (is_max && b_val == (pow(2, bv_width) - 1)) {
+    if (is_max && b == pow2_minus_one(bv_width)) {
       add_if_voilated(r, outlemmas);
-    } else if (!is_max && b_val == 0) {
+    } else if (!is_max && b == zero_) {
       add_if_voilated(r, outlemmas);
     }
   }
