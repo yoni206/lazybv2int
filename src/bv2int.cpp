@@ -6,26 +6,12 @@
 
 #include "bw_functions.h"
 #include "opts.h"
+#include "gmp_utils.h"
 
 using namespace std;
 using namespace smt;
 
 namespace lbv2i {
-
-static string pow2_str(uint64_t k)
-{
-  mpz_t base, p;
-  mpz_inits(base, p, NULL);
-  mpz_set_str(base, "2", 10);
-  mpz_pow_ui(p, base, k);
-
-  mpz_class res(p);
-
-  mpz_clear(p);
-  mpz_clear(base);
-
-  return res.get_str();
-}
 
 static bool is_simple_op(Op op)
 {
@@ -369,8 +355,7 @@ Term BV2Int::convert(Term & t)
 
 inline Term BV2Int::pow2(uint64_t k)
 {
-  string pow_bv_width_str = pow2_str(k);
-  return solver_->make_term(pow_bv_width_str, int_sort_);
+  return utils::pow2(k, solver_);
 }
 
 Term BV2Int::make_range_constraint(const Term & var, uint64_t bv_width)

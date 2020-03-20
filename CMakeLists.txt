@@ -10,6 +10,7 @@ include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 add_library(lazybv2int SHARED
+  "${PROJECT_SOURCE_DIR}/src/gmp_utils.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
   "${PROJECT_SOURCE_DIR}/src/preprocessor.cpp"
