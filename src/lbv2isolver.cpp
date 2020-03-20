@@ -65,9 +65,8 @@ Result LBV2ISolver::solve()
     if (!refine(lemmas)) {
       if (bv2int_->fbv_terms().size() > 0 && !opts.full_refinement) {
         r = Result(ResultType::UNKNOWN, "Refinement Failure");
-      } else {
-        break;
       }
+      break;
     }
 
     for (auto l : lemmas) {
