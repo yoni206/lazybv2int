@@ -12,7 +12,7 @@ int main() {
   SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
 
   LBV2ISolver s = LBV2ISolver(underlying_solver);
-  s.set_logic("QF_BVNIA");
+  s.set_logic("QF_UFBVNIA");
   Sort bvsort2 = s.make_sort(BV, 2);
   Term zero = underlying_solver->make_term(0, bvsort2);
 
