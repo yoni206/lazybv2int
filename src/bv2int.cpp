@@ -6,7 +6,6 @@
 
 #include "bw_functions.h"
 #include "opts.h"
-#include "gmp_utils.h"
 
 using namespace std;
 using namespace smt;
@@ -29,7 +28,7 @@ static bool is_simple_op(Op op)
 
 
 BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
-    : super(solver, clear_cache), lazy_bw_(lazy_bw)
+    : super(solver, clear_cache), lazy_bw_(lazy_bw), utils_(solver)
 {
   int_sort_ = solver_->make_sort(INT);
   int_zero_ = solver_->make_term(0, int_sort_);
@@ -38,14 +37,10 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
 
   Sort fbv_sort = solver_->make_sort(
       FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
-  Sort euclid_sort = solver_->make_sort(
-      FUNCTION, SortVec{int_sort_, int_sort_, int_sort_ }
-      );
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
   fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
-  fintdiv_ = solver_->make_symbol("fint_div", euclid_sort);
-  fintmod_ = solver_->make_symbol("fint_mod", euclid_sort);
+
 }
 
 BV2Int::~BV2Int() {}
@@ -66,105 +61,6 @@ void BV2Int::pop()
   stack_.pop_back();
 }
 
-Term BV2Int::gen_euclid(Term m, Term n) {
-  TermVec div_args = {fintdiv_, m, n};
-  TermVec mod_args = {fintmod_, m, n};
-  Term q = solver_->make_term(Apply, div_args);
-  Term r = solver_->make_term(Apply, mod_args);
-  
-  Term ne = solver_->make_term(Distinct, n, int_zero_);
-  Term mul = solver_->make_term(Mult, n, q);
-  Term plus = solver_->make_term(Plus, mul, r);
-  Term eq = solver_->make_term(Equal, m, plus);
-  Term le1 = solver_->make_term(Le, int_zero_, r);
-  //we actually know n >= 0. All int terms are supposed to be.
-  Term minus = solver_->make_term(Minus, n, int_one_);
-  Term le2 = solver_->make_term(Le, r, minus);
-  Term le3 = solver_->make_term(Le, int_zero_, q);
-  Term le4 = solver_->make_term(Le, q, m);
-  Term le = solver_->make_term(And, le1, le2);
-  le = solver_->make_term(And, le, le3);
-  le = solver_->make_term(And, le, le4);
-  Term left = ne;
-  Term right = solver_->make_term(And, eq, le); 
-  Term res = solver_->make_term(Implies, left, right);
-  return res;
-}
-
-Term BV2Int::gen_mod(const Term &a, const Term &b)
-{
-  if (b == int_one_) {
-    return int_zero_;
-  }
-  // return solver_->make_term(Mod, a, b);
-
-  /** old, complicated
-  string name0 = "sigma_mod_" + to_string(extra_vars_.size());
-  Term sigma0 = solver_->make_symbol(name0, int_sort_);
-  extra_vars_.push_back(sigma0);
-  string name1 = "sigma_mod_" + to_string(extra_vars_.size());
-  Term sigma1 = solver_->make_symbol(name1, int_sort_);
-  extra_vars_.push_back(sigma1);
-  // sigma0 = a mod b
-  // a = b*sigma1 + sigma0
-  // AI: abs(sigma0) < abs(b)
-  //     Because b >= 0, we can assert the property that sigma0 < b
-  Term left = a;
-  Term mul = solver_->make_term(Mult, b, sigma1);
-  Term right = solver_->make_term(Plus, mul, sigma0);
-  Term constraint = solver_->make_term(Equal, left, right);
-  Term zero = solver_->make_term("0", int_sort_);
-  extra_assertions_.push_back(solver_->make_term(Ge, sigma0, zero));
-  extra_assertions_.push_back(solver_->make_term(Ge, sigma1, zero));
-  extra_assertions_.push_back(solver_->make_term(Lt, sigma0, b));
-  extra_assertions_.push_back(constraint);
-  return sigma0;
-  */
-
-  // another implementation without extra variables
-  //Term a_div_b = gen_intdiv(a, b);
-  //Term res = solver_->make_term(Minus, a, solver_->make_term(Mult, b, a_div_b));
-  //extra_assertions_.push_back(solver_->make_term(Ge, res, int_zero_));
-
-
-  TermVec args = { fintmod_, a, b };
-  Term res = solver_->make_term(Apply, args);
-  
-  //Important! We don't really care about div vs. mod.
-  //We only need to store the pair a,b.
-  //A sueful way to do this is always store them under a div.
-  //So, even though we are constructing a mod node,
-  //we are storing a div node.
-  TermVec euclid_args = { fintdiv_, a, b };
-  Term euclid_res = solver_->make_term(Apply, euclid_args);
-  if (euclid_terms_.find(euclid_res) == euclid_terms_.end()) {
-    euclid_terms_.insert(euclid_res);
-    Term euclid = gen_euclid(a,b);
-    extra_assertions_.push_back(euclid);
-  }
-  return res;
-}
-
-Term BV2Int::gen_intdiv(const Term &a, const Term &b)
-{
-  // this is specific intdiv
-  // it assumes b to be positive
-  if (b == int_one_) {
-    return a;
-  }
-
- // Term div = solver_->make_term(Div, a, b);
- // return solver_->make_term(To_Int, div);
-  
-  TermVec args = { fintdiv_, a, b };
-  Term res = solver_->make_term(Apply, args);
-  if (euclid_terms_.find(res) == euclid_terms_.end()) {
-    euclid_terms_.insert(res);
-    Term euclid = gen_euclid(a,b);
-    extra_assertions_.push_back(euclid);
-  }
-  return res;
-}
 
 WalkerStepResult BV2Int::visit_term(Term & t)
 {
@@ -222,14 +118,14 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term div = gen_intdiv(cached_children[0], cached_children[1]);
+        Term div = utils_.gen_intdiv(cached_children[0], cached_children[1], extra_assertions_);
         Term condition =
             solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, int_max(bv_width), div);
         cache_[t] = res;
       } else if (op.prim_op == BVUrem) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term res = gen_mod(cached_children[0], cached_children[1]);
+        Term res = utils_.gen_mod(cached_children[0], cached_children[1], extra_assertions_);
         cache_[t] = res;
       } else if (op.prim_op == BVNeg) {
         uint64_t bv_width = t->get_sort()->get_width();
@@ -262,11 +158,11 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t upper = op.idx0;
         uint64_t lower = op.idx1;
         Term p = pow2(lower);
-        Term div = lower > 0 ? gen_intdiv(cached_children[0], p)
+        Term div = lower > 0 ? utils_.gen_intdiv(cached_children[0], p, extra_assertions_)
                              : cached_children[0];
         uint64_t interval = upper - lower + 1;
         Term pwinterval = pow2(interval);
-        Term res = gen_mod(div, pwinterval);
+        Term res = utils_.gen_mod(div, pwinterval, extra_assertions_);
         cache_[t] = res;
       } else if (op.prim_op == BVUlt) {
         Term res = solver_->make_term(Lt, cached_children);
@@ -355,7 +251,7 @@ Term BV2Int::convert(Term & t)
 
 inline Term BV2Int::pow2(uint64_t k)
 {
-  return utils::pow2(k, solver_);
+  return utils_.pow2(k);
 }
 
 Term BV2Int::make_range_constraint(const Term & var, uint64_t bv_width)
@@ -450,9 +346,9 @@ Term BV2Int::handle_boolean_bw_eager(Op op,
       // now extract the corresponding bits of sigma
       // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
       Term p = pow2(j);
-      sigma_ext = gen_intdiv(sigma, p);
+      sigma_ext = utils_.gen_intdiv(sigma, p, extra_assertions_);
       p = pow2(i - j + 1);
-      sigma_ext = gen_mod(sigma_ext, p);
+      sigma_ext = utils_.gen_mod(sigma_ext, p, extra_assertions_);
       // now we assert that the two are equal
       solver_->assert_formula(solver_->make_term(Equal, sigma_ext, block));
     }
@@ -470,13 +366,13 @@ Term BV2Int::gen_block(Op op,
                        uint64_t block_size)
 {
   Term p =  pow2(i * block_size);
-  Term left_a = gen_intdiv(cached_children[0], p);
+  Term left_a = utils_.gen_intdiv(cached_children[0], p, extra_assertions_);
   Term left_b = pow2(block_size);
-  Term left = gen_mod(left_a, left_b);
+  Term left = utils_.gen_mod(left_a, left_b, extra_assertions_);
 
-  Term right_a = gen_intdiv(cached_children[1], p);
+  Term right_a = utils_.gen_intdiv(cached_children[1], p, extra_assertions_);
   Term right_b = pow2(block_size);
-  Term right = gen_mod(right_a, right_b);
+  Term right = utils_.gen_mod(right_a, right_b, extra_assertions_);
   return gen_bitwise_int(op, block_size, left, right);
 }
 
@@ -583,7 +479,7 @@ Term BV2Int::handle_shift_eager(const Term & t,
       div_mul_term = solver_->make_term(Mult, x, p);
     } else {
       assert(op == BVLshr);
-      div_mul_term = gen_intdiv(x, p);
+      div_mul_term = utils_.gen_intdiv(x, p, extra_assertions_);
     }
     Term condition = solver_->make_term(Equal, y, i_term);
     ite = solver_->make_term(Ite, condition, div_mul_term, ite);
@@ -591,7 +487,7 @@ Term BV2Int::handle_shift_eager(const Term & t,
   Term res = ite;
   if (op.prim_op == BVShl) {
     Term p = pow2(bv_width);
-    res = gen_mod(res, p);
+    res = utils_.gen_mod(res, p, extra_assertions_);
   }
   return res;
 }

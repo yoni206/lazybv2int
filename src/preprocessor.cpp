@@ -7,7 +7,7 @@
 #include <map>
 
 #include "preprocessor.h"
-#include "gmp_utils.h"
+#include "utils.h"
 
 using namespace smt;
 using namespace std;

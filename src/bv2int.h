@@ -2,6 +2,7 @@
 
 #include "smt-switch/identity_walker.h"
 #include "smt-switch/smt.h"
+#include "utils.h"
 
 namespace lbv2i {
 
@@ -95,8 +96,9 @@ private:
   smt::Term fbvxor_;
   smt::Term fbvlshift_;
   smt::Term fbvrshift_;
-  smt::Term fintdiv_;
-  smt::Term fintmod_;
+
+  utils utils_;
+
 
   //set of terms of the form 
   //fintdiv_(m,n) or fintmod_(m,n)
