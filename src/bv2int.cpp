@@ -281,15 +281,7 @@ Term BV2Int::get_explicit_bw(Op op,
                                      uint64_t bv_width,
                                      const TermVec & cached_children)
 {
-  assert(granularity_ > 0);
-  uint64_t block_size = granularity_;
-  if (block_size > bv_width) {
-    block_size = bv_width;
-  }
-  while (bv_width % block_size != 0) {
-    block_size = block_size - 1;
-  }
-  return utils_.gen_bw(op, bv_width, block_size, cached_children[0], cached_children[1], extra_assertions_);
+  return utils_.gen_bw(op, bv_width, granularity_, cached_children[0], cached_children[1], extra_assertions_);
 }
 
 

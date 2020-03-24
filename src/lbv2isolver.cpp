@@ -418,11 +418,16 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
     uint64_t bv_width;
     get_fbv_args(f, bv_width, a, b);
 
-    TermVec children = {a, b};
-    Term full_def = bv2int_->get_explicit_bw(op, bv_width, children);
+    TermVec side_effects;
+    Term full_def = bv2int_->get_utils().gen_bw(op, bv_width, bv2int_->granularity(), a, b, side_effects);
     Term l = solver_->make_term(Equal, f, full_def);
-    if (solver_->get_value(l) == false_term) {
-      outlemmas.push_back(l);
+    Term se = solver_->make_term(true);
+    for (auto t : side_effects) {
+      se = solver_->make_term(And, se, t);
+    }
+    Term res = solver_->make_term(And, l, se);
+    if (solver_->get_value(res) == false_term) {
+      outlemmas.push_back(res);
     }
   }
 

@@ -137,7 +137,15 @@ Term utils::gen_block(Op op,
   return gen_bitwise_int(op, block_size, left, right);
 }
 
-Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t block_size, const Term &a, const Term &b, TermVec& side_effects) {
+Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t granularity, const Term &a, const Term &b, TermVec& side_effects) {
+  assert(granularity > 0);
+  uint64_t block_size = granularity;
+  if (block_size > bv_width) {
+    block_size = bv_width;
+  }
+  while (bv_width % block_size != 0) {
+    block_size = block_size - 1;
+  }
   uint64_t num_of_blocks = bv_width / block_size;
   if (opts.use_sum_bvops) {
     Term sum = int_zero_;

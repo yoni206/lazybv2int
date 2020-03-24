@@ -12,7 +12,7 @@ public:
   smt::Term pow2(uint64_t k);
   smt::Term gen_intdiv(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   smt::Term gen_mod(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
-  smt::Term gen_bw(const smt::Op op, const uint64_t bv_width, uint64_t block_size, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
+  smt::Term gen_bw(const smt::Op op, const uint64_t bv_width, uint64_t granularity, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   static std::string pow2_str(uint64_t k);
   smt::Term make_range_constraint(const smt::Term & var, uint64_t bv_width);
 
