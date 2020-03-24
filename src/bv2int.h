@@ -21,11 +21,11 @@ class BV2Int : smt::IdentityWalker
   void push();
   void pop();
 
-  const smt::Term & fbv_and() const { return fbvand_; }
-  const smt::Term & fbv_or() const { return fbvor_; }
-  const smt::Term & fbv_xor() const { return fbvxor_; }
-  const smt::Term & fbv_lshift() const { return fbvlshift_; }
-  const smt::Term & fbv_rshift() const { return fbvrshift_; }
+  const smt::Term & fbv_and() const { return utils_.fbvand_; }
+  const smt::Term & fbv_or() const { return utils_.fbvor_; }
+  const smt::Term & fbv_xor() const { return utils_.fbvxor_; }
+  const smt::Term & fbv_lshift() const { return utils_.fbvlshift_; }
+  const smt::Term & fbv_rshift() const { return utils_.fbvrshift_; }
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
@@ -38,7 +38,6 @@ class BV2Int : smt::IdentityWalker
 
 private:
   smt::Term pow2(uint64_t k);
-  smt::Term make_range_constraint(const smt::Term & var, uint64_t bv_width);
   smt::Term make_bvnot_term(const smt::Term & x, uint64_t k);
   smt::Term int_max(uint64_t k);
   smt::Term handle_bw_op(const smt::Term & t,
@@ -54,14 +53,6 @@ private:
                                uint64_t bv_width,
                                const smt::TermVec & cached_children);
   bool is_shift_op(smt::Op op);
-  smt::Term gen_block(smt::Op op,
-                      const smt::TermVec & cached_children,
-                      uint64_t i,
-                      uint64_t block_size);
-  smt::Term gen_bitwise_int(smt::Op op,
-                            uint64_t k,
-                            const smt::Term & a,
-                            const smt::Term & b);
   smt::Term gen_euclid(smt::Term m, smt::Term n);
   smt::Term gen_mod(const smt::Term &a, const smt::Term &b);
   smt::Term gen_intdiv(const smt::Term &a, const smt::Term &b);
@@ -91,11 +82,6 @@ private:
 
   uint64_t granularity_;
 
-  smt::Term fbvand_;
-  smt::Term fbvor_;
-  smt::Term fbvxor_;
-  smt::Term fbvlshift_;
-  smt::Term fbvrshift_;
 
   utils utils_;
 

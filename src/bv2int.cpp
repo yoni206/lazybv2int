@@ -4,7 +4,6 @@
 #include <gmpxx.h>
 #include <math.h>
 
-#include "bw_functions.h"
 #include "opts.h"
 
 using namespace std;
@@ -34,13 +33,6 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
   int_zero_ = solver_->make_term(0, int_sort_);
   int_one_ = solver_->make_term(1, int_sort_);
   granularity_ = opts.granularity;
-
-  Sort fbv_sort = solver_->make_sort(
-      FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
-  fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
-  fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
-  fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
-
 }
 
 BV2Int::~BV2Int() {}
@@ -87,8 +79,8 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         Term p = pow2(bv_width);
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, plus, multSig);
-        extra_assertions_.push_back(make_range_constraint(sigma, 1));
-        extra_assertions_.push_back(make_range_constraint(res, bv_width));
+        extra_assertions_.push_back(utils_.make_range_constraint(sigma, 1));
+        extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
 
         cache_[t] = res;
 
@@ -102,7 +94,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, mul, multSig);
 
-        extra_assertions_.push_back(make_range_constraint(res, bv_width));
+        extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
 
         if (cached_children[0]->is_value() || cached_children[1]->is_value()) {
           // linear multiplication optimization
@@ -111,7 +103,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
           extra_assertions_.push_back(solver_->make_term(Lt, sigma, c));
         } else {
-          extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
+          extra_assertions_.push_back(utils_.make_range_constraint(sigma, bv_width));
         }
 
         cache_[t] = res;
@@ -196,7 +188,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           Term res = solver_->make_symbol(name, int_sort_);
           int_vars_.insert(res);
 
-          extra_assertions_.push_back(make_range_constraint(res, bv_width));
+          extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
           cache_[t] = res;
         } else {
           assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
@@ -254,14 +246,6 @@ inline Term BV2Int::pow2(uint64_t k)
   return utils_.pow2(k);
 }
 
-Term BV2Int::make_range_constraint(const Term & var, uint64_t bv_width)
-{
-  // returns 0<= var < 2^bv_width as a constraint
-  Term l = solver_->make_term(Le, int_zero_, var);
-  Term p = pow2(bv_width);
-  Term u = solver_->make_term(Lt, var, p);
-  return solver_->make_term(And, l, u);
-}
 
 Term BV2Int::make_bvnot_term(const Term & x, uint64_t k)
 {
@@ -312,104 +296,10 @@ Term BV2Int::handle_boolean_bw_eager(Op op,
   while (bv_width % block_size != 0) {
     block_size = block_size - 1;
   }
-  uint64_t num_of_blocks = bv_width / block_size;
-
-  if (opts.use_sum_bvops) {
-    Term sum = int_zero_;
-    for (uint64_t i = 0; i < num_of_blocks; i++) {
-      Term block = gen_block(op, cached_children, i, block_size);
-      Term power_of_two = pow2(i);
-      Term sum_part = solver_->make_term(Mult, block, power_of_two);
-      sum = solver_->make_term(Plus, sum, sum_part);
-    }
-    return sum;
-  } else {
-    Sort intsort = solver_->make_sort(INT);
-
-    // add bitwise equality assertions over integers
-    // e.g. introduce bvand_x_y := (bvand x y)
-    // and assert bvand_x_y[i] = min(x[i], y[i]) for each i up to width-1
-    // using division and mod to extract bits
-    string name =
-        "sigma_" + op.to_string() + "_" + to_string(extra_vars_.size());
-    Term sigma = solver_->make_symbol(name, intsort);
-    extra_vars_.push_back(sigma);
-    extra_assertions_.push_back(make_range_constraint(sigma, bv_width));
-
-    uint64_t i, j;
-    Term block;
-    Term sigma_ext;
-    for (uint64_t n = 0; n < num_of_blocks; n++) {
-      block = gen_block(op, cached_children, n, block_size);
-      j = n * block_size;
-      i = j + block_size - 1;
-      // now extract the corresponding bits of sigma
-      // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
-      Term p = pow2(j);
-      sigma_ext = utils_.gen_intdiv(sigma, p, extra_assertions_);
-      p = pow2(i - j + 1);
-      sigma_ext = utils_.gen_mod(sigma_ext, p, extra_assertions_);
-      // now we assert that the two are equal
-      solver_->assert_formula(solver_->make_term(Equal, sigma_ext, block));
-    }
-
-    // sigma is the new symbol for this bitwise operator
-    // and we've asserted that it is equivalent at each bit
-    // in the binary representation
-    return sigma;
-  }
+  return utils_.gen_bw(op, bv_width, block_size, cached_children[0], cached_children[1], extra_assertions_);
 }
 
-Term BV2Int::gen_block(Op op,
-                       const TermVec & cached_children,
-                       uint64_t i,
-                       uint64_t block_size)
-{
-  Term p =  pow2(i * block_size);
-  Term left_a = utils_.gen_intdiv(cached_children[0], p, extra_assertions_);
-  Term left_b = pow2(block_size);
-  Term left = utils_.gen_mod(left_a, left_b, extra_assertions_);
 
-  Term right_a = utils_.gen_intdiv(cached_children[1], p, extra_assertions_);
-  Term right_b = pow2(block_size);
-  Term right = utils_.gen_mod(right_a, right_b, extra_assertions_);
-  return gen_bitwise_int(op, block_size, left, right);
-}
-
-Term BV2Int::gen_bitwise_int(Op op, uint64_t k, const Term & x, const Term & y)
-{
-  if (op.prim_op == BVAnd) {
-    switch (k) {
-      case 1: return int_bvand_1(x, y, solver_);
-      case 2: return int_bvand_2(x, y, solver_);
-      case 3: return int_bvand_3(x, y, solver_);
-      case 4: return int_bvand_4(x, y, solver_);
-      case 5: return int_bvand_5(x, y, solver_);
-      case 6: return int_bvand_6(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVOr) {
-    switch (k) {
-      case 1: return int_bvor_1(x, y, solver_);
-      case 2: return int_bvor_2(x, y, solver_);
-      case 3: return int_bvor_3(x, y, solver_);
-      case 4: return int_bvor_4(x, y, solver_);
-      case 5: return int_bvor_5(x, y, solver_);
-      case 6: return int_bvor_6(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVXor) {
-    switch (k) {
-      case 1: return int_bvxor_1(x, y, solver_);
-      case 2: return int_bvxor_2(x, y, solver_);
-      case 3: return int_bvxor_3(x, y, solver_);
-      case 4: return int_bvxor_4(x, y, solver_);
-      case 5: return int_bvxor_5(x, y, solver_);
-      default: assert(false);
-    }
-  }
-  assert(false);
-}
 
 Term BV2Int::handle_bw_op_lazy(const Term & t,
                                uint64_t bv_width,
@@ -430,13 +320,13 @@ Term BV2Int::handle_bw_op_lazy(const Term & t,
 
   Term res;
   if (op.prim_op == BVAnd) {
-    TermVec args = { fbvand_, bv_width_term, x, y };
+    TermVec args = { fbv_and(), bv_width_term, x, y };
     res = solver_->make_term(Apply, args);
   } else if (op.prim_op == BVOr) {
-    TermVec args = { fbvor_, bv_width_term, x, y };
+    TermVec args = { fbv_or(), bv_width_term, x, y };
     res = solver_->make_term(Apply, args);
   } else if (op.prim_op == BVXor) {
-    TermVec args = { fbvxor_, bv_width_term, x, y };
+    TermVec args = { fbv_xor(), bv_width_term, x, y };
     res = solver_->make_term(Apply, args);
   } else {
     assert(false);
