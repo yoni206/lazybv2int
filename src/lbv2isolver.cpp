@@ -419,7 +419,7 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
     get_fbv_args(f, bv_width, a, b);
 
     TermVec children = {a, b};
-    Term full_def = bv2int_->handle_boolean_bw_eager(op, bv_width, children);
+    Term full_def = bv2int_->get_explicit_bw(op, bv_width, children);
     Term l = solver_->make_term(Equal, f, full_def);
     if (solver_->get_value(l) == false_term) {
       outlemmas.push_back(l);

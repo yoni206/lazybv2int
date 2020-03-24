@@ -172,6 +172,10 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t bv_width = t->get_sort()->get_width();
         Term res = handle_bw_op(t, bv_width, cached_children);
         cache_[t] = res;
+      } else if (is_shift_op(op)) {
+        uint64_t bv_width = t->get_sort()->get_width();
+        Term res = handle_shift_eager(t, bv_width, cached_children);
+        cache_[t] = res;
       } else {
         assert(false);
       }
@@ -270,21 +274,10 @@ Term BV2Int::int_max(uint64_t k)
 
 bool BV2Int::is_bw_op(Op op)
 {
-  return (op == BVAnd || op == BVOr || op == BVXor || op == BVLshr || op == BVShl);
+  return (op == BVAnd || op == BVOr || op == BVXor);
 }
 
-Term BV2Int::handle_bw_op(const Term & t,
-                          uint64_t bv_width,
-                          const TermVec & cached_children)
-{
-  if (lazy_bw_ && !is_shift_op(t->get_op())) {
-    return handle_bw_op_lazy(t, bv_width, cached_children);
-  } else {
-    return handle_bw_op_eager(t, bv_width, cached_children);
-  }
-}
-
-Term BV2Int::handle_boolean_bw_eager(Op op,
+Term BV2Int::get_explicit_bw(Op op,
                                      uint64_t bv_width,
                                      const TermVec & cached_children)
 {
@@ -301,7 +294,7 @@ Term BV2Int::handle_boolean_bw_eager(Op op,
 
 
 
-Term BV2Int::handle_bw_op_lazy(const Term & t,
+Term BV2Int::handle_bw_op(const Term & t,
                                uint64_t bv_width,
                                const TermVec & cached_children)
 {
@@ -334,18 +327,14 @@ Term BV2Int::handle_bw_op_lazy(const Term & t,
 
   fterms_.push_back(res);
 
-  return res;
-}
-
-Term BV2Int::handle_bw_op_eager(const Term & t,
-                                uint64_t bv_width,
-                                const TermVec & cached_children)
-{
-  if (is_shift_op(t->get_op())) {
-    return handle_shift_eager(t, bv_width, cached_children);
-  } else {
-    return handle_boolean_bw_eager(t->get_op(), bv_width, cached_children);
+  if (!lazy_bw_) {
+    //eagerly add equations defining the term
+    Term uf_app = res;
+    Term explicit_sum = get_explicit_bw(op, bv_width, TermVec({x,y}));
+    Term eq = solver_->make_term(Equal, uf_app, explicit_sum);
+    extra_assertions_.push_back(eq);
   }
+  return res;
 }
 
 bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
