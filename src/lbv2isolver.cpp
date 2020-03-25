@@ -522,16 +522,14 @@ void LBV2ISolver::run(string filename)
   ifstream file(filename);
   string smtlib((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
 
-  regex re(
-      "\\((push|pop)(\\s(\\d+))?\\)|\\((check-sat)\\)|\\((check-sat-assuming) "
-      "\\((.*)\\)\\)");
-  vector<Result> results;
+  // NOTE: not a perfect regex accepts (check-sat 2) but ignores the two
+  //       shouldn't matter for our purposes
+  regex re("\\((push|pop|check-sat|check-sat-assuming)(\\s(\\d+)|\\((.*)\\))?\\)");
 
   msat_config cfg = msat_create_config();
   msat_env env = msat_create_env(cfg);
 
-  SmtSolver self_solver(this);
-  TermTranslator tr(self_solver);
+  TermTranslator tr(solver_);
 
   // Read input until a push/pop/check-sat/check-sat-assuming call
   while (smtlib.length()) {
@@ -545,7 +543,6 @@ void LBV2ISolver::run(string filename)
 
       // run command
       std::string command = match.str(1);
-      cout << "got command: " << command << endl;
       if (command == "push") {
         size_t num = match.size() > 3 ? stoi(match.str(3)) : 1;
         push(num);
@@ -554,7 +551,7 @@ void LBV2ISolver::run(string filename)
         pop(num);
       } else if (command == "check-sat") {
         Result res = check_sat();
-        results.push_back(res);
+        cout << res << endl;
         if (res.is_sat()) {
           if (opts.print_values) {
             for (auto s : bv2int_->get_int_vars()) {
@@ -578,6 +575,13 @@ void LBV2ISolver::run(string filename)
       // update string (remove up until past command)
       size_t start = match.position() + match.length();
       smtlib = smtlib.substr(start, smtlib.length() - start);
+    }
+    else
+    {
+      // no match
+      // NOTE: might miss the last part of the file if there's no check-sat
+      //       shouldn't matter
+      smtlib = "";
     }
   }
 
