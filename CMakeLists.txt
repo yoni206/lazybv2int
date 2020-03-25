@@ -9,6 +9,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
+message("-- CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+
 add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/utils.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
