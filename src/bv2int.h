@@ -38,7 +38,7 @@ class BV2Int : smt::IdentityWalker
                                     const smt::TermVec & cached_children);
 
   uint64_t granularity() {return granularity_;}
-  utils get_utils() {return utils_;}
+  utils& get_utils() {return utils_;}
 
 private:
   smt::Term pow2(uint64_t k);
