@@ -411,23 +411,100 @@ static void get_fbv_args(const Term & f,
 bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
 {
   size_t n = outlemmas.size();
-
   Term false_term = solver_->make_term(false);
+  Sort int_sort = solver_->make_sort(INT);
+  Term one = solver_->make_term("1", int_sort);
+  utils & utils = bv2int_->get_utils();
+  TermVec side_effects;
+
   for (const Term & f : fterms) {
     Term a, b;
     uint64_t bv_width;
     get_fbv_args(f, bv_width, a, b);
 
-    TermVec side_effects;
-    Term full_def = bv2int_->get_utils().gen_bw(op, bv_width, bv2int_->granularity(), a, b, side_effects);
-    Term l = solver_->make_term(Equal, f, full_def);
-    Term se = solver_->make_term(true);
-    for (auto t : side_effects) {
-      se = solver_->make_term(And, se, t);
-    }
-    Term res = solver_->make_term(And, l, se);
-    if (solver_->get_value(res) == false_term) {
-      outlemmas.push_back(res);
+    if (opts.lazy_granularity == 0) {
+      Term full_def = utils.gen_bw(
+          op, bv_width, bv2int_->granularity(), a, b, side_effects);
+      Term l = solver_->make_term(Equal, f, full_def);
+      Term se = solver_->make_term(true);
+      for (auto t : side_effects) {
+        se = solver_->make_term(And, se, t);
+      }
+      Term res = solver_->make_term(And, l, se);
+      if (solver_->get_value(res) == false_term) {
+        outlemmas.push_back(res);
+      }
+
+    } else {
+      // TODO: optimize the loop below
+      // TODO: cache the lemmas added in the last refinement
+
+      uint64_t block_size = opts.lazy_granularity;
+      if (block_size > bv_width) {
+        block_size = bv_width;
+      }
+      while (bv_width % block_size != 0) {
+        block_size = block_size - 1;
+      }
+
+      bool found = false;
+      for (uint64_t k = block_size; k <= bv_width && !found; k += block_size) {
+        // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
+
+        // lower bound
+        side_effects.clear();
+        uint64_t i = k;
+        uint64_t j = 0;
+        Term a_least_block = utils.gen_intdiv(a, utils.pow2(j), side_effects);
+        a_least_block =
+            utils.gen_mod(a_least_block, utils.pow2(i - j + 1), side_effects);
+        Term b_least_block = utils.gen_intdiv(b, utils.pow2(j), side_effects);
+        b_least_block =
+            utils.gen_mod(b_least_block, utils.pow2(i - j + 1), side_effects);
+        Term lower_bound = utils.gen_bw(op,
+                                        block_size,
+                                        bv2int_->granularity(),
+                                        a_least_block,
+                                        b_least_block,
+                                        side_effects);
+        Term lower_lemma = solver_->make_term(Le, lower_bound, f);
+        for (Term & t : side_effects) {
+          lower_lemma = solver_->make_term(And, lower_lemma, t);
+        }
+        if (solver_->get_value(lower_lemma) == false_term) {
+          outlemmas.push_back(lower_lemma);
+          found = true;
+        }
+
+        // upper bound
+        side_effects.clear();
+        i = bv_width - 1;
+        j = i - k + 1;
+        Term a_most_block = utils.gen_intdiv(a, utils.pow2(j), side_effects);
+        a_most_block =
+            utils.gen_mod(a_most_block, utils.pow2(i - j + 1), side_effects);
+        Term b_most_block = utils.gen_intdiv(b, utils.pow2(j), side_effects);
+        b_most_block =
+            utils.gen_mod(b_most_block, utils.pow2(i - j + 1), side_effects);
+        Term upper_bound = utils.gen_bw(op,
+                                        block_size,
+                                        bv2int_->granularity(),
+                                        a_most_block,
+                                        b_most_block,
+                                        side_effects);
+
+        Term slack =
+            solver_->make_term(Minus, utils.pow2(bv_width - block_size), one);
+        upper_bound = solver_->make_term(Plus, upper_bound, slack);
+        Term upper_lemma = solver_->make_term(Le, f, upper_bound);
+        for (Term & t : side_effects) {
+          upper_lemma = solver_->make_term(And, upper_lemma, t);
+        }
+        if (solver_->get_value(upper_lemma) == false_term) {
+          outlemmas.push_back(upper_lemma);
+          found = true;
+        }
+      }
     }
   }
 

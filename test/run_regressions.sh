@@ -10,7 +10,7 @@ for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
   cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
   lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f --msat`
-  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement $f --msat`
+  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy --lazy-granularity=2 --full-refinement $f --msat`
   lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
 
   #consistency issues 1

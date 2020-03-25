@@ -20,6 +20,9 @@ void set_opt(string option)
       throw std::exception();
     }
     opts.granularity = granularity;
+  } else if (option.rfind("--lazy-granularity=", 0) == 0) {
+    uint32_t granularity = stoi(option.substr(19, option.length() - 19));
+    opts.lazy_granularity = granularity;
   } else if (option == "--use-boolcomp-bvops") {
     opts.use_sum_bvops = false;
   } else if (option == "--lazy") {
@@ -44,10 +47,13 @@ void help_msg(string bin_name)
       << "usage: " << bin_name << " [options] <filename>"
       << "\noptions:"
       << "\n\t--granularity=[1-8] : sets granularity of int blocks"
+      << "\n\t--lazy-granularity=[1-inf] : sets granularity of int blocks "
+         "(works only with --lazy option)"
       << "\n\t--use-boolcomp-bvops : use comparisons between integer "
          "representation of bits instead of a sum"
       << "\n\t--lazy : lazily handle bitwise operators "
-      << "\n\t--full-refinement : fallback to the eager translation if the lazy lemmas fail "
+      << "\n\t--full-refinement : fallback to the eager translation if the "
+         "lazy lemmas fail "
       << "\nt\t--print-values : print values of integer variables"
       << "\n\t--print-sigma-values : print values of introduced sigma variables"
       << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "

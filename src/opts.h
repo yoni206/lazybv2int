@@ -7,6 +7,7 @@ namespace lbv2i {
 struct Options
 {
   uint32_t granularity;
+  uint32_t lazy_granularity;
   bool use_sum_bvops;
   bool lazy;
   bool full_refinement;
@@ -17,6 +18,7 @@ struct Options
   Options()
   {
     granularity = 1;
+    lazy_granularity = 1;
     use_sum_bvops = true;
     lazy = false;
     full_refinement = false;
