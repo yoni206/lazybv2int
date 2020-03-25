@@ -539,6 +539,11 @@ void LBV2ISolver::run(string filename)
     if (regex_search(smtlib, match, re) && match.size() > 1) {
       msat_term msat_assertions =
           msat_from_smtlib2(env, smtlib.substr(0, match.position()).c_str());
+      if (MSAT_ERROR_TERM(msat_assertions)) {
+        cout << "Failed to read first part of smt-lib file:" << endl;
+        cout << smtlib.substr(0, match.position()) << endl;
+        throw std::exception();
+      }
       Term mterm(new MsatTerm(env, msat_assertions));
       Term assertions = tr.transfer_term(mterm);
       assert_formula(assertions);
@@ -560,8 +565,22 @@ void LBV2ISolver::run(string filename)
         vector<string> str_assumptions{ istream_iterator<string>(buffer),
                                         istream_iterator<string>() };
         TermVec assumptions;
-        for (auto s : str_assumptions) {
-          msat_term m_assump = msat_from_string(env, s.c_str());
+        for (size_t i = 0; i < str_assumptions.size(); i++) {
+          string str_term = str_assumptions[i];
+          if (str_term == "(not") {
+            if (i >= str_assumptions.size()) {
+              cout << "unexpected end of text after '" << str_term
+                   << "' in check-sat-assuming" << endl;
+            }
+            str_term += " " + str_assumptions[i + 1];
+            i++;
+          }
+          msat_term m_assump = msat_from_string(env, str_term.c_str());
+          if (MSAT_ERROR_TERM(m_assump)) {
+            cout << "error parsing check-sat-assuming argument: " << str_term
+                 << endl;
+            throw std::exception();
+          }
           Term mterm_assump(new MsatTerm(env, m_assump));
           assumptions.push_back(tr.transfer_term(mterm_assump));
         }
