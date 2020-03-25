@@ -17,7 +17,7 @@ using namespace std;
 namespace lbv2i {
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
-    : bv2int_(new BV2Int(solver, true, lazy)),
+    : bv2int_(new BV2Int(solver, false, lazy)),
       prepro_(new Preprocessor(solver)),
       axioms_(
           solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
@@ -524,7 +524,9 @@ void LBV2ISolver::run(string filename)
 
   // NOTE: not a perfect regex accepts (check-sat 2) but ignores the two
   //       shouldn't matter for our purposes
-  regex re("\\((push|pop|check-sat|check-sat-assuming)(\\s(\\d+)|\\((.*)\\))?\\)");
+  regex re(
+      "\\((push|pop|check-sat|check-sat-assuming)(\\s(\\d+|\\((.*)\\)\\s))?"
+      "\\)");
 
   msat_config cfg = msat_create_config();
   msat_env env = msat_create_env(cfg);
@@ -551,22 +553,21 @@ void LBV2ISolver::run(string filename)
         pop(num);
       } else if (command == "check-sat") {
         Result res = check_sat();
-        cout << res << endl;
-        if (res.is_sat()) {
-          if (opts.print_values) {
-            for (auto s : bv2int_->get_int_vars()) {
-              cout << "\t" << s << " := " << solver_->get_value(s) << endl;
-            }
-          }
-          if (opts.print_sigma_values) {
-            for (auto s : bv2int_->get_extra_vars()) {
-              cout << "\t" << s << " := " << solver_->get_value(s) << endl;
-            }
-          }
-        }
+        print_result(res);
       } else if (command == "check-sat-assuming") {
-        cout << "Parser doesn't handle check-sat-assuming yet" << endl;
-        throw std::exception();
+        // split on whitespace
+        istringstream buffer(match.str(4));
+        vector<string> str_assumptions{ istream_iterator<string>(buffer),
+                                        istream_iterator<string>() };
+        TermVec assumptions;
+        for (auto s : str_assumptions) {
+          msat_term m_assump = msat_from_string(env, s.c_str());
+          Term mterm_assump(new MsatTerm(env, m_assump));
+          assumptions.push_back(tr.transfer_term(mterm_assump));
+        }
+
+        Result res = check_sat_assuming(assumptions);
+        print_result(res);
       } else {
         cout << "Unhandled command in smt-lib input" << endl;
         throw std::exception();
@@ -605,6 +606,23 @@ void LBV2ISolver::run(string filename)
   //     }
   //   }
   // }
+}
+
+void LBV2ISolver::print_result(Result res) const
+{
+  cout << res << endl;
+  if (res.is_sat()) {
+    if (opts.print_values) {
+      for (auto s : bv2int_->get_int_vars()) {
+        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+      }
+    }
+    if (opts.print_sigma_values) {
+      for (auto s : bv2int_->get_extra_vars()) {
+        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+      }
+    }
+  }
 }
 
 }  // namespace lbv2i

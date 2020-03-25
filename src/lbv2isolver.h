@@ -71,6 +71,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
   bool refine_bvxor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
   bool refine_final(smt::Op op, const smt::TermVec & fterms, smt::TermVec & outlemmas);
 
+  // print result and values based on options
+  void print_result(smt::Result res) const;
+
   // BV2Int Translator
   BV2Int * bv2int_;
 
