@@ -32,19 +32,25 @@ skeleton = """
   )
 )
 )
-<constraints>
+
+(declare-var s Int)
+(declare-var t Int)
+
+(constraint (=> (and (<= 0 s <max>) (<= 0 t <max>)) (= (int_bvand_<gran> s t) (bv2nat (bvand ((_ int2bv <gran>) s) ((_ int2bv <gran>) t))) )))
 (check-synth)
 """
 
 def create_sygus_problem_template_for_op_and_granularity(op, granularity):
     result = skeleton.replace("<F>", "int_" + op + "_" + str(granularity))
-    result = result.replace("<constraints>", "\n".join(get_constraints_for_op_and_granularity(op, granularity)))
+    result = result.replace("<max>", str(2**granularity - 1))
+    result = result.replace("<gran>", str(granularity))
     return result
 
 def get_constants_up_to(n):
     return range(0, (2 ** n))
 
 def get_constraints_for_op_and_granularity(op, granularity):
+    constraint = "(constraint" 
     constraints= []
     for i in range(0, 2 ** granularity):
         for j in range(0, 2 ** granularity):
@@ -78,8 +84,8 @@ os.makedirs(sygus_problems_dir)
 for op in OPS:
     for gran in GRANULARITIES:
         problem_template = create_sygus_problem_template_for_op_and_granularity(op, gran)
-        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)")
-        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)")
+        nia_template = problem_template.replace("<logic>", "BVNIA").replace("<multiplication>", "(* I I)")
+        lia_template = problem_template.replace("<logic>", "BVLIA").replace("<multiplication>", "(* Ic I)")
 
         problem_nia_explicit_constants = nia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
         problem_nia_zero_one_constants = nia_template.replace("<constants>", "0\n1")
