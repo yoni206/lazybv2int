@@ -1,6 +1,12 @@
 #include "lbv2isolver.h"
 
 #include <assert.h>
+#include <fstream>
+#include <iostream>
+#include <regex>
+#include <streambuf>
+
+#include "msat/include/msat_term.h"
 
 #include "opts.h"
 #include "smtlibmsatparser.h"
@@ -513,25 +519,88 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
 
 void LBV2ISolver::run(string filename)
 {
-  TermTranslator tr(solver_);
-  FILE * f = fopen(filename.c_str(), "r");
-  Term assert_term = parse_smt2(f, tr);
-  assert_formula(assert_term);
-  Result res = check_sat();
-  cout << res << endl;
+  ifstream file(filename);
+  string smtlib((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
 
-  if (res.is_sat()) {
-    if (opts.print_values) {
-      for (auto s : bv2int_->get_int_vars()) {
-        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+  regex re(
+      "\\((push|pop)(\\s(\\d+))?\\)|\\((check-sat)\\)|\\((check-sat-assuming) "
+      "\\((.*)\\)\\)");
+  vector<Result> results;
+
+  msat_config cfg = msat_create_config();
+  msat_env env = msat_create_env(cfg);
+
+  SmtSolver self_solver(this);
+  TermTranslator tr(self_solver);
+
+  // Read input until a push/pop/check-sat/check-sat-assuming call
+  while (smtlib.length()) {
+    smatch match;
+    if (regex_search(smtlib, match, re) && match.size() > 1) {
+      msat_term msat_assertions =
+          msat_from_smtlib2(env, smtlib.substr(0, match.position()).c_str());
+      Term mterm(new MsatTerm(env, msat_assertions));
+      Term assertions = tr.transfer_term(mterm);
+      assert_formula(assertions);
+
+      // run command
+      std::string command = match.str(1);
+      cout << "got command: " << command << endl;
+      if (command == "push") {
+        size_t num = match.size() > 3 ? stoi(match.str(3)) : 1;
+        push(num);
+      } else if (command == "pop") {
+        size_t num = match.size() > 3 ? stoi(match.str(3)) : 1;
+        pop(num);
+      } else if (command == "check-sat") {
+        Result res = check_sat();
+        results.push_back(res);
+        if (res.is_sat()) {
+          if (opts.print_values) {
+            for (auto s : bv2int_->get_int_vars()) {
+              cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+            }
+          }
+          if (opts.print_sigma_values) {
+            for (auto s : bv2int_->get_extra_vars()) {
+              cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+            }
+          }
+        }
+      } else if (command == "check-sat-assuming") {
+        cout << "Parser doesn't handle check-sat-assuming yet" << endl;
+        throw std::exception();
+      } else {
+        cout << "Unhandled command in smt-lib input" << endl;
+        throw std::exception();
       }
+
+      // update string (remove up until past command)
+      size_t start = match.position() + match.length();
+      smtlib = smtlib.substr(start, smtlib.length() - start);
     }
-    if (opts.print_sigma_values) {
-      for (auto s : bv2int_->get_extra_vars()) {
-        cout << "\t" << s << " := " << solver_->get_value(s) << endl;
-      }
-    }
-  } 
+  }
+
+  // Previous implementation: No incremental support
+  // TermTranslator tr(solver_);
+  // FILE * f = fopen(filename.c_str(), "r");
+  // Term assert_term = parse_smt2(f, tr);
+  // assert_formula(assert_term);
+  // Result res = check_sat();
+  // cout << res << endl;
+
+  // if (res.is_sat()) {
+  //   if (opts.print_values) {
+  //     for (auto s : bv2int_->get_int_vars()) {
+  //       cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+  //     }
+  //   }
+  //   if (opts.print_sigma_values) {
+  //     for (auto s : bv2int_->get_extra_vars()) {
+  //       cout << "\t" << s << " := " << solver_->get_value(s) << endl;
+  //     }
+  //   }
+  // }
 }
 
 }  // namespace lbv2i
