@@ -468,7 +468,7 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         b_least_block =
             utils.gen_mod(b_least_block, utils.pow2(i - j + 1), side_effects);
         Term lower_bound = utils.gen_bw(op,
-                                        block_size,
+                                        k,
                                         bv2int_->granularity(),
                                         a_least_block,
                                         b_least_block,
@@ -493,7 +493,7 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         b_most_block =
             utils.gen_mod(b_most_block, utils.pow2(i - j + 1), side_effects);
         Term upper_bound = utils.gen_bw(op,
-                                        block_size,
+                                        k,
                                         bv2int_->granularity(),
                                         a_most_block,
                                         b_most_block,
@@ -513,7 +513,6 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
       }
     }
   }
-
   return outlemmas.size() > n;
 }
 
