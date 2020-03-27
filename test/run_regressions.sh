@@ -4,18 +4,20 @@ MY_DIR=`realpath $MY_DIR`
 CVC4_PATH=$MY_DIR/../deps/smt-switch/deps/CVC4/build/bin/cvc4
 LAZY_PATH=$MY_DIR/../build/lazybv2int
 SMTLIB_FILES_DIR=$MY_DIR/smtlib_files
+TIME_LIMIT=3
 #SMTLIB_FILES_DIR=$MY_DIR/build/tmp
 
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
-  cvc4_res=`runlim -t 3 --output-file=tmp1.log $CVC4_PATH $f`
-  lbv2int_res_eager=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH $f --msat`
-  lbv2int_res_lazy=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --lazy --lazy-granularity=2 --full-refinement $f --msat`
-  lbv2int_res_eager_boolcomp=`runlim -t 3 --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
+  cvc4_res=`runlim -t $TIME_LIMIT --output-file=tmp1.log $CVC4_PATH $f`
+  lbv2int_res_eager=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH $f --msat`
+  lbv2int_res_lazy=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement $f`
+  lbv2int_res_eager_boolcomp=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
 
   #consistency issues 1
   if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" ]
   then
+    echo $lbv2int_res_lazy
     echo $f FAIL -- eager vs. lazy
   fi
 
