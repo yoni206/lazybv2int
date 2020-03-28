@@ -498,9 +498,13 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
                                         a_most_block,
                                         b_most_block,
                                         side_effects);
-
+        uint64_t slack_width = bv_width - k;
+        Term two_to_the_slack_width = utils.pow2(slack_width);
         Term slack =
-            solver_->make_term(Minus, utils.pow2(bv_width - block_size), one);
+            solver_->make_term(Minus, two_to_the_slack_width, one);
+        //simulate concatenation -- a concat b = a*2^{k}+b, with
+        //k=width(b)
+        upper_bound = solver_->make_term(Mult, upper_bound, two_to_the_slack_width);
         upper_bound = solver_->make_term(Plus, upper_bound, slack);
         Term upper_lemma = solver_->make_term(Le, f, upper_bound);
         for (Term & t : side_effects) {
