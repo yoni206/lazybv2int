@@ -1,5 +1,5 @@
 
-(set-logic BVLIA)
+(set-logic LIA)
 (synth-fun int_bvor_2 ((s Int) (t Int)) Int
 (
   (I Int) (Ic Int) (B Bool)
@@ -27,9 +27,20 @@
   )
 )
 )
-
-(declare-var s Int)
-(declare-var t Int)
-
-(constraint (=> (and (<= 0 s 3) (<= 0 t 3)) (= (int_bvand_2 s t) (bv2nat (bvand ((_ int2bv 2) s) ((_ int2bv 2) t))) )))
+(constraint (= (int_bvor_2 0 0) 0))
+(constraint (= (int_bvor_2 0 1) 1))
+(constraint (= (int_bvor_2 0 2) 2))
+(constraint (= (int_bvor_2 0 3) 3))
+(constraint (= (int_bvor_2 1 0) 1))
+(constraint (= (int_bvor_2 1 1) 1))
+(constraint (= (int_bvor_2 1 2) 3))
+(constraint (= (int_bvor_2 1 3) 3))
+(constraint (= (int_bvor_2 2 0) 2))
+(constraint (= (int_bvor_2 2 1) 3))
+(constraint (= (int_bvor_2 2 2) 2))
+(constraint (= (int_bvor_2 2 3) 3))
+(constraint (= (int_bvor_2 3 0) 3))
+(constraint (= (int_bvor_2 3 1) 3))
+(constraint (= (int_bvor_2 3 2) 3))
+(constraint (= (int_bvor_2 3 3) 3))
 (check-synth)

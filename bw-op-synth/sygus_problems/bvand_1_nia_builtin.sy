@@ -1,5 +1,5 @@
 
-(set-logic BVNIA)
+(set-logic NIA)
 (synth-fun int_bvand_1 ((s Int) (t Int)) Int
 (
   (I Int) (Ic Int) (B Bool)
@@ -26,9 +26,8 @@
   )
 )
 )
-
-(declare-var s Int)
-(declare-var t Int)
-
-(constraint (=> (and (<= 0 s 1) (<= 0 t 1)) (= (int_bvand_1 s t) (bv2nat (bvand ((_ int2bv 1) s) ((_ int2bv 1) t))) )))
+(constraint (= (int_bvand_1 0 0) 0))
+(constraint (= (int_bvand_1 0 1) 0))
+(constraint (= (int_bvand_1 1 0) 0))
+(constraint (= (int_bvand_1 1 1) 1))
 (check-synth)
