@@ -73,7 +73,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       else if (op.prim_op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_add_" + to_string(extra_vars_.size());
-        Term sigma = solver_->make_symbol(name, int_sort_);
+        Term sigma = utils_.create_fresh_var(name, int_sort_);
         extra_vars_.push_back(sigma);
         Term plus = solver_->make_term(Plus, cached_children);
         Term p = pow2(bv_width);
@@ -87,7 +87,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
         string name = "sigma_mul_" + to_string(extra_vars_.size());
-        Term sigma = solver_->make_symbol(name, int_sort_);
+        Term sigma = utils_.create_fresh_var(name, int_sort_);
         extra_vars_.push_back(sigma);
         Term mul = solver_->make_term(Mult, cached_children);
         Term p = pow2(bv_width);
@@ -189,7 +189,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         if (sk == SortKind::BV) {
           uint64_t bv_width = t->get_sort()->get_width();
           string name = "bv2int_" + t->to_string();
-          Term res = solver_->make_symbol(name, int_sort_);
+          Term res = utils_.create_fresh_var(name, int_sort_);
           int_vars_.insert(res);
 
           extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
@@ -222,7 +222,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 Term BV2Int::convert(Term & t)
 {
   visit(t);
-  Term res = cache_[t];
+  Term res = cache_.at(t);
   //  cout << "panda t " << t << endl;
   //  cout << "panda res " << res << endl;
   size_t r_begin_idx = 0;

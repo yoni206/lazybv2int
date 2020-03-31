@@ -59,6 +59,26 @@ Term utils::make_range_constraint(const Term & var, uint64_t bv_width)
 }
 
 
+Term utils::create_fresh_var(string name, Sort st)
+{
+  unsigned i = 0;
+  Term res;
+
+  while(true) {
+    try {
+      res = solver_->make_symbol(name + to_string(i), st);
+      break;
+    } catch (IncorrectUsageException & e){
+      ++i;
+    } catch (SmtException & e) {
+      throw e;
+    }
+  }
+
+  return res;
+}
+
+
 Term utils::gen_euclid(Term m, Term n) {
   TermVec div_args = {fintdiv_, m, n};
   TermVec mod_args = {fintmod_, m, n};
