@@ -24,8 +24,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       solver_(solver),
       lazy_(lazy)
 {
-  if (opts.solver == "cvc4" &&
-      (opts.print_values || opts.print_sigma_values || opts.lazy) ) {
+  if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
   }
 }
@@ -44,13 +43,19 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
   for (auto a : assumptions) {
     assert_formula(a);
   }
-  Result r = check_sat();
+  Result r = solve();
   pop();
   return r;
 }
 
 Result LBV2ISolver::solve()
 {
+  TermVec extra_cons;
+  bv2int_->get_extra_constraints_latest_push(extra_cons);
+  for (const Term &t : extra_cons) {
+    solver_->assert_formula(t);
+  }
+  
   if (!lazy_) {
     return solver_->check_sat();
   }
@@ -82,11 +87,13 @@ Result LBV2ISolver::solve()
     }
   }
 
+#if 0
   if (opts.solver == "msat") {
-    FILE * f = fopen("tmp.smt2", "w");
+    FILE * f = fopen("tmp.solver.smt2", "w");
     solver_->dump_smt2(f);
     fclose(f);
   }
+#endif
 
   return r;
 }
