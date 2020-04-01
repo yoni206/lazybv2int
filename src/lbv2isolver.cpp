@@ -44,7 +44,7 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
   for (auto a : assumptions) {
     assert_formula(a);
   }
-  Result r = check_sat();
+  Result r = solve();
   pop();
   return r;
 }
