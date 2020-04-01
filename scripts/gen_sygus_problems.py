@@ -2,7 +2,8 @@ import sys
 import os
 
 OPS = ["bvand", "bvor", "bvxor"]
-GRANULARITIES = range(1, 9) #actually 1..8
+#GRANULARITIES = range(1, 9) #actually 1..8
+GRANULARITIES = range(1, 5) #actually 1..4
 
 skeleton = """
 (set-logic <logic>)
@@ -13,7 +14,7 @@ skeleton = """
 (
   (I Int  (
        Ic
-       (+ I I )
+       <addition>
        <multiplication>
        (ite B I I)
     )
@@ -26,8 +27,8 @@ skeleton = """
 )
   (B Bool (
        (= I I)
-       (>= I I)
-       (not B)
+       <inequalities>
+       <negation>
      )
   )
 )
@@ -78,8 +79,11 @@ os.makedirs(sygus_problems_dir)
 for op in OPS:
     for gran in GRANULARITIES:
         problem_template = create_sygus_problem_template_for_op_and_granularity(op, gran)
-        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)")
-        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)")
+        
+        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
+        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
+        trivial_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "").replace("<addition>", "").replace("<inequalities>", "").replace("<negation>", "")
+
 
         problem_nia_explicit_constants = nia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
         problem_nia_zero_one_constants = nia_template.replace("<constants>", "0\n1")
@@ -88,6 +92,8 @@ for op in OPS:
         problem_lia_explicit_constants = lia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
         problem_lia_zero_one_constants = lia_template.replace("<constants>", "0\n1")
         problem_lia_builtin_constants = lia_template.replace("<constants>", "(Constant Int)")
+
+        problem_trivial_explicit_constants = trivial_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
 
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_nia_explicit" +  ".sy"
         save_data_to_path(problem_nia_explicit_constants, path)
@@ -106,4 +112,7 @@ for op in OPS:
 
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_lia_builtin" +  ".sy"
         save_data_to_path(problem_lia_builtin_constants, path)
+
+        path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_trivial_explicit" +  ".sy"
+        save_data_to_path(problem_trivial_explicit_constants, path)
 

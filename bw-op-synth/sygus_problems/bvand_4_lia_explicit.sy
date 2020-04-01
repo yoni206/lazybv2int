@@ -7,7 +7,7 @@
 (
   (I Int  (
        Ic
-       (+ I I )
+       (+ I I)
        (* Ic I)
        (ite B I I)
     )

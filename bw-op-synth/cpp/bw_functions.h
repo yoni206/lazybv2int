@@ -1,2 +1,26 @@
-#include "smt-switch/smt.h"
-using namespace smt;
+#include "expr/node.h"
+using namespace CVC4;
+Node int_bvand_1_min(Node s, Node t);
+Node int_bvand_1_trivial(Node s, Node t);
+Node int_bvand_2_min(Node s, Node t);
+Node int_bvand_2_trivial(Node s, Node t);
+Node int_bvand_3_min(Node s, Node t);
+Node int_bvand_3_trivial(Node s, Node t);
+Node int_bvand_4_min(Node s, Node t);
+Node int_bvand_4_trivial(Node s, Node t);
+Node int_bvor_1_min(Node s, Node t);
+Node int_bvor_1_trivial(Node s, Node t);
+Node int_bvor_2_min(Node s, Node t);
+Node int_bvor_2_trivial(Node s, Node t);
+Node int_bvor_3_min(Node s, Node t);
+Node int_bvor_3_trivial(Node s, Node t);
+Node int_bvor_4_min(Node s, Node t);
+Node int_bvor_4_trivial(Node s, Node t);
+Node int_bvxor_1_min(Node s, Node t);
+Node int_bvxor_1_trivial(Node s, Node t);
+Node int_bvxor_2_min(Node s, Node t);
+Node int_bvxor_2_trivial(Node s, Node t);
+Node int_bvxor_3_min(Node s, Node t);
+Node int_bvxor_3_trivial(Node s, Node t);
+Node int_bvxor_4_min(Node s, Node t);
+Node int_bvxor_4_trivial(Node s, Node t);
