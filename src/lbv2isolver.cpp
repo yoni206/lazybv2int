@@ -50,6 +50,12 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 
 Result LBV2ISolver::solve()
 {
+  TermVec extra_cons;
+  bv2int_->get_extra_constraints_latest_push(extra_cons);
+  for (const Term &t : extra_cons) {
+    solver_->assert_formula(t);
+  }
+  
   if (!lazy_) {
     return solver_->check_sat();
   }

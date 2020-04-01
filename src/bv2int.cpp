@@ -239,21 +239,13 @@ Term BV2Int::convert(Term & t)
   Term res = cache_.at(t);
   //  cout << "panda t " << t << endl;
   //  cout << "panda res " << res << endl;
-  size_t r_begin_idx = 0;
-  if (stack_.size() > 0) {
-    stack_entry_t e = stack_.back();
-    r_begin_idx = std::get<1>(e);
-  }
-  
-  for (size_t i = r_begin_idx; i < extra_assertions_.size(); ++i) {
-    res = solver_->make_term(And, res, extra_assertions_[i]);
-  }
 
- // cout << "panda with extra: " << res << endl;
+  // cout << "panda with extra: " << res << endl;
+
 #if 0
   if (opts.solver == "msat") {
     solver_->assert_formula(res);
-    FILE * f = fopen("tmp.smt2", "w");
+    FILE * f = fopen("tmp.bv2int.smt2", "w");
     solver_->dump_smt2(f);
     fclose(f);
   }
