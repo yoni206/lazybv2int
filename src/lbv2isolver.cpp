@@ -24,8 +24,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       solver_(solver),
       lazy_(lazy)
 {
-  if (opts.solver == "cvc4" &&
-      (opts.print_values || opts.print_sigma_values || opts.lazy) ) {
+  if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
   }
 }
