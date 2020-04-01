@@ -242,7 +242,7 @@ Term BV2Int::convert(Term & t)
   size_t r_begin_idx = 0;
   if (stack_.size() > 0) {
     stack_entry_t e = stack_.back();
-    size_t r_begin_idx = std::get<1>(e);
+    r_begin_idx = std::get<1>(e);
   }
   
   for (size_t i = r_begin_idx; i < extra_assertions_.size(); ++i) {
