@@ -81,11 +81,13 @@ Result LBV2ISolver::solve()
     }
   }
 
+#if 0
   if (opts.solver == "msat") {
-    FILE * f = fopen("tmp.smt2", "w");
+    FILE * f = fopen("tmp.solver.smt2", "w");
     solver_->dump_smt2(f);
     fclose(f);
   }
+#endif
 
   return r;
 }

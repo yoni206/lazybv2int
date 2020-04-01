@@ -250,12 +250,15 @@ Term BV2Int::convert(Term & t)
   }
 
  // cout << "panda with extra: " << res << endl;
+#if 0
   if (opts.solver == "msat") {
     solver_->assert_formula(res);
     FILE * f = fopen("tmp.smt2", "w");
     solver_->dump_smt2(f);
     fclose(f);
   }
+#endif
+
   return res;
 }
 
