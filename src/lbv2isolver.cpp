@@ -54,6 +54,7 @@ Result LBV2ISolver::solve()
   bv2int_->get_extra_constraints_latest_push(extra_cons);
   for (const Term &t : extra_cons) {
     solver_->assert_formula(t);
+    assertions_.push_back(t);
   }
   
   if (!lazy_) {
@@ -212,6 +213,7 @@ void LBV2ISolver::push(uint64_t num)
 {
   for (size_t i = 0; i < num; i++) {
     bv2int_->push();
+    stack_.push_back(assertions_.size());
   }
   solver_->push(num);
 }
@@ -220,11 +222,19 @@ void LBV2ISolver::pop(uint64_t num)
 {
   for (size_t i = 0; i < num; i++) {
     bv2int_->pop();
+    size_t s = stack_.back();
+    stack_.pop_back();
+    assertions_.resize(s);
   }
   solver_->pop(num);
 }
 
-void LBV2ISolver::reset() { solver_->reset(); }
+void LBV2ISolver::reset()
+{
+  bv2int_->reset();
+  solver_->reset();
+  assertions_.clear();
+}
 
 void LBV2ISolver::assert_formula(const Term & f)
 {
@@ -235,6 +245,7 @@ void LBV2ISolver::assert_formula(const Term & f)
   Term t_f = bv2int_->convert(pre_f);
   //cout << t_f << endl;
   solver_->assert_formula(t_f);
+  assertions_.push_back(t_f);
 }
 
 bool LBV2ISolver::refine(TermVec & outlemmas)

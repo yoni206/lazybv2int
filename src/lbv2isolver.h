@@ -88,6 +88,12 @@ class LBV2ISolver : public smt::AbsSmtSolver
   // smt-switch solver
   smt::SmtSolver & solver_;
 
+  // assertion stack
+  smt::TermVec assertions_;
+
+  // stack
+  std::vector<size_t> stack_;
+
   bool lazy_;
 };
 

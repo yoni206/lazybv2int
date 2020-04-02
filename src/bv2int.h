@@ -19,6 +19,7 @@ class BV2Int : smt::IdentityWalker
   smt::WalkerStepResult visit_term(smt::Term & term);
   smt::Term convert(smt::Term & t);
 
+  void reset();
   void push();
   void pop();
 

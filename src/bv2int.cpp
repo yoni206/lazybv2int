@@ -37,6 +37,15 @@ BV2Int::BV2Int(SmtSolver & solver, bool clear_cache, bool lazy_bw)
 
 BV2Int::~BV2Int() {}
 
+void BV2Int::reset()
+{
+  cache_.clear();
+  extra_assertions_.clear();
+  extra_vars_.clear();
+  fterms_.clear();
+  stack_.clear();
+}
+
 void BV2Int::push()
 {
   stack_.push_back(stack_entry_t(
