@@ -226,7 +226,7 @@ void LBV2ISolver::pop(uint64_t num)
 
 void LBV2ISolver::reset() { solver_->reset(); }
 
-void LBV2ISolver::assert_formula(const Term & f) const
+void LBV2ISolver::assert_formula(const Term & f)
 {
   // preprocess the formula
   Term pre_f = prepro_->process(f);
