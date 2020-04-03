@@ -1,6 +1,7 @@
 #include "smtlibmsatparser.h"
 
 #include <iostream>
+#include <vector>
 
 #include "msat/include/msat_term.h"
 #include "stdio.h"
@@ -26,6 +27,45 @@ Term parse_smt2(FILE * f, TermTranslator tr)
   msat_destroy_env(env);
   msat_destroy_config(cfg);
   return transferred_term;
+}
+
+string remove_asserts(string input)
+{
+  string assert_pattern("(assert");
+  vector<string> processed;
+  size_t loc = input.find(assert_pattern);
+  while (loc != string::npos) {
+    size_t current_loc = loc + assert_pattern.length();
+    size_t num_unbalanced = 1;
+    while (num_unbalanced) {
+      try {
+        if (input[current_loc] == '(') {
+          num_unbalanced++;
+        } else if (input[current_loc] == ')') {
+          num_unbalanced--;
+        }
+        current_loc++;
+      }
+      catch (const out_of_range & oor) {
+        cerr << "unmatched parentheses for assert in:" << endl;
+        cerr << input.substr(loc, input.length() - loc) << endl;
+        throw std::exception();
+      }
+    }
+    processed.push_back(input.substr(0, loc));
+    input = input.substr(current_loc, input.length() - current_loc);
+    loc = input.find(assert_pattern);
+  }
+
+  // add the leftover
+  processed.push_back(input);
+
+  // recombine string
+  string output("");
+  for (auto s : processed) {
+    output += s;
+  }
+  return output;
 }
 
 }  // namespace lbv2i

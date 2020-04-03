@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "smt-switch/smt.h"
 
 namespace lbv2i {
@@ -13,5 +15,7 @@ namespace lbv2i {
  *          if there are multiple assertions, they are conjuncted
  */
 smt::Term parse_smt2(FILE * f, smt::TermTranslator tr);
+
+std::string remove_asserts(std::string input);
 
 }  // namespace lbv2i
