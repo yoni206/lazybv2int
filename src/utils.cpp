@@ -100,8 +100,16 @@ Term utils::gen_euclid(Term m, Term n) {
   le = solver_->make_term(And, le, le4);
   Term left = ne;
   Term right = solver_->make_term(And, eq, le); 
-  Term res = solver_->make_term(Implies, left, right);
-  return res;
+  if (n->is_value()) {
+    if (n != int_zero_) {
+      return right;
+    } else {
+      return solver_->make_term(true);
+    } 
+  } else {
+    Term res = solver_->make_term(Implies, left, right);
+    return res;
+  }
 }
 
 Term utils::gen_bitwise_int(Op op, uint64_t k, const Term & x, const Term & y)
