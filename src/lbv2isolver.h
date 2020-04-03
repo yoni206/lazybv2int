@@ -90,9 +90,10 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
   // assertion stack
   smt::TermVec assertions_;
+  smt::TermVec extra_assertions_;
 
   // stack
-  std::vector<size_t> stack_;
+  std::vector<std::pair<size_t, size_t> > stack_;
 
   bool lazy_;
 };

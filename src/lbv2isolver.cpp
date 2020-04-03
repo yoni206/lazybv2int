@@ -50,13 +50,6 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 
 Result LBV2ISolver::solve()
 {
-  TermVec extra_cons;
-  bv2int_->get_extra_constraints_latest_push(extra_cons);
-  for (const Term &t : extra_cons) {
-    solver_->assert_formula(t);
-    assertions_.push_back(t);
-  }
-  
   if (!lazy_) {
     return solver_->check_sat();
   }
@@ -213,7 +206,8 @@ void LBV2ISolver::push(uint64_t num)
 {
   for (size_t i = 0; i < num; i++) {
     bv2int_->push();
-    stack_.push_back(assertions_.size());
+    stack_.push_back(pair<size_t, size_t>(assertions_.size(),
+                                          extra_assertions_.size()));
   }
   solver_->push(num);
 }
@@ -222,9 +216,10 @@ void LBV2ISolver::pop(uint64_t num)
 {
   for (size_t i = 0; i < num; i++) {
     bv2int_->pop();
-    size_t s = stack_.back();
+    pair<size_t, size_t> s = stack_.back();
     stack_.pop_back();
-    assertions_.resize(s);
+    assertions_.resize(s.first);
+    extra_assertions_.resize(s.second);
   }
   solver_->pop(num);
 }
@@ -234,6 +229,8 @@ void LBV2ISolver::reset()
   bv2int_->reset();
   solver_->reset();
   assertions_.clear();
+  extra_assertions_.clear();
+  stack_.clear();
 }
 
 void LBV2ISolver::assert_formula(const Term & f)
@@ -246,6 +243,14 @@ void LBV2ISolver::assert_formula(const Term & f)
   //cout << t_f << endl;
   solver_->assert_formula(t_f);
   assertions_.push_back(t_f);
+
+  // extra constraints
+  const TermVec &extra_cons = bv2int_->get_extra_assertions();
+  for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
+    const Term &t = extra_cons[i];
+    solver_->assert_formula(t);
+    extra_assertions_.push_back(t);
+  }
 }
 
 bool LBV2ISolver::refine(TermVec & outlemmas)

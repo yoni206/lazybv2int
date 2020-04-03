@@ -54,26 +54,13 @@ void BV2Int::push()
 
 void BV2Int::pop()
 {
+  assert(stack_.size() > 0);
   stack_entry_t e = stack_.back();
   cache_ = std::get<0>(e);
   extra_assertions_.resize(std::get<1>(e));
   extra_vars_.resize(std::get<2>(e));
   fterms_.resize(std::get<3>(e));
   stack_.pop_back();
-}
-
-
-void BV2Int::get_extra_constraints_latest_push(TermVec &out)
-{
-  size_t r_begin_idx = 0;
-  if (stack_.size() > 0) {
-    stack_entry_t e = stack_.back();
-    r_begin_idx = std::get<1>(e);
-  }
-
-  for (size_t i = r_begin_idx; i < extra_assertions_.size(); ++i) {
-    out.push_back(extra_assertions_[i]);
-  }
 }
 
 
