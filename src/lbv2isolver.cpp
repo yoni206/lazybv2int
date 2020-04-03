@@ -542,6 +542,15 @@ void LBV2ISolver::run(string filename)
 {
   ifstream file(filename);
   string smtlib((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+  // HACK keep the previously read smt-lib around
+  // it seems like MathSAT sometimes complains when parsing files in pieces like this
+  // this hack just re-reads the whole file again up to the current point
+  // but it also removes old assertions so that they're not asserted twice
+  // index zero contains processed smtlib, everything else is unprocessed
+  // so before reading it, everything should be processed and appended to the
+  // string in index 0
+  vector<string> previous_smtlib;
+  previous_smtlib.push_back("");
 
   // NOTE: not a perfect regex accepts (check-sat 2) but ignores the two
   //       shouldn't matter for our purposes
@@ -551,6 +560,7 @@ void LBV2ISolver::run(string filename)
 
   msat_config cfg = msat_create_config();
   msat_env env = msat_create_env(cfg);
+  msat_destroy_config(cfg);
 
   TermTranslator tr(solver_);
 
@@ -561,9 +571,21 @@ void LBV2ISolver::run(string filename)
       msat_term msat_assertions =
           msat_from_smtlib2(env, smtlib.substr(0, match.position()).c_str());
       if (MSAT_ERROR_TERM(msat_assertions)) {
-        cout << "Failed to read first part of smt-lib file:" << endl;
-        cout << smtlib.substr(0, match.position()) << endl;
-        throw std::exception();
+        // fallback on HACK by reading whole file up to this point (without commands)
+        for (size_t i = 1; i < previous_smtlib.size(); ++i)
+        {
+          previous_smtlib[0] += remove_asserts(previous_smtlib[i]);
+        }
+        // remove all but the first element
+        previous_smtlib.erase(++(previous_smtlib.begin()), previous_smtlib.end());
+        string input = previous_smtlib[0] + smtlib.substr(0, match.position());
+        msat_assertions = msat_from_smtlib2(env, input.c_str());
+        if (MSAT_ERROR_TERM(msat_assertions))
+        {
+          cout << "Failed to read first part of smt-lib file:" << endl;
+          // cout << smtlib.substr(0, match.position()) << endl;
+          throw std::exception();
+        }
       }
       Term mterm(new MsatTerm(env, msat_assertions));
       Term assertions = tr.transfer_term(mterm);
@@ -612,6 +634,9 @@ void LBV2ISolver::run(string filename)
         cout << "Unhandled command in smt-lib input" << endl;
         throw std::exception();
       }
+
+      // save first part
+      previous_smtlib.push_back(smtlib.substr(0, match.position()));
 
       // update string (remove up until past command)
       size_t start = match.position() + match.length();
