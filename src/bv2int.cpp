@@ -89,7 +89,11 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         Term p = pow2(bv_width);
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, plus, multSig);
-        extra_assertions_.push_back(utils_.make_range_constraint(sigma, 1));
+        extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
+        extra_assertions_.push_back(solver_->make_term(
+            Lt,
+            sigma,
+            solver_->make_term(to_string(cached_children.size()), int_sort_)));
         extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
 
         cache_[t] = res;
