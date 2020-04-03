@@ -31,10 +31,13 @@ class BV2Int : smt::IdentityWalker
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
+  const smt::TermVec & get_extra_assertions() const {
+    return extra_assertions_;
+  };
+
   const smt::TermVec & get_extra_vars() const { return extra_vars_; }
   const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
 
-  void get_extra_constraints_latest_push(smt::TermVec &out);
 
   smt::Term get_explicit_bw(smt::Op op,
                                     uint64_t bv_width,
