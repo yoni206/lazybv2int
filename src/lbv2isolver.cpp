@@ -56,6 +56,7 @@ Result LBV2ISolver::solve()
 
   // lazy version
   TermVec lemmas;
+  UnorderedTermSet seen;
 
   Result r = Result(ResultType::UNKNOWN);
 
@@ -77,7 +78,10 @@ Result LBV2ISolver::solve()
     for (auto l : lemmas) {
       //cout << "<--------> " << endl;
       //cout << "LAZY LEMMA : " << l << endl;
-      solver_->assert_formula(l);
+      if (seen.find(l) == seen.end()) {
+        solver_->assert_formula(l);
+        seen.insert(l);
+      }
     }
   }
 
