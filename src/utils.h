@@ -21,6 +21,8 @@ public:
   smt::Term fbvand_;
   smt::Term fbvor_;
   smt::Term fbvxor_;
+  smt::Term fintdiv_;
+  smt::Term fintmod_;
   smt::Term fbvlshift_;
   smt::Term fbvrshift_;
 
@@ -38,8 +40,6 @@ private:
 
   smt::SmtSolver & solver_;
   smt::Sort int_sort_;
-  smt::Term fintdiv_;
-  smt::Term fintmod_;
   smt::Term int_zero_;
   smt::Term int_one_;
 
