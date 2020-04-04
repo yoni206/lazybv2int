@@ -475,7 +475,7 @@ WalkerStepResult Binarizer::visit_term(Term & t)
       case BVAnd:
       case BVOr:
       case BVXor:
-      case BVAdd:
+        // case BVAdd:
       case BVMul:
       case Concat:
         children.clear();
