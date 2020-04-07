@@ -152,8 +152,9 @@ const std::map<RewriteRule,
 
         { UdivZero,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
-            Term res = s->make_term(
-                std::string('1', t->get_sort()->get_width()), t->get_sort(), 2);
+            Sort sort = t->get_sort();
+            Term res =
+                s->make_term(std::string(sort->get_width(), '1'), sort, 2);
             return res;
           } },
 
