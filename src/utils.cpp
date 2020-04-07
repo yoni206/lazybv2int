@@ -165,6 +165,23 @@ Term utils::gen_block(Op op,
   return gen_bitwise_int(op, block_size, left, right);
 }
 
+Term utils::gen_bw_uf(const Op op, uint64_t bv_width, const Term & a, const Term & b)
+{
+  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
+  if (op.prim_op == BVAnd) {
+    TermVec args = { fbvand_, bv_width_term, a, b };
+    return solver_->make_term(Apply, args);
+  } else if (op.prim_op == BVOr) {
+    TermVec args = { fbvor_, bv_width_term, a, b };
+    return solver_->make_term(Apply, args);
+  } else if (op.prim_op == BVXor) {
+    TermVec args = { fbvxor_, bv_width_term, a, b };
+    return solver_->make_term(Apply, args);
+  } else {
+    assert(false);
+  }
+}
+
 Term utils::gen_bw_sum(const Op op, uint64_t bv_width, uint64_t granularity, const Term &a, const Term & b, TermVec& side_effects)
 {
   assert(granularity > 0);
@@ -239,20 +256,7 @@ Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t granularity, c
 
 
   // sigma is the term, e.g., f_bvand(a,b)
-  Term sigma;
-  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
-  if (op.prim_op == BVAnd) {
-    TermVec args = { fbvand_, bv_width_term, a, b };
-    sigma = solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVOr) {
-    TermVec args = { fbvor_, bv_width_term, a, b };
-    sigma = solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVXor) {
-    TermVec args = { fbvxor_, bv_width_term, a, b };
-    sigma = solver_->make_term(Apply, args);
-  } else {
-    assert(false);
-  }
+  Term sigma = gen_bw_uf(op, bv_width, a, b);
 
   uint64_t block_size = granularity;
   if (block_size > bv_width) {

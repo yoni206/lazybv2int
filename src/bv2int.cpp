@@ -307,9 +307,8 @@ Term BV2Int::handle_bw_op(const Term & t,
   Term res;
   if (lazy_bw_) {
     // in lazy mode, don't want to add anything to extra_assertions_
-    // pass a throwaway vector instead
-    TermVec dummy_vec;
-    res = utils_.gen_bw(op, bv_width, granularity_, x, y, dummy_vec);
+    // just get the uf representation
+    res = utils_.gen_bw_uf(op, bv_width, x, y);
   } else {
     res = utils_.gen_bw(op, bv_width, granularity_, x, y, extra_assertions_);
   }

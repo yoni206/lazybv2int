@@ -12,6 +12,10 @@ public:
   smt::Term pow2(uint64_t k);
   smt::Term gen_intdiv(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   smt::Term gen_mod(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
+  smt::Term gen_bw_uf(const smt::Op op,
+                      uint64_t bv_width,
+                      const smt::Term & a,
+                      const smt::Term & b);
   smt::Term gen_bw_sum(const smt::Op op, uint64_t bv_width, uint64_t granularity, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   void gen_bw_equalities(const smt::Op op,
                          uint64_t bv_width,
