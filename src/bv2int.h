@@ -39,10 +39,6 @@ class BV2Int : smt::IdentityWalker
   const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
 
 
-  smt::Term get_explicit_bw(smt::Op op,
-                                    uint64_t bv_width,
-                                    const smt::TermVec & cached_children);
-
   uint64_t granularity() {return granularity_;}
   utils& get_utils() {return utils_;}
 

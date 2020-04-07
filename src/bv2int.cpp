@@ -289,18 +289,10 @@ bool BV2Int::is_bw_op(Op op)
   return (op == BVAnd || op == BVOr || op == BVXor);
 }
 
-Term BV2Int::get_explicit_bw(Op op,
-                                     uint64_t bv_width,
-                                     const TermVec & cached_children)
-{
-  return utils_.gen_bw(op, bv_width, granularity_, cached_children[0], cached_children[1], extra_assertions_);
-}
-
-
 
 Term BV2Int::handle_bw_op(const Term & t,
-                               uint64_t bv_width,
-                               const TermVec & cached_children)
+                          uint64_t bv_width,
+                          const TermVec & cached_children)
 {
   Op op = t->get_op();
   assert(cached_children.size() == 2);
@@ -316,28 +308,16 @@ Term BV2Int::handle_bw_op(const Term & t,
   }
 
   Term res;
-  if (op.prim_op == BVAnd) {
-    TermVec args = { fbv_and(), bv_width_term, x, y };
-    res = solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVOr) {
-    TermVec args = { fbv_or(), bv_width_term, x, y };
-    res = solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVXor) {
-    TermVec args = { fbv_xor(), bv_width_term, x, y };
-    res = solver_->make_term(Apply, args);
+  if (lazy_bw_) {
+    // in lazy mode, don't want to add anything to extra_assertions_
+    // just get the uf representation
+    res = utils_.gen_bw_uf(op, bv_width, x, y);
   } else {
-    assert(false);
+    res = utils_.gen_bw(op, bv_width, granularity_, x, y, extra_assertions_);
   }
 
   fterms_.push_back(res);
 
-  if (!lazy_bw_) {
-    //eagerly add equations defining the term
-    Term uf_app = res;
-    Term explicit_sum = get_explicit_bw(op, bv_width, TermVec({x,y}));
-    Term eq = solver_->make_term(Equal, uf_app, explicit_sum);
-    extra_assertions_.push_back(eq);
-  }
   return res;
 }
 
