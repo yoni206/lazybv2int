@@ -19,6 +19,7 @@ namespace lbv2i {
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     : bv2int_(new BV2Int(solver, false, lazy)),
       prepro_(new Preprocessor(solver)),
+      postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
       axioms_(
           solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
       solver_(solver),
@@ -33,6 +34,7 @@ LBV2ISolver::~LBV2ISolver()
 {
   delete bv2int_;
   delete prepro_;
+  delete postpro_;
 }
 
 Result LBV2ISolver::check_sat() { return solve(); }
@@ -244,6 +246,10 @@ void LBV2ISolver::assert_formula(const Term & f)
 
   // translate
   Term t_f = bv2int_->convert(pre_f);
+
+  //postprocess
+  t_f = postpro_->process(t_f);
+  
   //cout << t_f << endl;
   solver_->assert_formula(t_f);
   assertions_.push_back(t_f);
@@ -251,9 +257,10 @@ void LBV2ISolver::assert_formula(const Term & f)
   // extra constraints
   const TermVec &extra_cons = bv2int_->get_extra_assertions();
   for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
-    const Term &t = extra_cons[i];
-    solver_->assert_formula(t);
-    extra_assertions_.push_back(t);
+    Term t = extra_cons[i];
+    Term t_p = postpro_->process(t);
+    solver_->assert_formula(t_p);
+    extra_assertions_.push_back(t_p);
   }
 }
 
