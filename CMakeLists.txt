@@ -11,7 +11,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 
 message("-- CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
-add_library(lazybv2int SHARED
+add_library(lazybv2int "${LBV2I_LIB_TYPE}"
   "${PROJECT_SOURCE_DIR}/src/utils.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
   "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
@@ -24,26 +24,20 @@ add_library(lazybv2int SHARED
   "${PROJECT_SOURCE_DIR}/src/main.cpp"
   )
 
-if (APPLE)
-  set(SHARED_LIBRARY_EXT dylib)
-else()
-  set(SHARED_LIBRARY_EXT so)
-endif()
-
 # Check that dependencies are there
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/include/smt-switch/smt.h")
   message(FATAL_ERROR "Missing smt-switch headers -- try running ./contrib/setup-smt-switch.sh")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.${SHARED_LIBRARY_EXT}")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.a")
   message(FATAL_ERROR "Missing smt-switch library -- try running ./contrib/setup-smt-switch.sh")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.${SHARED_LIBRARY_EXT}")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.a")
   message(FATAL_ERROR "Missing smt-switch mathsat library -- try running ./contrib/setup-smt-switch.sh --with-msat")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.${SHARED_LIBRARY_EXT}")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.a")
   message(FATAL_ERROR "Missing smt-switch cvc4 library -- try running ./contrib/setup-smt-switch.sh")
 endif()
 
@@ -65,9 +59,9 @@ target_include_directories(lazybv2int PUBLIC
   "${PROJECT_SOURCE_DIR}/deps/smt-switch/deps/mathsat/include")
 
 
-target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.${SHARED_LIBRARY_EXT}")
-target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.${SHARED_LIBRARY_EXT}")
-target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.${SHARED_LIBRARY_EXT}")
+target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.a")
+target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.a")
+target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.a")
 target_link_libraries(lazybv2int PUBLIC gmp)
 
 add_executable(lazybv2int-bin
@@ -75,3 +69,7 @@ add_executable(lazybv2int-bin
 )
 set_target_properties(lazybv2int-bin PROPERTIES OUTPUT_NAME lazybv2int)
 target_link_libraries(lazybv2int-bin lazybv2int)
+
+if("${LBV2I_STATIC_EXEC}" STREQUAL "YES")
+  target_link_libraries(lazybv2int-bin -static)
+endif()
