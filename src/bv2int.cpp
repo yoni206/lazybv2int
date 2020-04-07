@@ -286,14 +286,6 @@ bool BV2Int::is_bw_op(Op op)
   return (op == BVAnd || op == BVOr || op == BVXor);
 }
 
-Term BV2Int::get_explicit_bw(Op op,
-                             uint64_t bv_width,
-                             const TermVec & cached_children)
-{
-  return utils_.gen_bw(op, bv_width, granularity_, cached_children[0], cached_children[1], extra_assertions_);
-}
-
-
 
 Term BV2Int::handle_bw_op(const Term & t,
                           uint64_t bv_width,
@@ -312,7 +304,16 @@ Term BV2Int::handle_bw_op(const Term & t,
     y = tmp;
   }
 
-  Term res = get_explicit_bw(op, bv_width, TermVec({x, y}));
+  Term res;
+  if (lazy_bw_) {
+    // in lazy mode, don't want to add anything to extra_assertions_
+    // pass a throwaway vector instead
+    TermVec dummy_vec;
+    res = utils_.gen_bw(op, bv_width, granularity_, x, y, dummy_vec);
+  } else {
+    res = utils_.gen_bw(op, bv_width, granularity_, x, y, extra_assertions_);
+  }
+
   fterms_.push_back(res);
 
   return res;
