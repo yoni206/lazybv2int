@@ -263,7 +263,7 @@ const std::map<RewriteRule,
                         Ite,
                         cond2,
                         s->make_term(BVAdd, neg_u, b),
-                        s->make_term(Ite, s->make_term(BVAdd, u, b), neg_u))));
+                        s->make_term(Ite, cond3, s->make_term(BVAdd, u, b), neg_u))));
             return res;
           } },
 
