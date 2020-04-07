@@ -29,10 +29,7 @@ TermVec Moderizer::get_children(Term t) {
 
 Moderizer::Moderizer(SmtSolver & solver, utils* u) : super(solver, false) {
   utils_ = u;
-    rr_applies_({
-
-        { ModFactorOut,
-          [](const Term & t, const TermVec & children, SmtSolver & s, Moderizer moderizer) {
+    rr_applies_[ModFactorOut] = [](const Term & t, const TermVec & children, SmtSolver & s, Moderizer& moderizer) {
   // ((a+b) mod c) mod c <---------- ((a mod c) + (b mod c)) mod c
   /**
    * We need to make sure that: 
@@ -73,17 +70,14 @@ Moderizer::Moderizer(SmtSolver & solver, utils* u) : super(solver, false) {
             if (c1 != c2 || c2 != c3 || c1 != c3) {
               return false;
             }
+            cout << "panda" << endl;
             return true;
-          } }
-
-          } );
+          };
 
 
 
-    rr_apply_({
-
-        { ModFactorOut,
-          [](const Term & t, const TermVec & children, SmtSolver & s, Moderizer moderizer) {
+    rr_apply_[ModFactorOut] = 
+          [](const Term & t, const TermVec & children, SmtSolver & s, Moderizer& moderizer) {
   // ((a+b) mod c) mod c <---------- ((a mod c) + (b mod c)) mod c
 
             Term t_first = children[1];
@@ -100,9 +94,7 @@ Moderizer::Moderizer(SmtSolver & solver, utils* u) : super(solver, false) {
             Term a_plus_b_mod_c = s->make_term(Apply, moderizer.utils_->fintmod_, a_plus_b, c);
             Term res = s->make_term(Apply, a_plus_b_mod_c, c);
             return res;
-          } }
-          } );
-
+          };
 }
 
 Moderizer::~Moderizer() {}
@@ -158,9 +150,7 @@ WalkerStepResult Moderizer::visit_term(Term & term)
   return Walker_Continue;
 }
 
-Postprocessor::Postprocessor(SmtSolver & solver, utils* u)  {
-  utils_ = u;
-  mod_(solver, u);
+Postprocessor::Postprocessor(SmtSolver & solver, utils* u) : utils_(u), mod_(solver, u)  {
 }
 
 Postprocessor::~Postprocessor() {}

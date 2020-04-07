@@ -3,6 +3,8 @@
 #include "smt-switch/identity_walker.h"
 #include "smt-switch/smt.h"
 #include "utils.h"
+#include <map>
+#include <functional>
 
 namespace lbv2i {
 enum RewriteRule
@@ -33,8 +35,8 @@ class Moderizer: public smt::IdentityWalker
 
 std::map<
     RewriteRule,
-    std::function<bool(const smt::Term & t, const smt::TermVec & c, smt::SmtSolver & s, Moderizer moderizer)>> rr_applies_;
-    std::map<RewriteRule, std::function<smt::Term(const smt::Term & t, const smt::TermVec & children, smt::SmtSolver & s, Moderizer moderizer)>> rr_apply_;
+    std::function<bool(const smt::Term & t, const smt::TermVec & c, smt::SmtSolver & s, Moderizer& moderizer)>> rr_applies_;
+    std::map<RewriteRule, std::function<smt::Term(const smt::Term & t, const smt::TermVec & children, smt::SmtSolver & s, Moderizer& moderizer)>> rr_apply_;
 
 };
 

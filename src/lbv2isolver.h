@@ -5,6 +5,7 @@
 #include "axioms.h"
 #include "bv2int.h"
 #include "preprocessor.h"
+#include "postprocessor.h"
 #include "smt-switch/result.h"
 #include "smt-switch/smt.h"
 
@@ -81,6 +82,12 @@ class LBV2ISolver : public smt::AbsSmtSolver
   // while writing the preprocessor that we want to use it also in the
   // incremental setting (push/pop)
   Preprocessor * prepro_;
+  
+
+  // Postprocessor that will eliminate some integer operators. Note: keep in mind
+  // while writing the postprocessor that we want to use it also in the
+  // incremental setting (push/pop)
+  Postprocessor * postpro_;
 
   // axioms for refinement
   Axioms axioms_;
