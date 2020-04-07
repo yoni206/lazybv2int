@@ -188,6 +188,52 @@ Term utils::gen_bw_sum(const Op op, uint64_t bv_width, uint64_t granularity, con
   return sum;
 }
 
+void utils::gen_bw_equalities(const Op op,
+                              uint64_t bv_width,
+                              uint64_t granularity,
+                              const Term & a,
+                              const Term & b,
+                              const Term & sigma,
+                              TermVec & side_effects)
+{
+  assert(granularity > 0);
+
+  uint64_t block_size = granularity;
+  if (block_size > bv_width) {
+    block_size = bv_width;
+  }
+  while (bv_width % block_size != 0) {
+    block_size = block_size - 1;
+  }
+
+  uint64_t num_of_blocks = bv_width / block_size;
+
+  Sort intsort = solver_->make_sort(INT);
+
+  // add bitwise equality assertions over integers
+  // e.g. introduce bvand_x_y := (bvand x y)
+  // and assert bvand_x_y[i] = min(x[i], y[i]) for each i up to width-1
+  // using division and mod to extract bits
+  side_effects.push_back(make_range_constraint(sigma, bv_width));
+
+  uint64_t i, j;
+  Term block;
+  Term sigma_ext;
+  for (uint64_t n = 0; n < num_of_blocks; n++) {
+    block = gen_block(op, a, b, n, block_size, side_effects);
+    j = n * block_size;
+    i = j + block_size - 1;
+    // now extract the corresponding bits of sigma
+    // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
+    Term p = pow2(j);
+    sigma_ext = gen_intdiv(sigma, p, side_effects);
+    p = pow2(i - j + 1);
+    sigma_ext = gen_mod(sigma_ext, p, side_effects);
+    // add equality between blocks
+    side_effects.push_back(solver_->make_term(Equal, sigma_ext, block));
+  }
+}
+
 Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t granularity, const Term &a, const Term &b, TermVec& side_effects) {
   assert(granularity > 0);
 
@@ -221,30 +267,7 @@ Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t granularity, c
     // add equality to extra assertions
     side_effects.push_back(solver_->make_term(Equal, sigma, sum));
   } else {
-    Sort intsort = solver_->make_sort(INT);
-
-    // add bitwise equality assertions over integers
-    // e.g. introduce bvand_x_y := (bvand x y)
-    // and assert bvand_x_y[i] = min(x[i], y[i]) for each i up to width-1
-    // using division and mod to extract bits
-    side_effects.push_back(make_range_constraint(sigma, bv_width));
-
-    uint64_t i, j;
-    Term block;
-    Term sigma_ext;
-    for (uint64_t n = 0; n < num_of_blocks; n++) {
-      block = gen_block(op, a, b, n, block_size, side_effects);
-      j = n * block_size;
-      i = j + block_size - 1;
-      // now extract the corresponding bits of sigma
-      // ((_ extract i j) a) is a / 2^j mod 2^{i-j+1}
-      Term p = pow2(j);
-      sigma_ext = gen_intdiv(sigma, p, side_effects);
-      p = pow2(i - j + 1);
-      sigma_ext = gen_mod(sigma_ext, p, side_effects);
-      // add equality between blocks
-      side_effects.push_back(solver_->make_term(Equal, sigma_ext, block));
-    }
+    gen_bw_equalities(op, bv_width, granularity, a, b, sigma, side_effects);
   }
 
   // sigma is the new term for this bitwise operator
