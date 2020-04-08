@@ -479,7 +479,7 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         outlemmas.push_back(res);
       }
 
-    } else {
+    } else if (opts.use_sum_bvops) {
       // TODO: optimize the loop below
       // TODO: cache the lemmas added in the last refinement
 
@@ -551,6 +551,18 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         if (solver_->get_value(upper_lemma) == false_term) {
           outlemmas.push_back(upper_lemma);
           found = true;
+        }
+      }
+    } else {
+      // in the boolcomp bvops mode
+      // each block of the UF representation and the integer version of the
+      // applied op are equated e.g. fbvand(a, b)[0] = min(a[0], b[0])
+      side_effects.clear();
+      Term bvop_uf = utils.gen_bw(
+          op, bv_width, bv2int_->granularity(), a, b, side_effects);
+      for (auto ax : side_effects) {
+        if (solver_->get_value(ax) == false_term) {
+          outlemmas.push_back(ax);
         }
       }
     }
