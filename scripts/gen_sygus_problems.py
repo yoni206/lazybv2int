@@ -14,14 +14,14 @@ skeleton = """
 (
   (I Int  (
        Ic
+       s
+       t
        <addition>
        <multiplication>
        (ite B I I)
     )
   )
   (Ic Int (
-  s
-  t
     <constants>
   )
 )

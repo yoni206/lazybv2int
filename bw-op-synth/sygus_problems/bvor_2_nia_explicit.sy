@@ -7,14 +7,14 @@
 (
   (I Int  (
        Ic
+       s
+       t
        (+ I I)
        (* I I)
        (ite B I I)
     )
   )
   (Ic Int (
-  s
-  t
     0
 1
 2
