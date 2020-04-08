@@ -463,8 +463,12 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
     get_fbv_args(f, bv_width, a, b);
 
     if (opts.lazy_granularity == 0) {
-      Term full_def = utils.gen_bw(
-          op, bv_width, bv2int_->granularity(), a, b, side_effects);
+      Term full_def = utils.gen_bw_sum(op,
+                                       bv_width,
+                                       bv2int_->granularity(),
+                                       a,
+                                       b,
+                                       side_effects);
       Term l = solver_->make_term(Equal, f, full_def);
       Term se = solver_->make_term(true);
       for (auto t : side_effects) {
@@ -501,12 +505,12 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         Term b_least_block = utils.gen_intdiv(b, utils.pow2(j), side_effects);
         b_least_block =
             utils.gen_mod(b_least_block, utils.pow2(i - j + 1), side_effects);
-        Term lower_bound = utils.gen_bw(op,
-                                        k,
-                                        bv2int_->granularity(),
-                                        a_least_block,
-                                        b_least_block,
-                                        side_effects);
+        Term lower_bound = utils.gen_bw_sum(op,
+                                            k,
+                                            bv2int_->granularity(),
+                                            a_least_block,
+                                            b_least_block,
+                                            side_effects);
         Term lower_lemma = solver_->make_term(Le, lower_bound, f);
         for (Term & t : side_effects) {
           lower_lemma = solver_->make_term(And, lower_lemma, t);
@@ -526,12 +530,12 @@ bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
         Term b_most_block = utils.gen_intdiv(b, utils.pow2(j), side_effects);
         b_most_block =
             utils.gen_mod(b_most_block, utils.pow2(i - j + 1), side_effects);
-        Term upper_bound = utils.gen_bw(op,
-                                        k,
-                                        bv2int_->granularity(),
-                                        a_most_block,
-                                        b_most_block,
-                                        side_effects);
+        Term upper_bound = utils.gen_bw_sum(op,
+                                            k,
+                                            bv2int_->granularity(),
+                                            a_most_block,
+                                            b_most_block,
+                                            side_effects);
         uint64_t slack_width = bv_width - k;
         Term two_to_the_slack_width = utils.pow2(slack_width);
         Term slack =
