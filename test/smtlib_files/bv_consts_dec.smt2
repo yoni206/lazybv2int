@@ -6,4 +6,4 @@
 (declare-const x (_ BitVec 4))
 (assert (= x #b0001))
 (check-sat)
-(get-value (x))
+;; (get-value (x))
