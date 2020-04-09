@@ -87,13 +87,15 @@ Result LBV2ISolver::solve()
     }
   }
 
-#if 0
-  if (opts.solver == "msat") {
-    FILE * f = fopen("tmp.solver.smt2", "w");
-    solver_->dump_smt2(f);
-    fclose(f);
+  if (opts.dump) {
+    if (opts.solver == "msat") {
+      FILE * f = fopen("tmp.solver.smt2", "w");
+      solver_->dump_smt2(f);
+      fclose(f);
+    } else {
+      cout << "no dumping with --cvc4, only with --msat." << endl;
+    }
   }
-#endif
 
   return r;
 }

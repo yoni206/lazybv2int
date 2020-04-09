@@ -35,6 +35,8 @@ void set_opt(string option)
     opts.print_sigma_values = true;
   } else if (option == "--cvc4" || option == "--msat") {
     opts.solver = option.erase(0, 2);
+  } else if (option == "--dump") {
+    opts.dump = true;
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();
@@ -57,7 +59,8 @@ void help_msg(string bin_name)
       << "\nt\t--print-values : print values of integer variables"
       << "\n\t--print-sigma-values : print values of introduced sigma variables"
       << "\n\t--cvc4 : use cvc4 (default) as the underlying solver "
-      << "\n\t--msat : use mathsat as the underlying solver " << endl;
+      << "\n\t--msat : use mathsat as the underlying solver "
+      << "\n\t--dump : dump the NIA translation file to tmp.smt2 " << endl;
 }
 
 }  // namespace lbv2i

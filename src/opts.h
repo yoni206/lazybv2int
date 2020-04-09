@@ -13,6 +13,7 @@ struct Options
   bool full_refinement;
   bool print_values;
   bool print_sigma_values;
+  bool dump;
   std::string solver;
 
   Options()
@@ -25,6 +26,7 @@ struct Options
     print_values = false;
     print_sigma_values = false;
     solver = "cvc4";
+    dump = false;
   }
 };
 
