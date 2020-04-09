@@ -12,7 +12,7 @@ def get_function_name_from_line(line):
     return line[first_space+1:second_space+1]
 
 def count_symbols(line):
-    return line.count("(ite ") + line.count("*") + line.count("+") + line.count("-")
+    return line.count("(ite ") + line.count("*") + line.count("+") + line.count("-") + line.count("=")
 
 def choose_best_line(lines):
     stats = {}
