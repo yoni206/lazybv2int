@@ -36,6 +36,7 @@ enum RewriteRule
   XnorEliminate,
   ShlByConst,
   LshrByConst,
+  SubEliminate,
   // Not meant to be used except for iteration
   NUM_REWRITE_RULES
 };
@@ -143,6 +144,11 @@ const std::map<
         { LshrByConst,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVLshr && (children[1]->is_value());
+          } },
+
+        { SubEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVSub;
           } } });
 
 const std::map<RewriteRule,
@@ -450,6 +456,11 @@ const std::map<RewriteRule,
             Term right = s->make_term(Op(Extract, size - 1, amount), a);
             Term left = s->make_term(0, s->make_sort(BV, amount));
             return s->make_term(Concat, left, right);
+          } },
+        { SubEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term negb = s->make_term(BVNeg, children[1]);
+            return s->make_term(BVAdd, children[0], negb);
           } } });
 
 Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
