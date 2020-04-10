@@ -253,7 +253,8 @@ void LBV2ISolver::assert_formula(const Term & f)
   Term t_f = bv2int_->convert(pre_f);
 
   //postprocess
-  t_f = postpro_->process(t_f);
+  //TODO this doesn't work currently, and requires more work and thinking. factoring out `mod` isn't trivial in the presense of side effects, and isn't useful unless terms like (a+b)+c are taken into account.
+  //t_f = postpro_->process(t_f);
   
   //cout << t_f << endl;
   solver_->assert_formula(t_f);
