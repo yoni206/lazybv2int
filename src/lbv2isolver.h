@@ -26,6 +26,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   void set_logic(const std::string logic_name);
   void set_opt(std::string op, std::string value);
   void assert_formula(const smt::Term & f);
+  void dump_smt2();
   smt::Term get_value(smt::Term & t) const;
   smt::Result check_sat();
   smt::Result check_sat_assuming(const smt::TermVec & assumptions);

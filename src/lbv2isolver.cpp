@@ -53,6 +53,7 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 Result LBV2ISolver::solve()
 {
   if (!lazy_) {
+    dump_smt2();
     return solver_->check_sat();
   }
 
@@ -86,7 +87,11 @@ Result LBV2ISolver::solve()
       }
     }
   }
+  dump_smt2();
+  return r;
+}
 
+void LBV2ISolver::dump_smt2() {
   if (opts.dump) {
     if (opts.solver == "msat") {
       FILE * f = fopen("tmp.solver.smt2", "w");
@@ -96,8 +101,6 @@ Result LBV2ISolver::solve()
       cout << "no dumping with --cvc4, only with --msat." << endl;
     }
   }
-
-  return r;
 }
 
 void LBV2ISolver::set_logic(const string logic_name)
