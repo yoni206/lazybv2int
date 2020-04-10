@@ -195,20 +195,26 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         cache_[t] = res;
       } else if (op.prim_op == Apply && !internal(*(t->begin()))) {
         Term uf = *(t->begin());
-        std::vector<Sort> bv_domain_sorts = t->get_sort()->get_domain_sorts();
-        //list of sorts for the translated function
-        //The last sort is the co-domain sort
-        std::vector<Sort> int_sorts;
-        for (auto s : bv_domain_sorts) {
-           assert(s.get_sort_kind() == BV);
-           int_sorts.push_back(int_sort_);
+        if (cache_.find(uf) == cache_.end()) {
+
+          std::vector<Sort> bv_domain_sorts = t->get_sort()->get_domain_sorts();
+          //list of sorts for the translated function
+          //The last sort is the co-domain sort
+          std::vector<Sort> int_sorts;
+          for (auto s : bv_domain_sorts) {
+             assert(s.get_sort_kind() == BV);
+             int_sorts.push_back(int_sort_);
+          }
+          assert(t->getSort().get_codomain_sort() == BV);
+          int_sorts.push_back(int_sort_);
+          Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
+          //cache fun symbol
+          cache_[uf] = solver_->make_symbol(uf->to_string() + "_bv2int", int_fun_sort);
         }
-        assert(t->getSort().get_codomain_sort() == BV);
-        int_sorts.push_back(int_sort_);
-        Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
-        //cache fun symbol
-        cache_[uf] = solver_->make_symbol(uf->to_string() + "_bv2int", int_fun_sort);
-        cache_[t] = solver_->make_term(Apply, cached_children);
+        TermVec app_children(cached_children.begin(), cached_children.end());
+        Term intuf = cache_[uf];
+        app_children.insert(app_children.begin(),intuf);
+        cache_[t] = solver_->make_term(Apply, app_children);
       } else {
         assert(false);
       }
