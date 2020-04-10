@@ -1,4 +1,4 @@
-# Setup
+# Install
 ```
 ./contrib/setup-smt-switch.sh
 ./configure.sh
@@ -6,7 +6,13 @@ cd build
 make
 ```
 
-#Testing
+#Use
+From `build` do:
 ```
-./test/test1.out
+./lazybv2int <smtlib-file>
 ```
+or
+```
+./lazybv2int -h
+```
+to see possible options.
