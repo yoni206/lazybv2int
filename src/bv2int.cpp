@@ -193,10 +193,25 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t bv_width = t->get_sort()->get_width();
         Term res = handle_shift_eager(t, bv_width, cached_children);
         cache_[t] = res;
+      } else if (op.prim_op == Apply && !internal(*(t->begin()))) {
+        Term uf = *(t->begin());
+        std::vector<Sort> bv_domain_sorts = t->get_sort()->get_domain_sorts();
+        //list of sorts for the translated function
+        //The last sort is the co-domain sort
+        std::vector<Sort> int_sorts;
+        for (auto s : bv_domain_sorts) {
+           assert(s.get_sort_kind() == BV);
+           int_sorts.push_back(int_sort_);
+        }
+        assert(t->getSort().get_codomain_sort() == BV);
+        int_sorts.push_back(int_sort_);
+        Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
+        //cache fun symbol
+        cache_[uf] = solver_->make_symbol(uf->to_string() + "_bv2int", int_fun_sort);
+        cache_[t] = solver_->make_term(Apply, cached_children);
       } else {
         assert(false);
       }
-
     } else {
       // leaf now
       Sort s = t->get_sort();
@@ -234,6 +249,17 @@ WalkerStepResult BV2Int::visit_term(Term & t)
     }
   }
   return Walker_Continue;
+}
+
+bool BV2Int::internal(Term uf) {
+  return (uf == utils_.fbvand_ || 
+          uf == utils_.fbvor_ || 
+          uf == utils_.fbvxor_ || 
+          uf == utils_.fintdiv_ || 
+          uf == utils_.fintmod_ || 
+          uf == utils_.fbvlshift_ || 
+          uf == utils_.fbvrshift_
+        );
 }
 
 Term BV2Int::convert(Term & t)
