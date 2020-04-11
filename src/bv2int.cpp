@@ -202,10 +202,10 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           //The last sort is the co-domain sort
           std::vector<Sort> int_sorts;
           for (auto s : bv_domain_sorts) {
-             assert(s.get_sort_kind() == BV);
+             assert(s->get_sort_kind() == BV);
              int_sorts.push_back(int_sort_);
           }
-          assert(t->getSort().get_codomain_sort() == BV);
+          assert(t->get_sort()->get_codomain_sort()->get_sort_kind() == BV);
           int_sorts.push_back(int_sort_);
           Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
           //cache fun symbol
