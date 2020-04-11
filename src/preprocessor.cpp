@@ -562,6 +562,74 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
   return Walker_Continue;
 }
 
+DisjointSet::DisjointSet()
+{
+}
+
+DisjointSet::~DisjointSet()
+{
+}
+
+void DisjointSet::add(Term &a, Term &b)
+{
+  if (leader_.find(a) != leader_.end()) {
+    Term leadera = leader_.at(a);
+    UnorderedTermSet & groupa = group_.at(leadera);
+
+    if (leader_.find(b) != leader_.end()) {
+      Term leaderb = leader_.at(b);
+
+      if (leadera != leaderb) {
+        UnorderedTermSet & groupb = group_.at(leaderb);
+
+        if (leadera <= leaderb) {
+          groupa.insert(groupb.begin(), groupb.end());
+
+          for (const Term &t : groupb) {
+            leader_[t] = leadera;
+          }
+          groupb.clear();
+          group_.erase(leaderb);
+
+        } else {
+          groupb.insert(groupa.begin(), groupa.end());
+
+          for (const Term &t : groupa) {
+            leader_[t] = leaderb;
+          }
+          groupa.clear();
+          group_.erase(leadera);
+        }
+      }
+
+    } else {
+      groupa.insert(b);
+      leader_[b] = leadera;
+    }
+
+  } else if (leader_.find(b) != leader_.end()) {
+    Term leaderb = leader_.at(b);
+    group_[leaderb].insert(a);
+    leader_[a] = leaderb;
+
+  } else {
+    leader_[a] = (a <= b) ? a : b;
+    leader_[b] = (a <= b) ? a : b;
+
+    if (a <= b) {
+      group_[a] = UnorderedTermSet({a, b});
+    } else {
+      group_[b] = UnorderedTermSet({a, b});
+    }
+  }
+}
+
+Term DisjointSet::find(Term &t)
+{
+  assert(leader_.find(t) != leader_.end());
+  return leader_.at(t);
+}
+
 Preprocessor::Preprocessor(SmtSolver & solver) : bin_(solver), opelim_(solver)
 {
 }

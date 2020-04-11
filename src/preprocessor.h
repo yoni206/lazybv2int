@@ -42,6 +42,23 @@ class OpEliminator : public smt::IdentityWalker
  private:
 };
 
+class DisjointSet
+{
+public:
+  DisjointSet();
+  ~DisjointSet();
+
+  void add(smt::Term &a, smt::Term &b);
+  smt::Term find(smt::Term &t);
+
+private:
+  // member to group's leader
+  smt::UnorderedTermMap leader_;
+  // group leader to group
+  std::unordered_map<smt::Term, smt::UnorderedTermSet> group_;
+
+};
+
 class Preprocessor
 {
  public:
