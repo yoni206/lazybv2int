@@ -258,14 +258,16 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 }
 
 bool BV2Int::internal(Term uf) {
-  return (uf == utils_.fbvand_ || 
-          uf == utils_.fbvor_ || 
-          uf == utils_.fbvxor_ || 
-          uf == utils_.fintdiv_ || 
-          uf == utils_.fintmod_ || 
-          uf == utils_.fbvlshift_ || 
-          uf == utils_.fbvrshift_
-        );
+  std::vector<Sort> domain_sorts = uf->get_sort()->get_domain_sorts();
+  for (auto s : domain_sorts) {
+    if (s != int_sort_) {
+      return false;
+    }
+  }
+  if (uf->get_sort()->get_codomain_sort() != int_sort_) {
+    return false;
+  }
+  return true;
 }
 
 Term BV2Int::convert(Term & t)
