@@ -59,6 +59,18 @@ private:
 
 };
 
+class TopLevelPropagator
+{
+public:
+  TopLevelPropagator(smt::SmtSolver &s);
+  ~TopLevelPropagator();
+
+  smt::Term process(smt::Term &t, bool preserve_equiv);
+
+private:
+  smt::SmtSolver &solver_;
+};
+
 class Preprocessor
 {
  public:
@@ -73,6 +85,9 @@ class Preprocessor
 
   // operator eliminator
   OpEliminator opelim_;
+
+  // toplevel propagator
+  TopLevelPropagator tlprop_;
 };
 
 }  // namespace lbv2i

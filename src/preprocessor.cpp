@@ -6,6 +6,7 @@
 
 #include "preprocessor.h"
 #include "utils.h"
+#include "opts.h"
 
 using namespace smt;
 using namespace std;
@@ -657,7 +658,69 @@ Term DisjointSet::find(Term &t)
   return leader_.at(t);
 }
 
-Preprocessor::Preprocessor(SmtSolver & solver) : bin_(solver), opelim_(solver)
+
+TopLevelPropagator::TopLevelPropagator(SmtSolver &s) :
+  solver_(s)
+{
+}
+
+TopLevelPropagator::~TopLevelPropagator()
+{
+}
+
+Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
+{
+  DisjointSet ds;
+  TermVec conjuncts;
+  conjunctive_partition(t, conjuncts);
+
+  UnorderedTermSet relevant;
+  for (Term c : conjuncts) {
+    Op op = c->get_op();
+    //cout << op << " : " << c << endl;
+    if (op.prim_op == Equal) {
+      //cout << c << endl;
+      TermVec children;
+      for (auto tt : c) {
+        children.push_back(tt);
+      }
+
+      if (children[0]->is_symbolic_const()) {
+        ds.add(children[0], children[1]);
+        relevant.insert(children[0]);
+      } else if (children[1]->is_symbolic_const()) {
+        ds.add(children[1], children[0]);
+        relevant.insert(children[1]);
+      }
+ 
+    }
+  }
+
+  Term equiv = solver_->make_term(true);
+  UnorderedTermMap sigma;
+  for (Term k : relevant) {
+    Term v = ds.find(k);
+    if (k != v) {
+      sigma[k] = v;
+
+      Term eq = solver_->make_term(Equal, k, v);
+      equiv = solver_->make_term(And, equiv, eq);
+    }
+  }
+
+  Term res = solver_->substitute(t, sigma);
+  if (preserve_equiv) {
+    res = solver_->make_term(And, res, equiv);
+  }
+
+  return res;
+}
+
+
+Preprocessor::Preprocessor(SmtSolver & solver) :
+  bin_(solver),
+  opelim_(solver),
+  tlprop_(solver)
 {
 }
 
@@ -665,8 +728,14 @@ Preprocessor::~Preprocessor() {}
 
 Term Preprocessor::process(Term t)
 {
-  Term res = bin_.process(t);
+  Term res = bin_.process(t); 
   res = opelim_.process(res);
+  if (opts.toplevel_propagation) {
+    res = tlprop_.process(res, false);
+    // if (res != t) {
+    //   cout << res << endl;
+    // }
+  }
   return res;
 }
 
