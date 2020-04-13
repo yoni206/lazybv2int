@@ -213,7 +213,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         }
         TermVec app_children(cached_children.begin(), cached_children.end());
         Term intuf = cache_[uf];
-        app_children.insert(app_children.begin(),intuf);
+        app_children.at(0) = intuf;
         cache_[t] = solver_->make_term(Apply, app_children);
       } else {
         assert(false);
