@@ -42,6 +42,35 @@ class OpEliminator : public smt::IdentityWalker
  private:
 };
 
+class DisjointSet
+{
+public:
+  DisjointSet();
+  ~DisjointSet();
+
+  void add(smt::Term &a, smt::Term &b);
+  smt::Term find(smt::Term &t);
+
+private:
+  // member to group's leader
+  smt::UnorderedTermMap leader_;
+  // group leader to group
+  std::unordered_map<smt::Term, smt::UnorderedTermSet> group_;
+
+};
+
+class TopLevelPropagator
+{
+public:
+  TopLevelPropagator(smt::SmtSolver &s);
+  ~TopLevelPropagator();
+
+  smt::Term process(smt::Term &t, bool preserve_equiv);
+
+private:
+  smt::SmtSolver &solver_;
+};
+
 class Preprocessor
 {
  public:
@@ -56,6 +85,9 @@ class Preprocessor
 
   // operator eliminator
   OpEliminator opelim_;
+
+  // toplevel propagator
+  TopLevelPropagator tlprop_;
 };
 
 }  // namespace lbv2i

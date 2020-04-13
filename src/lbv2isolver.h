@@ -26,6 +26,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   void set_logic(const std::string logic_name);
   void set_opt(std::string op, std::string value);
   void assert_formula(const smt::Term & f);
+  void do_assert_formula();
   void dump_smt2();
   smt::Term get_value(smt::Term & t) const;
   smt::Result check_sat();
@@ -97,11 +98,13 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::SmtSolver & solver_;
 
   // assertion stack
+  smt::TermVec orig_assertions_;
   smt::TermVec assertions_;
   smt::TermVec extra_assertions_;
 
-  // stack
-  std::vector<std::pair<size_t, size_t> > stack_;
+  // stack 
+  typedef std::tuple<size_t, size_t, size_t> stack_entry_t;
+  std::vector<stack_entry_t> stack_;
 
   bool lazy_;
 };

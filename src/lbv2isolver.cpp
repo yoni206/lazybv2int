@@ -52,6 +52,8 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 
 Result LBV2ISolver::solve()
 {
+  do_assert_formula();
+
   if (!lazy_) {
     dump_smt2();
     return solver_->check_sat();
@@ -215,23 +217,30 @@ Term LBV2ISolver::get_value(Term & t) const
 
 void LBV2ISolver::push(uint64_t num)
 {
+  do_assert_formula();
+
   for (size_t i = 0; i < num; i++) {
     bv2int_->push();
-    stack_.push_back(pair<size_t, size_t>(assertions_.size(),
-                                          extra_assertions_.size()));
+    stack_.push_back(stack_entry_t(orig_assertions_.size(), assertions_.size(),
+                                   extra_assertions_.size()));
   }
   solver_->push(num);
 }
 
 void LBV2ISolver::pop(uint64_t num)
 {
+  stack_entry_t e;
+
   for (size_t i = 0; i < num; i++) {
     bv2int_->pop();
-    pair<size_t, size_t> s = stack_.back();
+    e = stack_.back();
     stack_.pop_back();
-    assertions_.resize(s.first);
-    extra_assertions_.resize(s.second);
   }
+
+  orig_assertions_.resize(std::get<0>(e));
+  assertions_.resize(std::get<1>(e));
+  extra_assertions_.resize(std::get<2>(e));
+
   solver_->pop(num);
 }
 
@@ -239,6 +248,7 @@ void LBV2ISolver::reset()
 {
   bv2int_->reset();
   solver_->reset();
+  orig_assertions_.clear();
   assertions_.clear();
   extra_assertions_.clear();
   stack_.clear();
@@ -246,27 +256,41 @@ void LBV2ISolver::reset()
 
 void LBV2ISolver::assert_formula(const Term & f)
 {
-  // preprocess the formula
-  Term pre_f = prepro_->process(f);
+  orig_assertions_.push_back(f);
+}
 
-  // translate
-  Term t_f = bv2int_->convert(pre_f);
+void LBV2ISolver::do_assert_formula()
+{
+  Term f;
+  if (stack_.size() == 0 || std::get<0>(stack_.back()) < orig_assertions_.size()) {
+    size_t i = stack_.size() == 0 ? 0 : std::get<0>(stack_.back());
+    f = orig_assertions_[i++];
+    for (; i < orig_assertions_.size(); ++i) {
+      f = solver_->make_term(And, f, orig_assertions_[i]);
+    }
 
-  //postprocess
-  //TODO this doesn't work currently, and requires more work and thinking. factoring out `mod` isn't trivial in the presense of side effects, and isn't useful unless terms like (a+b)+c are taken into account.
-  //t_f = postpro_->process(t_f);
+    // preprocess the formula
+    Term pre_f = prepro_->process(f);
+
+    // translate
+    Term t_f = bv2int_->convert(pre_f);
+
+    //postprocess
+    //TODO this doesn't work currently, and requires more work and thinking. factoring out `mod` isn't trivial in the presense of side effects, and isn't useful unless terms like (a+b)+c are taken into account.
+    //t_f = postpro_->process(t_f);
   
-  //cout << t_f << endl;
-  solver_->assert_formula(t_f);
-  assertions_.push_back(t_f);
+    //cout << t_f << endl;
+    solver_->assert_formula(t_f);
+    assertions_.push_back(t_f);
 
-  // extra constraints
-  const TermVec &extra_cons = bv2int_->get_extra_assertions();
-  for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
-    Term t = extra_cons[i];
-    Term t_p = postpro_->process(t);
-    solver_->assert_formula(t_p);
-    extra_assertions_.push_back(t_p);
+    // extra constraints
+    const TermVec &extra_cons = bv2int_->get_extra_assertions();
+    for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
+      Term t = extra_cons[i];
+      Term t_p = postpro_->process(t);
+      solver_->assert_formula(t_p);
+      extra_assertions_.push_back(t_p);
+    }
   }
 }
 

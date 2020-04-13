@@ -6,11 +6,39 @@
 
 #include "preprocessor.h"
 #include "utils.h"
+#include "opts.h"
 
 using namespace smt;
 using namespace std;
 
 namespace lbv2i {
+
+static void conjunctive_partition(const Term & term, TermVec & out)
+{
+  TermVec to_visit({ term });
+  UnorderedTermSet visited;
+
+  Term t;
+  while (to_visit.size()) {
+    t = to_visit.back();
+    to_visit.pop_back();
+
+    if (visited.find(t) == visited.end()) {
+      visited.insert(t);
+
+      Op op = t->get_op();
+      if (op == And) {
+        // add children to queue
+        for (auto tt : t) {
+          to_visit.push_back(tt);
+        }
+      } else {
+        out.push_back(t);
+      }
+
+    }
+  }
+}
 
 // Using simplification and op elimination rewrite rules from CVC4:
 // https://github.com/CVC4/CVC4/tree/master/src/theory/bv
@@ -562,7 +590,137 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
   return Walker_Continue;
 }
 
-Preprocessor::Preprocessor(SmtSolver & solver) : bin_(solver), opelim_(solver)
+DisjointSet::DisjointSet()
+{
+}
+
+DisjointSet::~DisjointSet()
+{
+}
+
+void DisjointSet::add(Term &a, Term &b)
+{
+  if (leader_.find(a) != leader_.end()) {
+    Term leadera = leader_.at(a);
+    UnorderedTermSet & groupa = group_.at(leadera);
+
+    if (leader_.find(b) != leader_.end()) {
+      Term leaderb = leader_.at(b);
+
+      if (leadera != leaderb) {
+        UnorderedTermSet & groupb = group_.at(leaderb);
+
+        if (leadera <= leaderb) {
+          groupa.insert(groupb.begin(), groupb.end());
+
+          for (const Term &t : groupb) {
+            leader_[t] = leadera;
+          }
+          groupb.clear();
+          group_.erase(leaderb);
+
+        } else {
+          groupb.insert(groupa.begin(), groupa.end());
+
+          for (const Term &t : groupa) {
+            leader_[t] = leaderb;
+          }
+          groupa.clear();
+          group_.erase(leadera);
+        }
+      }
+
+    } else {
+      groupa.insert(b);
+      leader_[b] = leadera;
+    }
+
+  } else if (leader_.find(b) != leader_.end()) {
+    Term leaderb = leader_.at(b);
+    group_[leaderb].insert(a);
+    leader_[a] = leaderb;
+
+  } else {
+    leader_[a] = (a <= b) ? a : b;
+    leader_[b] = (a <= b) ? a : b;
+
+    if (a <= b) {
+      group_[a] = UnorderedTermSet({a, b});
+    } else {
+      group_[b] = UnorderedTermSet({a, b});
+    }
+  }
+}
+
+Term DisjointSet::find(Term &t)
+{
+  assert(leader_.find(t) != leader_.end());
+  return leader_.at(t);
+}
+
+
+TopLevelPropagator::TopLevelPropagator(SmtSolver &s) :
+  solver_(s)
+{
+}
+
+TopLevelPropagator::~TopLevelPropagator()
+{
+}
+
+Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
+{
+  DisjointSet ds;
+  TermVec conjuncts;
+  conjunctive_partition(t, conjuncts);
+
+  UnorderedTermSet relevant;
+  for (Term c : conjuncts) {
+    Op op = c->get_op();
+    //cout << op << " : " << c << endl;
+    if (op.prim_op == Equal) {
+      //cout << c << endl;
+      TermVec children;
+      for (auto tt : c) {
+        children.push_back(tt);
+      }
+
+      if (children[0]->is_symbolic_const()) {
+        ds.add(children[0], children[1]);
+        relevant.insert(children[0]);
+      } else if (children[1]->is_symbolic_const()) {
+        ds.add(children[1], children[0]);
+        relevant.insert(children[1]);
+      }
+ 
+    }
+  }
+
+  Term equiv = solver_->make_term(true);
+  UnorderedTermMap sigma;
+  for (Term k : relevant) {
+    Term v = ds.find(k);
+    if (k != v) {
+      sigma[k] = v;
+
+      Term eq = solver_->make_term(Equal, k, v);
+      equiv = solver_->make_term(And, equiv, eq);
+    }
+  }
+
+  Term res = solver_->substitute(t, sigma);
+  if (preserve_equiv) {
+    res = solver_->make_term(And, res, equiv);
+  }
+
+  return res;
+}
+
+
+Preprocessor::Preprocessor(SmtSolver & solver) :
+  bin_(solver),
+  opelim_(solver),
+  tlprop_(solver)
 {
 }
 
@@ -570,8 +728,14 @@ Preprocessor::~Preprocessor() {}
 
 Term Preprocessor::process(Term t)
 {
-  Term res = bin_.process(t);
+  Term res = bin_.process(t); 
   res = opelim_.process(res);
+  if (opts.toplevel_propagation) {
+    res = tlprop_.process(res, false);
+    // if (res != t) {
+    //   cout << res << endl;
+    // }
+  }
   return res;
 }
 
