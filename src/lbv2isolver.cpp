@@ -626,9 +626,7 @@ void LBV2ISolver::run(string filename)
         }
       }
       Term mterm(new MsatTerm(env, msat_assertions));
-      cout << "panda mterm " << mterm << endl;
       Term assertions = tr.transfer_term(mterm);
-      cout << "panda assertions " << assertions << endl;
       assert_formula(assertions);
 
       // run command

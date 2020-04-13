@@ -193,25 +193,10 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         uint64_t bv_width = t->get_sort()->get_width();
         Term res = handle_shift_eager(t, bv_width, cached_children);
         cache_[t] = res;
-      } else if (op.prim_op == Apply && !internal(*(t->begin()))) {
+      } else if (op.prim_op == Apply) {
         Term uf = *(t->begin());
-        if (cache_.find(uf) == cache_.end()) {
-
-          std::vector<Sort> bv_domain_sorts = t->get_sort()->get_domain_sorts();
-          //list of sorts for the translated function
-          //The last sort is the co-domain sort
-          std::vector<Sort> int_sorts;
-          for (auto s : bv_domain_sorts) {
-             assert(s->get_sort_kind() == BV);
-             int_sorts.push_back(int_sort_);
-          }
-          assert(t->get_sort()->get_codomain_sort()->get_sort_kind() == BV);
-          int_sorts.push_back(int_sort_);
-          Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
-          //cache fun symbol
-          cache_[uf] = solver_->make_symbol(uf->to_string() + "_bv2int", int_fun_sort);
-        }
         TermVec app_children(cached_children.begin(), cached_children.end());
+        assert(cache_.find(uf) != cache_.end());
         Term intuf = cache_[uf];
         app_children.at(0) = intuf;
         cache_[t] = solver_->make_term(Apply, app_children);
@@ -232,8 +217,26 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 
           extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
           cache_[t] = res;
+        } else if (sk == SortKind::FUNCTION) {
+           if (internal(t)) {
+              cache_[t] = t;
+           } else {
+               std::vector<Sort> bv_domain_sorts = t->get_sort()->get_domain_sorts();
+               //list of sorts for the translated function
+               //The last sort is the co-domain sort
+               std::vector<Sort> int_sorts;
+               for (auto s : bv_domain_sorts) {
+                  assert(s->get_sort_kind() == BV);
+                  int_sorts.push_back(int_sort_);
+               }
+               assert(t->get_sort()->get_codomain_sort()->get_sort_kind() == BV);
+               int_sorts.push_back(int_sort_);
+               Sort int_fun_sort = solver_->make_sort(FUNCTION, int_sorts);
+               //cache fun symbol
+               cache_[t] = solver_->make_symbol(t->to_string() + "_bv2int", int_fun_sort);
+           }
         } else {
-          assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
+          assert(sk == SortKind::BOOL);
           cache_[t] = t;
         }
       } else if (t->is_value()) {
@@ -247,9 +250,10 @@ WalkerStepResult BV2Int::visit_term(Term & t)
           size_t decimal_length = last_space_location - decimal_begin;
           string decimal = smtlib_string.substr(5, decimal_length);
           cache_[t] = solver_->make_term(decimal, int_sort_);
-        } else {
-          assert(sk == SortKind::BOOL || sk == SortKind::FUNCTION);
+        } else if (sk == SortKind::BOOL)  {
           cache_[t] = t;
+        } else {
+          assert(false);
         }
       }
     }
