@@ -680,8 +680,10 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
   for (auto &c : conjuncts) {
     Op op = c->get_op();
     //cout << op << " : " << c << endl;
-    if (op.prim_op == Equal) {
-      //cout << c << endl;
+    if (op.prim_op == Equal && c->get_sort()->get_sort_kind() != BOOL) {
+      // cvc4 represent IFF as EQUAL. the second condition is to exclude IFF
+      // case
+      cout << c << endl;
       TermVec children;
       for (auto tt : c) {
         children.push_back(tt);
@@ -707,21 +709,24 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
     }
   }
 
-  Term equiv = solver_->make_term(true);
-  UnorderedTermMap sigma;
-  for (auto k : relevant) {
-    Term v = ds.find(k);
-    //cout << k << " : " << v << endl;
-    if (k != v) {
-      sigma[k] = v;
-      Term eq = solver_->make_term(Equal, k, v);
-      equiv = solver_->make_term(And, equiv, eq);
+  Term res = t;
+  if (relevant.size() > 0) {
+    Term equiv = solver_->make_term(true);
+    UnorderedTermMap sigma;
+    for (auto k : relevant) {
+      Term v = ds.find(k);
+      //cout << k << " : " << v << endl;
+      if (k != v) {
+        sigma[k] = v;
+        Term eq = solver_->make_term(Equal, k, v);
+        equiv = solver_->make_term(And, equiv, eq);
+      }
     }
-  }
 
-  Term res = solver_->substitute(t, sigma);
-  if (preserve_equiv) {
-    res = solver_->make_term(And, res, equiv);
+    res = solver_->substitute(t, sigma);
+    if (preserve_equiv) {
+      res = solver_->make_term(And, res, equiv);
+    }
   }
 
   return res;
