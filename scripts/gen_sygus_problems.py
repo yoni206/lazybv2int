@@ -82,7 +82,7 @@ for op in OPS:
         
         nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
         lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
-        trivial_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "").replace("<addition>", "").replace("<inequalities>", "").replace("<negation>", "")
+        relational_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "").replace("<addition>", "").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
 
 
         problem_nia_explicit_constants = nia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
@@ -93,7 +93,7 @@ for op in OPS:
         problem_lia_zero_one_constants = lia_template.replace("<constants>", "0\n1")
         problem_lia_builtin_constants = lia_template.replace("<constants>", "(Constant Int)")
 
-        problem_trivial_explicit_constants = trivial_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
+        problem_relational_explicit_constants = relational_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
 
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_nia_explicit" +  ".sy"
         save_data_to_path(problem_nia_explicit_constants, path)
@@ -113,6 +113,6 @@ for op in OPS:
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_lia_builtin" +  ".sy"
         save_data_to_path(problem_lia_builtin_constants, path)
 
-        path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_trivial_explicit" +  ".sy"
-        save_data_to_path(problem_trivial_explicit_constants, path)
+        path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_relational_explicit" +  ".sy"
+        save_data_to_path(problem_relational_explicit_constants, path)
 
