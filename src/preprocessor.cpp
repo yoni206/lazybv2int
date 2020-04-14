@@ -27,7 +27,7 @@ static void conjunctive_partition(const Term & term, TermVec & out)
       visited.insert(t);
 
       Op op = t->get_op();
-      if (op == And) {
+      if (op.prim_op == And) {
         // add children to queue
         for (auto tt : t) {
           to_visit.push_back(tt);
@@ -641,14 +641,16 @@ void DisjointSet::add(Term &a, Term &b)
     leader_[a] = leaderb;
 
   } else {
-    leader_[a] = (a <= b) ? a : b;
-    leader_[b] = (a <= b) ? a : b;
+    leader_[a] = b; //(a->hash() <= b->hash()) ? a : b;
+    leader_[b] = b; //(a->hash() <= b->hash()) ? a : b;
 
-    if (a <= b) {
-      group_[a] = UnorderedTermSet({a, b});
-    } else {
-      group_[b] = UnorderedTermSet({a, b});
-    }
+    // if (a->hash() <= b->hash()) {
+    //   group_[a] = UnorderedTermSet({a, b});
+    // } else {
+    //   group_[b] = UnorderedTermSet({a, b});
+    // }
+
+    group_[a] = UnorderedTermSet({a, b});
   }
 }
 
@@ -675,42 +677,56 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
   conjunctive_partition(t, conjuncts);
 
   UnorderedTermSet relevant;
-  for (Term c : conjuncts) {
+  for (auto &c : conjuncts) {
     Op op = c->get_op();
     //cout << op << " : " << c << endl;
-    if (op.prim_op == Equal) {
-      //cout << c << endl;
+    if (op.prim_op == Equal && c->get_sort()->get_sort_kind() != BOOL) {
+      // cvc4 represent IFF as EQUAL. the second condition is to exclude IFF
+      // case
+      cout << c << endl;
       TermVec children;
       for (auto tt : c) {
         children.push_back(tt);
       }
 
-      if (children[0]->is_symbolic_const()) {
-        ds.add(children[0], children[1]);
-        relevant.insert(children[0]);
-      } else if (children[1]->is_symbolic_const()) {
-        ds.add(children[1], children[0]);
-        relevant.insert(children[1]);
+      if ((children[0]->is_symbolic_const() ||
+           children[0]->is_value()) &&
+          (children[1]->is_symbolic_const() ||
+           children[1]->is_value())) {
+        Term a, b;
+        if (children[0]->is_symbolic_const()) {
+          a = children[0];
+          b = children[1];
+        } else if (children[1]->is_symbolic_const()) {
+          a = children[1];
+          b = children[0];
+        } else {
+          continue;
+        }
+        ds.add(a, b);
+        relevant.insert(a);
       }
- 
     }
   }
 
-  Term equiv = solver_->make_term(true);
-  UnorderedTermMap sigma;
-  for (Term k : relevant) {
-    Term v = ds.find(k);
-    if (k != v) {
-      sigma[k] = v;
-
-      Term eq = solver_->make_term(Equal, k, v);
-      equiv = solver_->make_term(And, equiv, eq);
+  Term res = t;
+  if (relevant.size() > 0) {
+    Term equiv = solver_->make_term(true);
+    UnorderedTermMap sigma;
+    for (auto k : relevant) {
+      Term v = ds.find(k);
+      //cout << k << " : " << v << endl;
+      if (k != v) {
+        sigma[k] = v;
+        Term eq = solver_->make_term(Equal, k, v);
+        equiv = solver_->make_term(And, equiv, eq);
+      }
     }
-  }
 
-  Term res = solver_->substitute(t, sigma);
-  if (preserve_equiv) {
-    res = solver_->make_term(And, res, equiv);
+    res = solver_->substitute(t, sigma);
+    if (preserve_equiv) {
+      res = solver_->make_term(And, res, equiv);
+    }
   }
 
   return res;
@@ -736,6 +752,7 @@ Term Preprocessor::process(Term t)
     //   cout << res << endl;
     // }
   }
+
   return res;
 }
 
