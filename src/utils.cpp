@@ -310,3 +310,11 @@ Term utils::gen_mod(const Term &a, const Term &b, TermVec& side_effects)
   return res;
 }
 
+Term utils::int_val_to_bv_val(Term t, uint64_t bit_width) {
+  assert(t->get_sort() == int_sort_);
+  string t_str = t->to_string();
+  Sort bv_sort = solver_->make_sort(BV, bit_width);
+  Term res = solver_->make_term(t_str, bv_sort);
+  return res;
+}
+

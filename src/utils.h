@@ -28,6 +28,7 @@ public:
   static std::string pow2_str(uint64_t k);
   smt::Term make_range_constraint(const smt::Term & var, uint64_t bv_width);
 
+  smt::Term int_val_to_bv_val(smt::Term t, uint64_t bit_width);
   smt::Term create_fresh_var(std::string name, smt::Sort st);
 
   smt::Term fbvand_;
