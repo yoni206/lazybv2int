@@ -42,6 +42,21 @@ class OpEliminator : public smt::IdentityWalker
  private:
 };
 
+class OpOptimizer : public smt::IdentityWalker
+{
+  public:
+    OpOptimizer(smt::SmtSolver & solver);
+    ~OpOptimizer();
+
+    typedef smt::IdentityWalker super;
+    smt::Term process(smt::Term t);
+
+  protected:
+    smt::WalkerStepResult visit_term(smt::Term & term) override;
+
+  private:
+};
+
 class DisjointSet
 {
 public:
@@ -85,6 +100,8 @@ class Preprocessor
 
   // operator eliminator
   OpEliminator opelim_;
+  
+  OpOptimizer opopt_;
 
   // toplevel propagator
   TopLevelPropagator tlprop_;

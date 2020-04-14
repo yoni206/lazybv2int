@@ -10,10 +10,10 @@ TIME_LIMIT=6
 for f in `find $SMTLIB_FILES_DIR -name "*.smt2"`
 do
   cvc4_res=`runlim -t $TIME_LIMIT --output-file=tmp1.log $CVC4_PATH --incremental $f`
-  lbv2int_res_eager=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH $f --msat`
-  lbv2int_res_lazy=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement $f`
-  lbv2int_res_lazy_boolcomp=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement --use-boolcomp-bvops $f`
-  lbv2int_res_eager_boolcomp=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat`
+  lbv2int_res_eager=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH $f --msat --toplevel-prop`
+  lbv2int_res_lazy=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement --toplevel-prop $f`
+  lbv2int_res_lazy_boolcomp=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --lazy --full-refinement --use-boolcomp-bvops --toplevel-prop $f`
+  lbv2int_res_eager_boolcomp=`runlim -t $TIME_LIMIT --output-file=tmp2.log $LAZY_PATH --use-boolcomp-bvops $f --msat --toplevel-prop` 
 
   #consistency issues 1
   if [ "$lbv2int_res_eager" != "$lbv2int_res_lazy" ]

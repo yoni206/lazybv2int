@@ -42,7 +42,7 @@ static void conjunctive_partition(const Term & term, TermVec & out)
 
 // Using simplification and op elimination rewrite rules from CVC4:
 // https://github.com/CVC4/CVC4/tree/master/src/theory/bv
-enum RewriteRule
+enum EliminationRewriteRule
 {
   UdivZero = 0,
   AshrEliminate,
@@ -66,13 +66,16 @@ enum RewriteRule
   LshrByConst,
   SubEliminate,
   // Not meant to be used except for iteration
-  NUM_REWRITE_RULES
+  NUM_ELIMINATION_REWRITE_RULES
 };
 
+
+
+
 const std::map<
-    RewriteRule,
+    EliminationRewriteRule,
     std::function<bool(const Term & t, const TermVec & c, SmtSolver & s)>>
-    rr_applies({
+    elimination_rr_applies({
 
         { UdivZero,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
@@ -179,10 +182,10 @@ const std::map<
             return t->get_op() == BVSub;
           } } });
 
-const std::map<RewriteRule,
+const std::map<EliminationRewriteRule,
                std::function<Term(
                    const Term & t, const TermVec & children, SmtSolver & s)>>
-    rr_apply({
+    elimination_rr_apply({
 
         { UdivZero,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
@@ -491,6 +494,80 @@ const std::map<RewriteRule,
             return s->make_term(BVAdd, children[0], negb);
           } } });
 
+
+
+enum OptimizationRewriteRule
+{
+  FactorOutExtract = 0,
+  // Not meant to be used except for iteration
+  NUM_OPTIMIZATION_REWRITE_RULES
+};
+
+
+
+const std::map<
+    OptimizationRewriteRule,
+    std::function<bool(const Term & t, const TermVec & c, SmtSolver & s)>>
+    optimization_rr_applies({
+
+        { FactorOutExtract,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            //a[i:j]*b[i:j] with * in {&,|,xor}, and the same i and j.
+            //That is:
+            //A*B with:
+            //   (1) * is &/|/xor
+            //   (2) A is a[iA:jA] and B is b[iB:jB]
+            //   (3) iA=iB, jA=jB
+            //below, A is a[i:j], B is b[i:j]
+            Op star = t->get_op();
+            if (star != BVAnd && star != BVOr && star != BVXor) {
+              cout << "panda 1" << endl;
+              return false;
+            }
+            Term A = children[0];
+            Term B = children[1];
+            if (A->get_op().prim_op != Extract || B->get_op().prim_op !=Extract) {
+              cout << "panda 2" << endl;
+              return false;
+            }
+            uint64_t iA = A->get_op().idx0;
+            uint64_t jA = A->get_op().idx1;
+            uint64_t iB = B->get_op().idx0;
+            uint64_t jB = B->get_op().idx1;
+            if (iA != iB || jA != jB) {
+              cout << "panda 3" << endl;
+              return false;
+            }
+            cout << "panda 4" << endl;
+            return true;
+          } }
+          });
+
+
+const std::map<OptimizationRewriteRule,
+               std::function<Term(
+                   const Term & t, const TermVec & children, SmtSolver & s)>>
+    optimization_rr_apply({
+
+        { FactorOutExtract, 
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+
+              Op star = t->get_op();
+              Term A = children[0];
+              Term B = children[1];
+              uint64_t i = A->get_op().idx0;
+              uint64_t j = A->get_op().idx1;
+              TermVec vec(t->begin(), t->end());
+              Term a = vec.at(0);
+              Term b = vec.at(1);
+              Term starTerm = s->make_term(star, a, b);
+              Op extract_op(Extract, i, j);
+              Term extract = s->make_term(extract_op, a, b);
+              return extract;
+
+          } } });
+
+
 Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
 
 Binarizer::~Binarizer() {}
@@ -571,11 +648,11 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
       fixpoint = true;
 
       // iterate over all the rewrite rules and apply applicable ones
-      for (int rr_int = 0; rr_int < NUM_REWRITE_RULES; rr_int++) {
-        RewriteRule rr = static_cast<RewriteRule>(rr_int);
-        if (rr_applies.at(rr)(res, children, solver_)) {
+      for (int rr_int = 0; rr_int < NUM_ELIMINATION_REWRITE_RULES; rr_int++) {
+        EliminationRewriteRule rr = static_cast<EliminationRewriteRule>(rr_int);
+        if (elimination_rr_applies.at(rr)(res, children, solver_)) {
           fixpoint = false;
-          res = rr_apply.at(rr)(res, children, solver_);
+          res = elimination_rr_apply.at(rr)(res, children, solver_);
           // update children after rewriting
           children.clear();
           for (auto tt : res) {
@@ -589,6 +666,65 @@ WalkerStepResult OpEliminator::visit_term(Term & term)
   }
   return Walker_Continue;
 }
+
+OpOptimizer::OpOptimizer(SmtSolver& solver): super(solver, false) {}
+
+OpOptimizer::~OpOptimizer() {}
+
+Term OpOptimizer::process(Term t) {
+  Term res = visit(t);
+  return res;
+}
+
+WalkerStepResult OpOptimizer::visit_term(Term & term) 
+{
+  if (!preorder_) {
+    Op op = term->get_op();
+    if (op.is_null()) {
+      cache_[term] = term;
+      return Walker_Continue;
+    }
+
+    TermVec children;
+    for (auto tt : term) {
+      children.push_back(cache_.at(tt));
+    }
+    // rebuild it from cached children before rewriting
+    Term res = solver_->make_term(term->get_op(), children);
+
+    // now we need to update the op and children (in case the solver
+    // rewrote the term internally)
+    op = res->get_op();
+    children.clear();
+    for (auto tt : res)
+    {
+      children.push_back(tt);
+    }
+
+    bool fixpoint;
+    do {
+      fixpoint = true;
+
+      // iterate over all the rewrite rules and apply applicable ones
+      for (int rr_int = 0; rr_int < NUM_OPTIMIZATION_REWRITE_RULES; rr_int++) {
+        OptimizationRewriteRule rr = static_cast<OptimizationRewriteRule>(rr_int);
+        if (optimization_rr_applies.at(rr)(res, children, solver_)) {
+          fixpoint = false;
+          res = optimization_rr_apply.at(rr)(res, children, solver_);
+          // update children after rewriting
+          children.clear();
+          for (auto tt : res) {
+            children.push_back(tt);
+          }
+        }
+      }
+    } while (!fixpoint);
+
+    cache_[term] = res;
+  }
+  return Walker_Continue;
+}
+
 
 DisjointSet::DisjointSet()
 {
@@ -720,7 +856,8 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
 Preprocessor::Preprocessor(SmtSolver & solver) :
   bin_(solver),
   opelim_(solver),
-  tlprop_(solver)
+  tlprop_(solver),
+  opopt_(solver)
 {
 }
 
@@ -736,6 +873,7 @@ Term Preprocessor::process(Term t)
     //   cout << res << endl;
     // }
   }
+  res = opopt_.process(res);
   return res;
 }
 
