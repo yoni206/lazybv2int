@@ -368,27 +368,41 @@ Term BV2Int::handle_shift_eager(const Term & t,
   Op op = t->get_op();
   Term x = cached_children[0];
   Term y = cached_children[1];
-  // this will be the case where y is geq the bitwidth or is equal to zero.
-  Term y_is_zero = solver_->make_term(Equal, y, int_zero_);
-  Term ite = solver_->make_term(Ite, y_is_zero, x, int_zero_);
-  // all other cases
-  for (uint64_t i = 1; i < bv_width; i++) {
-    Term i_term = solver_->make_term(i, int_sort_);
-    Term div_mul_term;
-    Term p = pow2(i);
-    if (op.prim_op == BVShl) {
-      div_mul_term = solver_->make_term(Mult, x, p);
+  Term res;
+  if (y->is_value()) {
+    string y_str = y->to_string();
+    bool y_less_than_bw = (utils_.compare(y_str, bv_width) < 0);
+    if (y_less_than_bw) {
+      uint64_t y_int = strtoul(y_str.c_str(), NULL, 10);
+      Term two_to_the_y = utils_.pow2(y_int);
+      Term mul = solver_->make_term(Mult, x, two_to_the_y);
+      res = mul;
     } else {
-      assert(op == BVLshr);
-      div_mul_term = utils_.gen_intdiv(x, p, extra_assertions_);
+      res = int_zero_;
     }
-    Term condition = solver_->make_term(Equal, y, i_term);
-    ite = solver_->make_term(Ite, condition, div_mul_term, ite);
-  }
-  Term res = ite;
-  if (op.prim_op == BVShl) {
-    Term p = pow2(bv_width);
-    res = utils_.gen_mod(res, p, extra_assertions_);
+  } else {
+    // this will be the case where y is geq the bitwidth or is equal to zero.
+    Term y_is_zero = solver_->make_term(Equal, y, int_zero_);
+    Term ite = solver_->make_term(Ite, y_is_zero, x, int_zero_);
+    // all other cases
+    for (uint64_t i = 1; i < bv_width; i++) {
+      Term i_term = solver_->make_term(i, int_sort_);
+      Term div_mul_term;
+      Term p = pow2(i);
+      if (op.prim_op == BVShl) {
+        div_mul_term = solver_->make_term(Mult, x, p);
+      } else {
+        assert(op == BVLshr);
+        div_mul_term = utils_.gen_intdiv(x, p, extra_assertions_);
+      }
+      Term condition = solver_->make_term(Equal, y, i_term);
+      ite = solver_->make_term(Ite, condition, div_mul_term, ite);
+    }
+    res = ite;
+    if (op.prim_op == BVShl) {
+      Term p = pow2(bv_width);
+      res = utils_.gen_mod(res, p, extra_assertions_);
+    }
   }
   return res;
 }
