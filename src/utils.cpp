@@ -25,6 +25,14 @@ string utils::pow2_str(uint64_t k)
   return res.get_str();
 }
 
+int utils::compare(string x, uint64_t y)
+{
+  mpz_t a;
+  mpz_inits(a, NULL);
+  mpz_set_str(a, x.c_str(), 10);
+  return mpz_cmp_ui(a, y);
+}
+
 utils::utils(SmtSolver& solver) : solver_(solver) {
  
   int_sort_ = solver_->make_sort(INT);

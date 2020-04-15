@@ -26,6 +26,10 @@ public:
                          smt::TermVec & side_effects);
   smt::Term gen_bw(const smt::Op op, const uint64_t bv_width, uint64_t granularity, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   static std::string pow2_str(uint64_t k);
+  static int compare(std::string x, uint64_t y);
+  static int compare(uint64_t x, std::string y) {
+    return -1 * compare(y, x);
+  };
   smt::Term make_range_constraint(const smt::Term & var, uint64_t bv_width);
 
   smt::Term int_val_to_bv_val(smt::Term t, uint64_t bit_width);
