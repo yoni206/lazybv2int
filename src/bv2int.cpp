@@ -375,8 +375,14 @@ Term BV2Int::handle_shift_eager(const Term & t,
     if (y_less_than_bw) {
       uint64_t y_int = strtoul(y_str.c_str(), NULL, 10);
       Term two_to_the_y = utils_.pow2(y_int);
-      Term mul = solver_->make_term(Mult, x, two_to_the_y);
-      res = mul;
+      Term div_mul_term;
+      if (op.prim_op == BVShl) {
+        div_mul_term = solver_->make_term(Mult, x, two_to_the_y);
+      } else {
+        assert(op == BVLshr);
+        div_mul_term = utils_.gen_intdiv(x, two_to_the_y, extra_assertions_);
+      }
+      res = div_mul_term;
     } else {
       res = int_zero_;
     }
