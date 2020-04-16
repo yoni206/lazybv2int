@@ -86,6 +86,15 @@ Term utils::create_fresh_var(string name, Sort st)
   return res;
 }
 
+/**
+ * From smt-lib:
+ * (for all ((m Int) (n Int))
+      (=> (distinct n 0)
+          (let ((q (div m n)) (r (mod m n)))
+            (and (= m (+ (* n q) r))
+                 (<= 0 r (- (abs n) 1))))))
+ *
+ */
 
 Term utils::gen_euclid(Term m, Term n) {
   TermVec div_args = {fintdiv_, m, n};
@@ -93,7 +102,7 @@ Term utils::gen_euclid(Term m, Term n) {
   Term q = solver_->make_term(Apply, div_args);
   Term r = solver_->make_term(Apply, mod_args);
   
-  Term ne = solver_->make_term(Distinct, n, int_zero_);
+  Term gt = solver_->make_term(Gt, n, int_zero_);
   Term mul = solver_->make_term(Mult, n, q);
   Term plus = solver_->make_term(Plus, mul, r);
   Term eq = solver_->make_term(Equal, m, plus);
@@ -101,12 +110,14 @@ Term utils::gen_euclid(Term m, Term n) {
   //we actually know n >= 0. All int terms are supposed to be.
   Term minus = solver_->make_term(Minus, n, int_one_);
   Term le2 = solver_->make_term(Le, r, minus);
-  Term le3 = solver_->make_term(Le, int_zero_, q);
-  Term le4 = solver_->make_term(Le, q, m);
+  
+  //The following two are extra information that we decided not to include.
+  //Term le3 = solver_->make_term(Le, int_zero_, q);
+  //Term le4 = solver_->make_term(Le, q, m);
   Term le = solver_->make_term(And, le1, le2);
   le = solver_->make_term(And, le, le3);
   le = solver_->make_term(And, le, le4);
-  Term left = ne;
+  Term left = gt;
   Term right = solver_->make_term(And, eq, le); 
   if (n->is_value()) {
     if (n != int_zero_) {
