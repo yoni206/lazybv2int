@@ -115,8 +115,8 @@ Term utils::gen_euclid(Term m, Term n) {
   //Term le3 = solver_->make_term(Le, int_zero_, q);
   //Term le4 = solver_->make_term(Le, q, m);
   Term le = solver_->make_term(And, le1, le2);
-  le = solver_->make_term(And, le, le3);
-  le = solver_->make_term(And, le, le4);
+  //le = solver_->make_term(And, le, le3);
+  //le = solver_->make_term(And, le, le4);
   Term left = gt;
   Term right = solver_->make_term(And, eq, le); 
   if (n->is_value()) {
