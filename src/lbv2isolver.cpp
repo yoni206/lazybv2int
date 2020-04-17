@@ -284,12 +284,18 @@ void LBV2ISolver::do_assert_formula()
     assertions_.push_back(t_f);
 
     // extra constraints
+    UnorderedTermSet seen;
     const TermVec &extra_cons = bv2int_->get_extra_assertions();
     for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
       Term t = extra_cons[i];
-      Term t_p = postpro_->process(t);
-      solver_->assert_formula(t_p);
-      extra_assertions_.push_back(t_p);
+      if (seen.find(t) == seen.end()) {
+        //Term t_p = postpro_->process(t);
+        solver_->assert_formula(t);
+        seen.insert(t);
+      } else {
+        //cout << "skipping" << endl;
+      }
+      extra_assertions_.push_back(t);
     }
   }
 }

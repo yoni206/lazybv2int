@@ -683,7 +683,7 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
     if (op.prim_op == Equal && c->get_sort()->get_sort_kind() != BOOL) {
       // cvc4 represent IFF as EQUAL. the second condition is to exclude IFF
       // case
-      cout << c << endl;
+      //cout << c << endl;
       TermVec children;
       for (auto tt : c) {
         children.push_back(tt);
@@ -748,9 +748,6 @@ Term Preprocessor::process(Term t)
   res = opelim_.process(res);
   if (opts.toplevel_propagation) {
     res = tlprop_.process(res, false);
-    // if (res != t) {
-    //   cout << res << endl;
-    // }
   }
 
   return res;
