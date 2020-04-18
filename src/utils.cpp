@@ -50,6 +50,8 @@ utils::utils(SmtSolver& solver) : solver_(solver) {
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
   fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
+  fbvshl_ = solver_->make_symbol("fbv_shl", fbv_sort);
+  fbvlshr_ = solver_->make_symbol("fbv_lshr", fbv_sort);
 }
 
 
@@ -301,6 +303,79 @@ Term utils::gen_bw(const Op op, const uint64_t bv_width, uint64_t granularity, c
   // 2. asserted it's within the range constraints and each bit is equal
   return sigma;
 }
+
+
+
+
+Term utils::gen_shift_uf(const Op op, uint64_t bv_width, const Term & a, const Term & b)
+{
+  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
+  if (op.prim_op == BVShl) {
+    TermVec args = { fbvshl_, bv_width_term, a, b };
+    return solver_->make_term(Apply, args);
+  } else if (op.prim_op == BVLshr) {
+    TermVec args = { fbvlshr_, bv_width_term, a, b };
+    return solver_->make_term(Apply, args);
+  } else {
+    assert(false);
+  }
+}
+
+
+Term utils::gen_shift_result(const Op op, const uint64_t bv_width, const Term &x, const Term &y, TermVec& side_effects) {
+  Term res;
+  if (y->is_value()) {
+    string y_str = y->to_string();
+    bool y_less_than_bw = (compare(y_str, bv_width) < 0);
+    if (y_less_than_bw) {
+      uint64_t y_int = strtoul(y_str.c_str(), NULL, 10);
+      Term two_to_the_y = pow2(y_int);
+      Term div_mul_term;
+      if (op.prim_op == BVShl) {
+        div_mul_term = solver_->make_term(Mult, x, two_to_the_y);
+      } else {
+        assert(op == BVLshr);
+        div_mul_term = gen_intdiv(x, two_to_the_y, side_effects);
+      }
+      res = div_mul_term;
+    } else {
+      res = int_zero_;
+    }
+  } else {
+    // this will be the case where y is geq the bitwidth or is equal to zero.
+    Term y_is_zero = solver_->make_term(Equal, y, int_zero_);
+    Term ite = solver_->make_term(Ite, y_is_zero, x, int_zero_);
+    // all other cases
+    for (uint64_t i = 1; i < bv_width; i++) {
+      Term i_term = solver_->make_term(i, int_sort_);
+      Term div_mul_term;
+      Term p = pow2(i);
+      if (op.prim_op == BVShl) {
+        div_mul_term = solver_->make_term(Mult, x, p);
+      } else {
+        assert(op == BVLshr);
+        div_mul_term = gen_intdiv(x, p, side_effects);
+      }
+      Term condition = solver_->make_term(Equal, y, i_term);
+      ite = solver_->make_term(Ite, condition, div_mul_term, ite);
+    }
+    res = ite;
+    if (op.prim_op == BVShl) {
+      Term p = pow2(bv_width);
+      res = gen_mod(res, p, side_effects);
+    }
+  }
+  return res;
+}
+
+
+Term utils::gen_shift(const Op op, const uint64_t bv_width, const Term &a, const Term &b, TermVec& side_effects) {
+  Term res = gen_shift_uf(op, bv_width, a, b);
+  Term shift_result = gen_shift_result(op, bv_width, a, b, side_effects);
+  side_effects.push_back(solver_->make_term(Equal, res, shift_result));
+  return res;
+}
+
 
 Term utils::gen_intdiv(const Term &a, const Term &b, TermVec& side_effects)
 {

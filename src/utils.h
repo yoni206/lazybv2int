@@ -20,6 +20,13 @@ public:
                       const smt::Term & a,
                       const smt::Term & b);
   smt::Term gen_bw_sum(const smt::Op op, uint64_t bv_width, uint64_t granularity, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
+
+
+  smt::Term gen_shift_uf(const smt::Op op, uint64_t bv_width, const smt::Term & a, const smt::Term & b);
+  smt::Term gen_shift_result(const smt::Op op, const uint64_t bv_width, const smt::Term &x, const smt::Term &y, smt::TermVec& side_effects);
+  smt::Term gen_shift(const smt::Op op, const uint64_t bv_width, const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
+
+
   void gen_bw_equalities(const smt::Op op,
                          uint64_t bv_width,
                          uint64_t granularity,
@@ -45,8 +52,8 @@ public:
   smt::Term fintmod_;
   smt::Term fsigadd_;
   smt::Term fsigmul_;
-  smt::Term fbvlshift_;
-  smt::Term fbvrshift_;
+  smt::Term fbvshl_;
+  smt::Term fbvlshr_;
 
 private:
   smt::Term gen_euclid(smt::Term m, smt::Term n);

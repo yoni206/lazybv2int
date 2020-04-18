@@ -165,7 +165,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
         cache_[t] = res;
       } else if (is_shift_op(op)) {
         uint64_t bv_width = t->get_sort()->get_width();
-        Term res = handle_shift_eager(t, bv_width, cached_children);
+        Term res = handle_shift_op(t, bv_width, cached_children);
         cache_[t] = res;
       } else if (op.prim_op == Apply) {
         Term uf = *(t->begin());
@@ -310,7 +310,6 @@ Term BV2Int::handle_bw_op(const Term & t,
   assert(cached_children.size() == 2);
   Term x = cached_children[0];
   Term y = cached_children[1];
-  Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
 
   // sort args (to handle symmetry)
   if (x->hash() > y->hash()) {
@@ -335,54 +334,25 @@ Term BV2Int::handle_bw_op(const Term & t,
 
 bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
-Term BV2Int::handle_shift_eager(const Term & t,
+
+Term BV2Int::handle_shift_op(const Term & t,
                                 uint64_t bv_width,
                                 const TermVec & cached_children)
 {
   Op op = t->get_op();
+  assert(cached_children.size() == 2);
   Term x = cached_children[0];
   Term y = cached_children[1];
+
   Term res;
-  if (y->is_value()) {
-    string y_str = y->to_string();
-    bool y_less_than_bw = (utils_.compare(y_str, bv_width) < 0);
-    if (y_less_than_bw) {
-      uint64_t y_int = strtoul(y_str.c_str(), NULL, 10);
-      Term two_to_the_y = utils_.pow2(y_int);
-      Term div_mul_term;
-      if (op.prim_op == BVShl) {
-        div_mul_term = solver_->make_term(Mult, x, two_to_the_y);
-      } else {
-        assert(op == BVLshr);
-        div_mul_term = utils_.gen_intdiv(x, two_to_the_y, extra_assertions_);
-      }
-      res = div_mul_term;
-    } else {
-      res = int_zero_;
-    }
+  if (lazy_bw_) {
+    //TODO currently lazy and eager do the same for shift. 
+    //Once there is a proper handling of shift in lazy,
+    //the following line should be uncommented and the one that follows deleted.
+    //res = utils_.gen_shift_uf(op, bv_width, x, y);
+    res = utils_.gen_shift(op, bv_width, x, y, extra_assertions_);
   } else {
-    // this will be the case where y is geq the bitwidth or is equal to zero.
-    Term y_is_zero = solver_->make_term(Equal, y, int_zero_);
-    Term ite = solver_->make_term(Ite, y_is_zero, x, int_zero_);
-    // all other cases
-    for (uint64_t i = 1; i < bv_width; i++) {
-      Term i_term = solver_->make_term(i, int_sort_);
-      Term div_mul_term;
-      Term p = pow2(i);
-      if (op.prim_op == BVShl) {
-        div_mul_term = solver_->make_term(Mult, x, p);
-      } else {
-        assert(op == BVLshr);
-        div_mul_term = utils_.gen_intdiv(x, p, extra_assertions_);
-      }
-      Term condition = solver_->make_term(Equal, y, i_term);
-      ite = solver_->make_term(Ite, condition, div_mul_term, ite);
-    }
-    res = ite;
-    if (op.prim_op == BVShl) {
-      Term p = pow2(bv_width);
-      res = utils_.gen_mod(res, p, extra_assertions_);
-    }
+    res = utils_.gen_shift(op, bv_width, x, y, extra_assertions_);
   }
   return res;
 }

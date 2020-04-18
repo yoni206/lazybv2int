@@ -27,8 +27,8 @@ class BV2Int : smt::IdentityWalker
   const smt::Term & fbv_and() const { return utils_.fbvand_; }
   const smt::Term & fbv_or() const { return utils_.fbvor_; }
   const smt::Term & fbv_xor() const { return utils_.fbvxor_; }
-  const smt::Term & fbv_lshift() const { return utils_.fbvlshift_; }
-  const smt::Term & fbv_rshift() const { return utils_.fbvrshift_; }
+  const smt::Term & fbv_lshift() const { return utils_.fbvshl_; }
+  const smt::Term & fbv_rshift() const { return utils_.fbvlshr_; }
 
   const smt::TermVec & fbv_terms() const { return fterms_; }
 
@@ -55,7 +55,7 @@ private:
   smt::Term handle_bw_op_eager(const smt::Term & t,
                                uint64_t bv_width,
                                const smt::TermVec & cached_children);
-  smt::Term handle_shift_eager(const smt::Term & t,
+  smt::Term handle_shift_op(const smt::Term & t,
                                uint64_t bv_width,
                                const smt::TermVec & cached_children);
   bool is_shift_op(smt::Op op);
