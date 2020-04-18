@@ -27,3 +27,15 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-------------------------------------------------------------------------------
+ Third-Party Software
+-------------------------------------------------------------------------------
+
+The lazybv2int source code uses third-party software which has its own
+copyright and licensing terms, as described below.
+
+lazybv2int uses MathSAT SMTLIB Parser via MathSAT API. MathSAT license is 
+restricted to research-only usage. For more details, see 
+https://mathsat.fbk.eu/download.html
+
