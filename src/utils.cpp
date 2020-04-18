@@ -36,11 +36,13 @@ int utils::compare(string x, uint64_t y)
 utils::utils(SmtSolver& solver) : solver_(solver) {
  
   int_sort_ = solver_->make_sort(INT);
-  Sort euclid_sort = solver_->make_sort(
+  Sort int_int_int_sort = solver_->make_sort(
       FUNCTION, SortVec{int_sort_, int_sort_, int_sort_ }
       );
-  fintdiv_ = solver_->make_symbol("fint_div", euclid_sort);
-  fintmod_ = solver_->make_symbol("fint_mod", euclid_sort);
+  fintdiv_ = solver_->make_symbol("fint_div", int_int_int_sort);
+  fintmod_ = solver_->make_symbol("fint_mod", int_int_int_sort);
+  fsigadd_ = solver_->make_symbol("fsig_add", int_int_int_sort);
+  fsigmul_ = solver_->make_symbol("fsig_mul", int_int_int_sort);
   int_zero_ = solver_->make_term(0, int_sort_);
   int_one_ = solver_->make_term(1, int_sort_);
   Sort fbv_sort = solver_->make_sort(
@@ -312,6 +314,33 @@ Term utils::gen_intdiv(const Term &a, const Term &b, TermVec& side_effects)
   Term res = solver_->make_term(Apply, args);
   Term euclid = gen_euclid(a,b);
   side_effects.push_back(euclid);
+  return res;
+}
+
+Term utils::gen_add_sigma(const TermVec& children, TermVec& side_effects, uint64_t bv_width) {
+  TermVec args = {fsigadd_, children[0], children[1]};
+  Term res = solver_->make_term(Apply, args);
+  side_effects.push_back(solver_->make_term(Ge, res, int_zero_));
+  side_effects.push_back(solver_->make_term(
+      Lt,
+      res,
+      solver_->make_term(to_string(children.size()), int_sort_)));
+  return res;
+}
+
+Term utils::gen_mul_sigma(const TermVec& children, TermVec& side_effects, uint64_t bv_width) {
+  TermVec args = {fsigmul_, children[0], children[1]};
+  Term res = solver_->make_term(Apply, args);
+
+  if (children[0]->is_value() || children[1]->is_value()) {
+    // linear multiplication optimization
+    Term c = children[0]->is_value() ? children[0]
+                                            : children[1];
+    side_effects.push_back(solver_->make_term(Ge, res, int_zero_));
+    side_effects.push_back(solver_->make_term(Lt, res, c));
+  } else {
+    side_effects.push_back(make_range_constraint(res, bv_width));
+  }
   return res;
 }
 

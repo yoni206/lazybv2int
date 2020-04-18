@@ -10,6 +10,9 @@ public:
   utils(smt::SmtSolver& solver);
   ~utils() {};
   smt::Term pow2(uint64_t k);
+
+  smt::Term gen_mul_sigma(const smt::TermVec& children, smt::TermVec& side_effects, uint64_t bv_width);
+  smt::Term gen_add_sigma(const smt::TermVec& children, smt::TermVec& side_effects, uint64_t bv_width);
   smt::Term gen_intdiv(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   smt::Term gen_mod(const smt::Term &a, const smt::Term &b, smt::TermVec& side_effects);
   smt::Term gen_bw_uf(const smt::Op op,
@@ -40,6 +43,8 @@ public:
   smt::Term fbvxor_;
   smt::Term fintdiv_;
   smt::Term fintmod_;
+  smt::Term fsigadd_;
+  smt::Term fsigmul_;
   smt::Term fbvlshift_;
   smt::Term fbvrshift_;
 

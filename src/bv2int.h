@@ -36,7 +36,6 @@ class BV2Int : smt::IdentityWalker
     return extra_assertions_;
   };
 
-  const smt::TermVec & get_extra_vars() const { return extra_vars_; }
   const smt::UnorderedTermSet & get_int_vars() const { return int_vars_; }
 
 
@@ -67,12 +66,11 @@ private:
   bool is_bw_op(smt::Op op);
 
   smt::TermVec extra_assertions_;
-  smt::TermVec extra_vars_;
   smt::UnorderedTermSet int_vars_;  ///< integer versions of bv vars
   // list of abstract (lazy_bv_op) terms
   smt::TermVec fterms_;
 
-  typedef std::tuple<smt::UnorderedTermMap, size_t, size_t, size_t>
+  typedef std::tuple<smt::UnorderedTermMap, size_t, size_t>
       stack_entry_t;
   std::vector<stack_entry_t> stack_;
 

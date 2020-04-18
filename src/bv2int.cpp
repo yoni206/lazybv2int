@@ -41,7 +41,6 @@ void BV2Int::reset()
 {
   cache_.clear();
   extra_assertions_.clear();
-  extra_vars_.clear();
   fterms_.clear();
   stack_.clear();
 }
@@ -49,7 +48,7 @@ void BV2Int::reset()
 void BV2Int::push()
 {
   stack_.push_back(stack_entry_t(
-      cache_, extra_assertions_.size(), extra_vars_.size(), fterms_.size()));
+      cache_, extra_assertions_.size(), fterms_.size()));
 }
 
 void BV2Int::pop()
@@ -58,8 +57,7 @@ void BV2Int::pop()
   stack_entry_t e = stack_.back();
   cache_ = std::get<0>(e);
   extra_assertions_.resize(std::get<1>(e));
-  extra_vars_.resize(std::get<2>(e));
-  fterms_.resize(std::get<3>(e));
+  fterms_.resize(std::get<2>(e));
   stack_.pop_back();
 }
 
@@ -82,46 +80,22 @@ WalkerStepResult BV2Int::visit_term(Term & t)
 
       else if (op.prim_op == BVAdd) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_add_" + to_string(extra_vars_.size());
-        Term sigma = utils_.create_fresh_var(name, int_sort_);
-        extra_vars_.push_back(sigma);
+        Term sigma = utils_.gen_add_sigma(cached_children, extra_assertions_, bv_width);
         Term plus = solver_->make_term(Plus, cached_children);
         Term p = pow2(bv_width);
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, plus, multSig);
-        extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
-        extra_assertions_.push_back(solver_->make_term(
-            Lt,
-            sigma,
-            solver_->make_term(to_string(cached_children.size()), int_sort_)));
         extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
-
         cache_[t] = res;
-
       } else if (op.prim_op == BVMul) {
         uint64_t bv_width = t->get_sort()->get_width();
-        string name = "sigma_mul_" + to_string(extra_vars_.size());
-        Term sigma = utils_.create_fresh_var(name, int_sort_);
-        extra_vars_.push_back(sigma);
+        Term sigma = utils_.gen_mul_sigma(cached_children, extra_assertions_, bv_width);
         Term mul = solver_->make_term(Mult, cached_children);
         Term p = pow2(bv_width);
         Term multSig = solver_->make_term(Mult, sigma, p);
         Term res = solver_->make_term(Minus, mul, multSig);
-
         extra_assertions_.push_back(utils_.make_range_constraint(res, bv_width));
-
-        if (cached_children[0]->is_value() || cached_children[1]->is_value()) {
-          // linear multiplication optimization
-          Term c = cached_children[0]->is_value() ? cached_children[0]
-                                                  : cached_children[1];
-          extra_assertions_.push_back(solver_->make_term(Ge, sigma, int_zero_));
-          extra_assertions_.push_back(solver_->make_term(Lt, sigma, c));
-        } else {
-          extra_assertions_.push_back(utils_.make_range_constraint(sigma, bv_width));
-        }
-
         cache_[t] = res;
-
       } else if (op.prim_op == BVUdiv) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term div = utils_.gen_intdiv(cached_children[0], cached_children[1], extra_assertions_);
