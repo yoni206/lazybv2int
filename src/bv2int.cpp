@@ -41,14 +41,14 @@ void BV2Int::reset()
 {
   cache_.clear();
   extra_assertions_.clear();
-  fterms_.clear();
+  f_bw_terms_.clear();
   stack_.clear();
 }
 
 void BV2Int::push()
 {
   stack_.push_back(stack_entry_t(
-      cache_, extra_assertions_.size(), fterms_.size()));
+      cache_, extra_assertions_.size(), f_bw_terms_.size()));
 }
 
 void BV2Int::pop()
@@ -57,7 +57,7 @@ void BV2Int::pop()
   stack_entry_t e = stack_.back();
   cache_ = std::get<0>(e);
   extra_assertions_.resize(std::get<1>(e));
-  fterms_.resize(std::get<2>(e));
+  f_bw_terms_.resize(std::get<2>(e));
   stack_.pop_back();
 }
 
@@ -327,7 +327,7 @@ Term BV2Int::handle_bw_op(const Term & t,
     res = utils_.gen_bw(op, bv_width, granularity_, x, y, extra_assertions_);
   }
 
-  fterms_.push_back(res);
+  f_bw_terms_.push_back(res);
 
   return res;
 }
