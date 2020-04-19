@@ -74,6 +74,8 @@ class LBV2ISolver : public smt::AbsSmtSolver
   bool refine_bvxor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
   bool refine_final(smt::Op op, const smt::TermVec & fterms, smt::TermVec & outlemmas);
 
+  bool try_sat_check();
+
   // print result and values based on options
   void print_result(smt::Result res) const;
 
@@ -96,6 +98,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
   // smt-switch solver
   smt::SmtSolver & solver_;
+  smt::SmtSolver sat_checker_;
+  // term transfer to sat_checker
+  smt::TermTranslator tr_sat_checker_;
 
   // assertion stack
   smt::TermVec orig_assertions_;

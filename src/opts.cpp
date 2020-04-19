@@ -39,6 +39,8 @@ void set_opt(string option)
     opts.dump = true;
   } else if (option == "--toplevel-prop") {
     opts.toplevel_propagation = true;
+  } else if (option == "--sat-checker") {
+    opts.sat_checker = true;
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();
@@ -64,6 +66,7 @@ void help_msg(string bin_name)
       << "\n\t--msat : use mathsat as the underlying solver "
       << "\n\t--dump : dump the NIA translation file to tmp.solver.smt2 "
       << "\n\t--toplevel-prop : enable toplevel propagation in preprocessing "
+      << "\n\t--sat-checker : use separate sat checker with the lazy mode "
       << endl;
 }
 

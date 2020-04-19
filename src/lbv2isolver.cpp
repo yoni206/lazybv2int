@@ -8,6 +8,9 @@
 
 #include "msat/include/msat_term.h"
 
+#include "smt-switch/cvc4_factory.h"
+#include "smt-switch/msat_factory.h"
+
 #include "opts.h"
 #include "smtlibmsatparser.h"
 
@@ -16,6 +19,31 @@ using namespace std;
 
 namespace lbv2i {
 
+static void get_vars(Term term, TermVec & out)
+{
+  TermVec to_visit({ term });
+  UnorderedTermSet visited;
+
+  Term t;
+  while (to_visit.size()) {
+    t = to_visit.back();
+    to_visit.pop_back();
+
+    if (visited.find(t) == visited.end()) {
+      visited.insert(t);
+
+      if (t->is_symbolic_const()) {
+        out.push_back(t);
+      } else {// add children to queue
+        for (auto tt : t) {
+          to_visit.push_back(tt);
+        }
+      }
+    }
+  }
+}
+
+
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     : bv2int_(new BV2Int(solver, false, lazy)),
       prepro_(new Preprocessor(solver)),
@@ -23,10 +51,18 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       axioms_(
           solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
       solver_(solver),
+      tr_sat_checker_(sat_checker_),
+      sat_checker_(NULL),
       lazy_(lazy)
 {
   if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
+  }
+
+  if (opts.solver == "cvc4") {
+    sat_checker_ = CVC4SolverFactory::create();
+  } else if (opts.solver == "msat") {
+    sat_checker_ = MsatSolverFactory::create();
   }
 }
 
@@ -70,6 +106,10 @@ Result LBV2ISolver::solve()
 
     if (r.is_unsat()) {
       break;
+    } else if (lazy_ && opts.sat_checker) {
+      if (try_sat_check()) {
+        return r;
+      }
     }
 
     lemmas.clear();
@@ -224,7 +264,12 @@ void LBV2ISolver::push(uint64_t num)
     stack_.push_back(stack_entry_t(orig_assertions_.size(), assertions_.size(),
                                    extra_assertions_.size()));
   }
+
   solver_->push(num);
+
+  if (opts.lazy && opts.sat_checker) {
+    sat_checker_->push(num);
+  }
 }
 
 void LBV2ISolver::pop(uint64_t num)
@@ -242,6 +287,10 @@ void LBV2ISolver::pop(uint64_t num)
   extra_assertions_.resize(std::get<2>(e));
 
   solver_->pop(num);
+
+  if (opts.lazy && opts.sat_checker) {
+    sat_checker_->pop(num);
+  }
 }
 
 void LBV2ISolver::reset()
@@ -272,6 +321,9 @@ void LBV2ISolver::do_assert_formula()
     // preprocess the formula
     Term pre_f = prepro_->process(f);
 
+    if (opts.lazy && opts.sat_checker) {
+      sat_checker_->assert_formula(tr_sat_checker_.transfer_term(pre_f));
+    }
     // translate
     Term t_f = bv2int_->convert(pre_f);
 
@@ -739,6 +791,43 @@ void LBV2ISolver::run(string filename)
   //     }
   //   }
   // }
+}
+
+bool LBV2ISolver::try_sat_check()
+{
+  Term formula = solver_->make_term(true);
+  for (auto &t : orig_assertions_) {
+    formula = solver_->make_term(And, formula, t);
+  }
+
+  const UnorderedTermMap& map = bv2int_->get_cache();
+  TermVec vars;
+  get_vars(formula, vars);
+
+  TermVec assumptions;
+  utils & utils = bv2int_->get_utils();
+
+  for (auto &v : vars) {
+    Sort s = v->get_sort();
+    SortKind sk = s->get_sort_kind();
+    if (sk == SortKind::BV) {
+      assert(map.find(v) != map.end());
+      Term int_v = map.at(v);
+      Term int_val = solver_->get_value(int_v);
+      Term bv_val = utils.int_val_to_bv_val(int_val, s->get_width());
+      Term v_eq_val = solver_->make_term(Equal, v, bv_val);
+      assumptions.push_back(tr_sat_checker_.transfer_term(v_eq_val));
+    }
+  }
+
+  sat_checker_->push();
+  for (auto &a : assumptions) {
+    sat_checker_->assert_formula(a);
+  }
+  Result r = sat_checker_->check_sat();
+  sat_checker_->pop();
+
+  return r.is_sat();
 }
 
 void LBV2ISolver::print_result(Result res) const

@@ -42,6 +42,8 @@ class BV2Int : smt::IdentityWalker
   uint64_t granularity() {return granularity_;}
   utils& get_utils() {return utils_;}
 
+  const smt::UnorderedTermMap & get_cache() const { return cache_; }
+
 private:
   smt::Term pow2(uint64_t k);
   smt::Term make_bvnot_term(const smt::Term & x, uint64_t k);

@@ -15,6 +15,7 @@ struct Options
   bool print_sigma_values;
   bool dump;
   bool toplevel_propagation;
+  bool sat_checker;
   std::string solver;
 
   Options()
@@ -29,6 +30,7 @@ struct Options
     solver = "cvc4";
     dump = false;
     toplevel_propagation = false;
+    sat_checker = false;
   }
 };
 
