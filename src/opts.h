@@ -17,6 +17,7 @@ struct Options
   bool toplevel_propagation;
   bool sat_checker;
   uint32_t sat_checker_limit;
+  bool sat_checker_filter;
   std::string solver;
 
   Options()
@@ -33,6 +34,7 @@ struct Options
     toplevel_propagation = false;
     sat_checker = false;
     sat_checker_limit = 0;
+    sat_checker_filter = false;
   }
 };
 

@@ -44,6 +44,8 @@ void set_opt(string option)
   } else if (option.rfind("--sat-checker-limit=", 0) == 0) {
     uint32_t limit = stoi(option.substr(20, option.length() - 20));
     opts.sat_checker_limit = limit;
+  } else if (option == "--sat-checker-filter") {
+    opts.sat_checker_filter = true;
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();

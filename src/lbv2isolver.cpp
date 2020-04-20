@@ -795,6 +795,7 @@ void LBV2ISolver::run(string filename)
 
 bool LBV2ISolver::try_sat_check()
 {
+  //cout << "SAT CHECKER" << endl;
   Term formula = solver_->make_term(true);
   for (auto &t : orig_assertions_) {
     formula = solver_->make_term(And, formula, t);
@@ -804,14 +805,30 @@ bool LBV2ISolver::try_sat_check()
   TermVec vars;
   get_vars(formula, vars);
 
+  UnorderedTermSet filter_vars;
+  if (opts.sat_checker_filter) {
+    TermVec tmp_vars;
+    for (auto &t : bv2int_->fbv_terms()) {
+      get_vars(t, tmp_vars);
+    }
+    for (auto &v : tmp_vars) {
+      filter_vars.insert(v);
+    }
+  }
+
   TermVec assumptions;
   utils & utils = bv2int_->get_utils();
 
   for (auto &v : vars) {
     Sort s = v->get_sort();
     SortKind sk = s->get_sort_kind();
+    assert(map.find(v) != map.end());
+    if (opts.sat_checker_filter &&
+        filter_vars.find(map.at(v)) != filter_vars.end()) {
+      //cout << "Dropping " << v << endl;
+      continue;
+    }
     if (sk == SortKind::BV && s->get_width() > opts.sat_checker_limit) {
-      assert(map.find(v) != map.end());
       Term int_v = map.at(v);
       Term int_val = solver_->get_value(int_v);
       Term bv_val = utils.int_val_to_bv_val(int_val, s->get_width());
@@ -822,11 +839,12 @@ bool LBV2ISolver::try_sat_check()
 
   sat_checker_->push();
   for (auto &a : assumptions) {
+    cout << a << endl;
     sat_checker_->assert_formula(a);
   }
   Result r = sat_checker_->check_sat();
   sat_checker_->pop();
-
+  //  cout << "SAT CHECKER DONE" << endl;
   return r.is_sat();
 }
 
