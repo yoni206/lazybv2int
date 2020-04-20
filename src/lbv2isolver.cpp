@@ -810,7 +810,7 @@ bool LBV2ISolver::try_sat_check()
   for (auto &v : vars) {
     Sort s = v->get_sort();
     SortKind sk = s->get_sort_kind();
-    if (sk == SortKind::BV) {
+    if (sk == SortKind::BV && s->get_width() > opts.sat_checker_limit) {
       assert(map.find(v) != map.end());
       Term int_v = map.at(v);
       Term int_val = solver_->get_value(int_v);

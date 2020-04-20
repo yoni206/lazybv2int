@@ -41,6 +41,9 @@ void set_opt(string option)
     opts.toplevel_propagation = true;
   } else if (option == "--sat-checker") {
     opts.sat_checker = true;
+  } else if (option.rfind("--sat-checker-limit=", 0) == 0) {
+    uint32_t limit = stoi(option.substr(20, option.length() - 20));
+    opts.sat_checker_limit = limit;
   } else {
     cout << "Unrecognized option: " << option << endl;
     throw std::exception();
@@ -67,6 +70,7 @@ void help_msg(string bin_name)
       << "\n\t--dump : dump the NIA translation file to tmp.solver.smt2 "
       << "\n\t--toplevel-prop : enable toplevel propagation in preprocessing "
       << "\n\t--sat-checker : use separate sat checker with the lazy mode "
+      << "\n\t--sat-checker-limit=[0-inf] : consider variable with bit-width that are greater than the limit "
       << endl;
 }
 
