@@ -73,6 +73,7 @@ void help_msg(string bin_name)
       << "\n\t--toplevel-prop : enable toplevel propagation in preprocessing "
       << "\n\t--sat-checker : use separate sat checker with the lazy mode "
       << "\n\t--sat-checker-limit=[0-inf] : consider variable with bit-width that are greater than the limit "
+      << "\n\t--sat-checker-filter : don't consider variables that appear in the abstracted bv terms (e.g. bvand) for sat-checker assumptions "
       << endl;
 }
 
