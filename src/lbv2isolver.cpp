@@ -136,9 +136,7 @@ Result LBV2ISolver::solve()
 void LBV2ISolver::dump_smt2() {
   if (opts.dump) {
     if (opts.solver == "msat") {
-      FILE * f = fopen("tmp.solver.smt2", "w");
-      solver_->dump_smt2(f);
-      fclose(f);
+      solver_->dump_smt2("tmp.solver.smt2");
     } else {
       cout << "no dumping with --cvc4, only with --msat." << endl;
     }
