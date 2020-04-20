@@ -839,7 +839,7 @@ bool LBV2ISolver::try_sat_check()
 
   sat_checker_->push();
   for (auto &a : assumptions) {
-    cout << a << endl;
+    //cout << a << endl;
     sat_checker_->assert_formula(a);
   }
   Result r = sat_checker_->check_sat();
