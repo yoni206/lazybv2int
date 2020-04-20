@@ -249,6 +249,14 @@ void LBV2ISolver::set_opt(string op, string value)
 
 Term LBV2ISolver::get_value(Term & t) const
 {
+  // handle special case of booleans
+  // useful for cosa
+  if (t->get_sort()->get_sort_kind() == BOOL)
+  {
+    Term pre_t = prepro_->process(t);
+    Term final_t = bv2int_->convert(pre_t);
+    return solver_->get_value(final_t);
+  }
   // Need to do this by translating back to bv...
   assert(false);
 }
