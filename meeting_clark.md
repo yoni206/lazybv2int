@@ -68,6 +68,9 @@ But sygus finds shorter representations.
 * sygus benchmarks and results, sizes of generated functions
 * sygus is interesting but does not seem to be very useful...
 
+## SMT-COMP
+* We plan to submit it to SMT-COMP QF_BV incremental+non-incremental
+
 ## License
 * we want BSD 3
 * we use mathsat:
