@@ -1,14 +1,12 @@
-## Good News
+## So Far
 * Tool is working
 * no errors on 2019 QF_BV incremental/non-incremental 5min timeouts
 * also no discrepencies
-
-## Bad News
-* Performence is not amazing
-* Not a lot of contribution to virtual best solver w.r.t. 2019 winners
-
-## Medium News
 * Contribution improves for virtual timeout of 1 sec in non-incremental
+
+## Need to improve the performance
+* Performence is not amazing (we were focusing on the correctness -- now working on performance tricks)
+* Not a lot of contribution to virtual best solver w.r.t. 2019 winners
 
 
 ## Techniques
