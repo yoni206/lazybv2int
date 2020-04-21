@@ -1,3 +1,10 @@
+## Overview
+* `lazybv2int` is an SMT-solver for QF_BV and QF_UFBV, both incremental and non-incremental.
+* It is implemented in c++, on top of smt-switch
+* The backend solvers are cvc4 and mathsat
+* We use CVC4's UFNIA solver
+* We use mathsat's UFNIA solver + parser
+
 ## So Far
 * Tool is working
 * no errors on 2019 QF_BV incremental/non-incremental 5min timeouts
