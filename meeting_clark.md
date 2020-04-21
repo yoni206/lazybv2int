@@ -49,6 +49,11 @@ But sygus finds shorter representations.
   *f(k,x,y) >= [---------] /\ f(k,x,y) <= [--------]
 * lazy granularity: how fast to do these steps
 
+## TODO
+* lazy shift operator
+* better spuriousness check
+* under-approximate SAT check
+
 ## What can be reported in a paper?
 * SMTLIB QF_BV - not a lot of contribution
 * trying to get blockchain benchmars from ethereum, but.... who knows
