@@ -33,6 +33,40 @@ int utils::compare(string x, uint64_t y)
   return mpz_cmp_ui(a, y);
 }
 
+string utils::mod_value(string a, string b)
+{
+  mpz_t az, bz, rz;
+  mpz_inits(az, bz, rz, NULL);
+  mpz_set_str(az, a.c_str(), 10);
+  mpz_set_str(bz, b.c_str(), 10);
+
+  mpz_mod(rz, az, bz);
+
+  mpz_class res(rz);
+
+  mpz_clear(az);
+  mpz_clear(bz);
+
+  return res.get_str();
+}
+
+string utils::div_value(string a, string b)
+{
+  mpz_t az, bz, rz;
+  mpz_inits(az, bz, rz, NULL);
+  mpz_set_str(az, a.c_str(), 10);
+  mpz_set_str(bz, b.c_str(), 10);
+
+  mpz_div(rz, az, bz);
+
+  mpz_class res(rz);
+
+  mpz_clear(az);
+  mpz_clear(bz);
+
+  return res.get_str();
+}
+
 utils::utils(SmtSolver& solver) : solver_(solver) {
  
   int_sort_ = solver_->make_sort(INT);
@@ -385,6 +419,12 @@ Term utils::gen_intdiv(const Term &a, const Term &b, TermVec& side_effects)
   if (b == int_one_) {
     return a;
   }
+
+  if (a->is_value() && b->is_value()) {
+    string r = div_value(a->to_string(), b->to_string());
+    return solver_->make_term(r, int_sort_);
+  }
+
   TermVec args = { fintdiv_, a, b };
   Term res = solver_->make_term(Apply, args);
   Term euclid = gen_euclid(a,b);
@@ -425,11 +465,16 @@ Term utils::gen_mod(const Term &a, const Term &b, TermVec& side_effects)
     return int_zero_;
   }
 
+  if (a->is_value() && b->is_value()) {
+    string r = mod_value(a->to_string(), b->to_string());
+    return solver_->make_term(r, int_sort_);
+  }
+
   TermVec args = { fintmod_, a, b };
   Term res = solver_->make_term(Apply, args);
   Term euclid = gen_euclid(a,b);
   side_effects.push_back(euclid);
-  
+
   return res;
 }
 
