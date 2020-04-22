@@ -420,7 +420,8 @@ Term utils::gen_intdiv(const Term &a, const Term &b, TermVec& side_effects)
     return a;
   }
 
-  if (a->is_value() && b->is_value()) {
+  if (a->is_value() && b->is_value() && b != int_zero_) {
+    assert(b != int_zero_);
     string r = div_value(a->to_string(), b->to_string());
     return solver_->make_term(r, int_sort_);
   }
@@ -465,7 +466,7 @@ Term utils::gen_mod(const Term &a, const Term &b, TermVec& side_effects)
     return int_zero_;
   }
 
-  if (a->is_value() && b->is_value()) {
+  if (a->is_value() && b->is_value() && b != int_zero_) {
     string r = mod_value(a->to_string(), b->to_string());
     return solver_->make_term(r, int_sort_);
   }
