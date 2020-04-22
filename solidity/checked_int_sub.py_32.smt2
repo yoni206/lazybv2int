@@ -1,0 +1,15 @@
+; benchmark generated from python API
+(set-info :status unknown)
+(declare-fun Y () (_ BitVec 32))
+(declare-fun X () (_ BitVec 32))
+(assert
+ (let ((?x10 (concat (ite (bvslt X (_ bv0 32)) (_ bv26959946667150639794667015087019630673637144422540572481103610249215 224) (_ bv0 224)) X)))
+ (let (($x21 (bvsgt ?x10 (bvadd (_ bv2147483647 256) (concat (ite (bvslt Y (_ bv0 32)) (_ bv26959946667150639794667015087019630673637144422540572481103610249215 224) (_ bv0 224)) Y)))))
+ (let ((?x65 (ite (bvslt (concat (ite (bvslt Y (_ bv0 32)) (_ bv26959946667150639794667015087019630673637144422540572481103610249215 224) (_ bv0 224)) Y) (_ bv0 256)) (_ bv1 256) (_ bv0 256))))
+ (let ((?x54 (bvand ?x65 (ite $x21 (_ bv1 256) (_ bv0 256)))))
+ (let (($x104 (and (distinct ?x54 (_ bv0 256)) true)))
+ (let (($x36 (=> (and (bvslt (_ bv0 32) X) (bvslt (_ bv0 32) (bvneg Y))) (bvslt (_ bv0 32) (bvadd X (bvneg Y))))))
+ (let (($x30 (bvslt X (_ bv0 32))))
+ (let (($x50 (not (ite (= Y (bvshl (_ bv1 32) (_ bv31 32))) $x30 $x36))))
+ (and (distinct $x50 $x104) true))))))))))
+(check-sat)
