@@ -5,8 +5,9 @@
 (assert
  (let (($x43 (bvumul_noovfl X Y)))
  (let (($x25 (not $x43)))
- (let ((?x27 (ite (= (ite (= X (_ bv0 16)) (_ bv1 16) (_ bv0 16)) (_ bv0 16)) (_ bv1 16) (_ bv0 16))))
- (let ((?x31 (bvand ?x27 (ite (bvugt Y (ite (= X (_ bv0 16)) (_ bv0 16) (bvudiv (_ bv65535 16) X))) (_ bv1 16) (_ bv0 16)))))
- (let (($x9 (and (distinct ?x31 (_ bv0 16)) true)))
- (and (distinct $x9 $x25) true)))))))
+ (let ((?x36 (concat (_ bv0 240) Y)))
+ (let (($x33 (bvugt ?x36 (ite (= (concat (_ bv0 240) X) (_ bv0 256)) (_ bv0 256) (bvudiv (_ bv65535 256) (concat (_ bv0 240) X))))))
+ (let ((?x37 (bvand (ite (= (ite (= (concat (_ bv0 240) X) (_ bv0 256)) (_ bv1 256) (_ bv0 256)) (_ bv0 256)) (_ bv1 256) (_ bv0 256)) (ite $x33 (_ bv1 256) (_ bv0 256)))))
+ (let (($x9 (and (distinct ?x37 (_ bv0 256)) true)))
+ (and (distinct $x9 $x25) true))))))))
 (check-sat)

@@ -1,12 +1,12 @@
 ; benchmark generated from python API
 (set-info :status unknown)
-(declare-fun B () (_ BitVec 128))
-(declare-fun A () (_ BitVec 128))
-(declare-fun X () (_ BitVec 128))
+(declare-fun B () (_ BitVec 256))
+(declare-fun A () (_ BitVec 256))
+(declare-fun X () (_ BitVec 256))
 (assert
- (bvult B (_ bv128 128)))
+ (bvult B (_ bv256 256)))
 (assert
- (bvult B (_ bv128 128)))
+ (bvult B (_ bv256 256)))
 (assert
  (let ((?x14 (bvshl A B)))
  (let ((?x15 (bvshl X B)))
