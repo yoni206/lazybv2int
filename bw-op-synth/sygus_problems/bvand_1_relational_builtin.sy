@@ -1,0 +1,33 @@
+
+(set-logic LIA)
+(synth-fun int_bvand_1 ((s Int) (t Int)) Int
+(
+  (I Int) (Ic Int) (B Bool)
+)
+(
+  (I Int  (
+       Ic
+       s
+       t
+       
+       
+       (ite B I I)
+    )
+  )
+  (Ic Int (
+    (Constant Int)
+  )
+)
+  (B Bool (
+       (= I Ic)
+       (>= I Ic)
+        (not B)
+     )
+  )
+)
+)
+(constraint (= (int_bvand_1 0 0) 0))
+(constraint (= (int_bvand_1 0 1) 0))
+(constraint (= (int_bvand_1 1 0) 0))
+(constraint (= (int_bvand_1 1 1) 1))
+(check-synth)

@@ -1,3 +1,6 @@
+(ite ((and (= x 1) (= y 1)) 1 0)
+
+
 (define-fun int_bvand_1_lia ((s Int) (t Int)) Int (ite (= s t) s 0))
 (define-fun int_bvand_1_nia ((s Int) (t Int)) Int (* s t))
 (define-fun int_bvand_1_relational ((s Int) (t Int)) Int (ite (= s t) s 0))

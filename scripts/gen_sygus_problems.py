@@ -26,9 +26,9 @@ skeleton = """
   )
 )
   (B Bool (
-       (= I I)
+       (= I Ic)
        <inequalities>
-       <negation>
+        (not B)
      )
   )
 )
@@ -80,9 +80,9 @@ for op in OPS:
     for gran in GRANULARITIES:
         problem_template = create_sygus_problem_template_for_op_and_granularity(op, gran)
         
-        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
-        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
-        relational_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "").replace("<addition>", "").replace("<inequalities>", "(>= I I)").replace("<negation>", "(not B)")
+        nia_template = problem_template.replace("<logic>", "NIA").replace("<multiplication>", "(* I I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)")
+        lia_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "(* Ic I)").replace("<addition>", "(+ I I)").replace("<inequalities>", "(>= I I)")
+        relational_template = problem_template.replace("<logic>", "LIA").replace("<multiplication>", "").replace("<addition>", "").replace("<inequalities>", "(>= I Ic)")
 
 
         problem_nia_explicit_constants = nia_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
@@ -94,6 +94,8 @@ for op in OPS:
         problem_lia_builtin_constants = lia_template.replace("<constants>", "(Constant Int)")
 
         problem_relational_explicit_constants = relational_template.replace("<constants>", "\n".join([str(x) for x in get_constants_up_to(gran)]))
+        problem_relational_zero_one_constants = relational_template.replace("<constants>", "0\n1")
+        problem_relational_builtin_constants = relational_template.replace("<constants>", "(Constant Int)")
 
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_nia_explicit" +  ".sy"
         save_data_to_path(problem_nia_explicit_constants, path)
@@ -116,3 +118,5 @@ for op in OPS:
         path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_relational_explicit" +  ".sy"
         save_data_to_path(problem_relational_explicit_constants, path)
 
+        path = sygus_problems_dir + "/" + op + "_" + str(gran) + "_relational_builtin" +  ".sy"
+        save_data_to_path(problem_relational_builtin_constants, path)

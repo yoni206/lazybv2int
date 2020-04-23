@@ -19,9 +19,9 @@
   )
 )
   (B Bool (
-       (= I I)
+       (= I Ic)
        (>= I I)
-       (not B)
+        (not B)
      )
   )
 )

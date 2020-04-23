@@ -1,0 +1,7 @@
+(set-logic QF_BV)
+(declare-fun |T1@53879| () (_ BitVec 8))
+(declare-fun |T1@53884| () (_ BitVec 8))
+(assert (let ((?x179 (bvashr (bvadd ((_ zero_extend 24) |T1@53879|) (_ bv7 32)) ((_ zero_extend 24) (_ bv3 8))))) (bvult (bvashr (bvmul ?x179 ((_ zero_extend 24) |T1@53884|)) ((_ zero_extend 24) (_ bv3 8))) (_ bv2048 32))))
+(assert (= |T1@53884| (_ bv8 8)))
+(check-sat)
+(exit)
