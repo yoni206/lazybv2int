@@ -86,6 +86,12 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
   return r;
 }
 
+Term LBV2ISolver::substitute(const Term term,
+                const UnorderedTermMap & substitution_map) const
+{
+  return solver_->substitute(term, substitution_map);
+}
+
 Result LBV2ISolver::solve()
 {
   do_assert_formula();

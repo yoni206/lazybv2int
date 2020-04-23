@@ -32,6 +32,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::Result check_sat();
   smt::Result check_sat_assuming(const smt::TermVec & assumptions);
 
+  smt::Term substitute(const smt::Term term,
+                       const smt::UnorderedTermMap & substitution_map) const;
+
   smt::Sort make_sort(const smt::SortKind sk) const;
   smt::Sort make_sort(const std::string name, uint64_t arity) const;
   smt::Sort make_sort(const smt::SortKind sk, uint64_t size) const;
