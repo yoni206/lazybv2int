@@ -55,6 +55,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       sat_checker_(NULL),
       lazy_(lazy)
 {
+  last_asserted_size_ = 0;
   if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
   }
@@ -297,6 +298,9 @@ void LBV2ISolver::pop(uint64_t num)
   orig_assertions_.resize(std::get<0>(e));
   assertions_.resize(std::get<1>(e));
   extra_assertions_.resize(std::get<2>(e));
+  if (last_asserted_size_ > orig_assertions_.size()) {
+    last_asserted_size_ = orig_assertions_.size();
+  }
 
   solver_->pop(num);
 
@@ -313,6 +317,7 @@ void LBV2ISolver::reset()
   assertions_.clear();
   extra_assertions_.clear();
   stack_.clear();
+  last_asserted_size_ = 0;
 }
 
 void LBV2ISolver::assert_formula(const Term & f)
@@ -323,10 +328,9 @@ void LBV2ISolver::assert_formula(const Term & f)
 void LBV2ISolver::do_assert_formula()
 {
   Term f;
-  if (stack_.size() == 0 || std::get<0>(stack_.back()) < orig_assertions_.size()) {
-    size_t i = stack_.size() == 0 ? 0 : std::get<0>(stack_.back());
+  if (last_asserted_size_ < orig_assertions_.size()) {
     f = solver_->make_term(true);
-      for (; i < orig_assertions_.size(); ++i) {
+    for (size_t i = last_asserted_size_; i < orig_assertions_.size(); ++i) {
       f = solver_->make_term(And, f, orig_assertions_[i]);
     }
 
@@ -342,10 +346,11 @@ void LBV2ISolver::do_assert_formula()
     //postprocess
     //TODO this doesn't work currently, and requires more work and thinking. factoring out `mod` isn't trivial in the presense of side effects, and isn't useful unless terms like (a+b)+c are taken into account.
     //t_f = postpro_->process(t_f);
-  
+
     //cout << t_f << endl;
     solver_->assert_formula(t_f);
     assertions_.push_back(t_f);
+    last_asserted_size_ = orig_assertions_.size();
 
     // extra constraints
     UnorderedTermSet seen;

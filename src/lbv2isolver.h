@@ -109,6 +109,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::TermVec orig_assertions_;
   smt::TermVec assertions_;
   smt::TermVec extra_assertions_;
+  size_t last_asserted_size_;
 
   // stack 
   typedef std::tuple<size_t, size_t, size_t> stack_entry_t;
