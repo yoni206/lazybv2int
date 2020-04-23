@@ -51,8 +51,6 @@ public:
   smt::Term create_fresh_var(std::string name, smt::Sort st);
 
   smt::Term fbvand_;
-  smt::Term fbvor_;
-  smt::Term fbvxor_;
   smt::Term fintdiv_;
   smt::Term fintmod_;
   smt::Term fsigadd_;

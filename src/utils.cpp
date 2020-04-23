@@ -80,8 +80,6 @@ utils::utils(SmtSolver& solver) : solver_(solver) {
   Sort fbv_sort = solver_->make_sort(
       FUNCTION, SortVec{ int_sort_, int_sort_, int_sort_, int_sort_ });
   fbvand_ = solver_->make_symbol("fbv_and", fbv_sort);
-  fbvor_ = solver_->make_symbol("fbv_or", fbv_sort);
-  fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
   fbvshl_ = solver_->make_symbol("fbv_shl", fbv_sort);
   fbvlshr_ = solver_->make_symbol("fbv_lshr", fbv_sort);
   fsigadd_ = solver_->make_symbol("fsig_add", fbv_sort);
@@ -343,7 +341,7 @@ Term utils::gen_shift_result(const Op op, const uint64_t bv_width, const Term &x
       Term two_to_the_y = pow2(y_int);
       Term div_mul_term;
       if (op.prim_op == BVShl) {
-        div_mul_term = solver_->make_term(Mult, x, two_to_the_y);
+        div_mul_term = gen_mod(solver_->make_term(Mult, x, two_to_the_y), pow2(bv_width), side_effects) ;
       } else {
         assert(op == BVLshr);
         div_mul_term = gen_intdiv(x, two_to_the_y, side_effects);
@@ -362,7 +360,7 @@ Term utils::gen_shift_result(const Op op, const uint64_t bv_width, const Term &x
       Term div_mul_term;
       Term p = pow2(i);
       if (op.prim_op == BVShl) {
-        div_mul_term = solver_->make_term(Mult, x, p);
+        div_mul_term = gen_mod(solver_->make_term(Mult, x, p), pow2(bv_width), side_effects);
       } else {
         assert(op == BVLshr);
         div_mul_term = gen_intdiv(x, p, side_effects);
@@ -376,7 +374,6 @@ Term utils::gen_shift_result(const Op op, const uint64_t bv_width, const Term &x
       res = gen_mod(res, p, side_effects);
     }
   }
-  side_effects.push_back(make_range_constraint(res, bv_width));
   return res;
 }
 

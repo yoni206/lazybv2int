@@ -49,7 +49,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       prepro_(new Preprocessor(solver)),
       postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
       axioms_(
-          solver, bv2int_->fbv_and(), bv2int_->fbv_or(), bv2int_->fbv_xor()),
+          solver, bv2int_->fbv_and()),
       solver_(solver),
       tr_sat_checker_(sat_checker_),
       sat_checker_(NULL),
@@ -373,19 +373,13 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
 {
   const TermVec & fbv_terms = bv2int_->fbv_terms();
   const Term & fbv_and = bv2int_->fbv_and();
-  const Term & fbv_or = bv2int_->fbv_or();
-  const Term & fbv_xor = bv2int_->fbv_xor();
 
-  TermVec fbvand_terms, fbvor_terms, fbvxor_terms;
+  TermVec fbvand_terms;
   for (Term f : fbv_terms) {
     // TODO: check for spurious terms
     Term fsymbol = *(f->begin());
     if (fsymbol == fbv_and) {
       fbvand_terms.push_back(f);
-    } else if (fsymbol == fbv_or) {
-      fbvor_terms.push_back(f);
-    } else if (fsymbol == fbv_xor) {
-      fbvxor_terms.push_back(f);
     } else {
       assert(false);
     }
@@ -394,8 +388,6 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
   bool ret = false;
 
   ret |= refine_bvand(fbvand_terms, outlemmas);
-  ret |= refine_bvor(fbvor_terms, outlemmas);
-  ret |= refine_bvxor(fbvxor_terms, outlemmas);
 
   return ret;
 }
@@ -450,85 +442,6 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
 
   if (opts.full_refinement && outlemmas.size() == n) {
     refine_final(BVAnd, fterms, outlemmas);
-  }
-
-  return outlemmas.size() > n;
-}
-
-bool LBV2ISolver::refine_bvor(const TermVec & fterms, TermVec & outlemmas)
-{
-  size_t n = outlemmas.size();
-
-  for (const Term & f : fterms) {
-    bool found = axioms_.check_bvor_base_case(f, outlemmas);
-    if (!found) {
-      found = axioms_.check_bvor_range(f, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvor_idempotence(f, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvor_excluded_middle(f, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvor_minmax(f, false, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvor_minmax(f, true, outlemmas);
-    }
-  }
-
-  if (outlemmas.size() == n) {
-    const TermVec & fbv_terms = bv2int_->fbv_terms();
-    const Term & fbv_or = bv2int_->fbv_and();
-
-    TermVec all_fbvor_terms;
-    for (const Term & f : fbv_terms) {
-      Term fsymbol = *(f->begin());
-      if (fsymbol == fbv_or) {
-        all_fbvor_terms.push_back(f);
-      }
-    }
-
-    for (const Term & f1 : fterms) {
-      for (const Term & f2 : all_fbvor_terms) {
-        if (f1 == f2) {
-          continue;
-        }
-        bool found = axioms_.check_bvor_difference(f1, f2, outlemmas);
-        if (found) {
-          break;
-        }
-      }
-    }
-  }
-
-  if (opts.full_refinement && outlemmas.size() == n) {
-    refine_final(BVOr, fterms, outlemmas);
-  }
-
-  return outlemmas.size() > n;
-}
-
-bool LBV2ISolver::refine_bvxor(const TermVec & fterms, TermVec & outlemmas)
-{
-  size_t n = outlemmas.size();
-
-  for (const Term & f : fterms) {
-    bool found = axioms_.check_bvxor_base_case(f, outlemmas);
-    if (!found) {
-      found = axioms_.check_bvxor_zero(f, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvxor_one(f, outlemmas);
-    }
-    if (!found) {
-      found = axioms_.check_bvxor_range(f, outlemmas);
-    }
-  }
-
-  if (opts.full_refinement && outlemmas.size() == n) {
-    refine_final(BVXor, fterms, outlemmas);
   }
 
   return outlemmas.size() > n;
