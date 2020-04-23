@@ -319,8 +319,8 @@ void LBV2ISolver::do_assert_formula()
   Term f;
   if (stack_.size() == 0 || std::get<0>(stack_.back()) < orig_assertions_.size()) {
     size_t i = stack_.size() == 0 ? 0 : std::get<0>(stack_.back());
-    f = orig_assertions_[i++];
-    for (; i < orig_assertions_.size(); ++i) {
+    f = solver_->make_term(true);
+      for (; i < orig_assertions_.size(); ++i) {
       f = solver_->make_term(And, f, orig_assertions_[i]);
     }
 
