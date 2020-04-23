@@ -298,7 +298,7 @@ Term BV2Int::int_max(uint64_t k)
 
 bool BV2Int::is_bw_op(Op op)
 {
-  return (op == BVAnd || op == BVOr || op == BVXor);
+  return (op == BVAnd); 
 }
 
 

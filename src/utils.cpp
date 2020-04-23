@@ -75,8 +75,6 @@ utils::utils(SmtSolver& solver) : solver_(solver) {
       );
   fintdiv_ = solver_->make_symbol("fint_div", int_int_int_sort);
   fintmod_ = solver_->make_symbol("fint_mod", int_int_int_sort);
-  fsigadd_ = solver_->make_symbol("fsig_add", int_int_int_sort);
-  fsigmul_ = solver_->make_symbol("fsig_mul", int_int_int_sort);
   int_zero_ = solver_->make_term(0, int_sort_);
   int_one_ = solver_->make_term(1, int_sort_);
   Sort fbv_sort = solver_->make_sort(
@@ -86,6 +84,8 @@ utils::utils(SmtSolver& solver) : solver_(solver) {
   fbvxor_ = solver_->make_symbol("fbv_xor", fbv_sort);
   fbvshl_ = solver_->make_symbol("fbv_shl", fbv_sort);
   fbvlshr_ = solver_->make_symbol("fbv_lshr", fbv_sort);
+  fsigadd_ = solver_->make_symbol("fsig_add", fbv_sort);
+  fsigmul_ = solver_->make_symbol("fsig_mul", fbv_sort);
 }
 
 
@@ -101,7 +101,8 @@ Term utils::make_range_constraint(const Term & var, uint64_t bv_width)
   Term l = solver_->make_term(Le, int_zero_, var);
   Term p = pow2(bv_width);
   Term u = solver_->make_term(Lt, var, p);
-  return solver_->make_term(And, l, u);
+  Term res = solver_->make_term(And, l, u);
+  return res;
 }
 
 
@@ -181,27 +182,9 @@ Term utils::gen_bitwise_int(Op op, uint64_t k, const Term & x, const Term & y)
       case 6: return int_bvand_6(x, y, solver_);
       default: assert(false);
     }
-  } else if (op.prim_op == BVOr) {
-    switch (k) {
-      case 1: return int_bvor_1(x, y, solver_);
-      case 2: return int_bvor_2(x, y, solver_);
-      case 3: return int_bvor_3(x, y, solver_);
-      case 4: return int_bvor_4(x, y, solver_);
-      case 5: return int_bvor_5(x, y, solver_);
-      case 6: return int_bvor_6(x, y, solver_);
-      default: assert(false);
-    }
-  } else if (op.prim_op == BVXor) {
-    switch (k) {
-      case 1: return int_bvxor_1(x, y, solver_);
-      case 2: return int_bvxor_2(x, y, solver_);
-      case 3: return int_bvxor_3(x, y, solver_);
-      case 4: return int_bvxor_4(x, y, solver_);
-      case 5: return int_bvxor_5(x, y, solver_);
-      default: assert(false);
-    }
+  } else {
+    assert(false);
   }
-  assert(false);
 }
 
 Term utils::gen_block(Op op,
@@ -227,12 +210,6 @@ Term utils::gen_bw_uf(const Op op, uint64_t bv_width, const Term & a, const Term
   Term bv_width_term = solver_->make_term(to_string(bv_width), int_sort_);
   if (op.prim_op == BVAnd) {
     TermVec args = { fbvand_, bv_width_term, a, b };
-    return solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVOr) {
-    TermVec args = { fbvor_, bv_width_term, a, b };
-    return solver_->make_term(Apply, args);
-  } else if (op.prim_op == BVXor) {
-    TermVec args = { fbvxor_, bv_width_term, a, b };
     return solver_->make_term(Apply, args);
   } else {
     assert(false);
@@ -399,6 +376,7 @@ Term utils::gen_shift_result(const Op op, const uint64_t bv_width, const Term &x
       res = gen_mod(res, p, side_effects);
     }
   }
+  side_effects.push_back(make_range_constraint(res, bv_width));
   return res;
 }
 
@@ -434,7 +412,7 @@ Term utils::gen_intdiv(const Term &a, const Term &b, TermVec& side_effects)
 }
 
 Term utils::gen_add_sigma(const TermVec& children, TermVec& side_effects, uint64_t bv_width) {
-  TermVec args = {fsigadd_, children[0], children[1]};
+  TermVec args = {fsigadd_, solver_->make_term(bv_width, int_sort_), children[0], children[1]};
   Term res = solver_->make_term(Apply, args);
   side_effects.push_back(solver_->make_term(Ge, res, int_zero_));
   side_effects.push_back(solver_->make_term(
@@ -445,7 +423,7 @@ Term utils::gen_add_sigma(const TermVec& children, TermVec& side_effects, uint64
 }
 
 Term utils::gen_mul_sigma(const TermVec& children, TermVec& side_effects, uint64_t bv_width) {
-  TermVec args = {fsigmul_, children[0], children[1]};
+  TermVec args = {fsigmul_, solver_->make_term(bv_width, int_sort_), children[0], children[1]};
   Term res = solver_->make_term(Apply, args);
 
   if (children[0]->is_value() || children[1]->is_value()) {
