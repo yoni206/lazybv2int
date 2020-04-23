@@ -13,6 +13,19 @@ using namespace std;
 
 namespace lbv2i {
 
+Term make_bvneg(SmtSolver& solver, const Term& x) {
+          //From Hacker's delight, 2-2
+          //addition combined with logical operations
+          //item a
+          //bvneg x = (bvnot x)+1
+  size_t size = x->get_sort()->get_width();
+  Term one = solver->make_term(1, solver->make_sort(BV, size));
+  Term bvnot = solver->make_term(BVNot, x);
+  Term result = solver->make_term(BVAdd, bvnot, one);
+  return result;
+
+}
+
 static void conjunctive_partition(const Term & term, TermVec & out)
 {
   TermVec to_visit({ term });
@@ -65,6 +78,9 @@ enum RewriteRule
   ShlByConst,
   LshrByConst,
   SubEliminate,
+  NegEliminate,
+  OrEliminate,
+  XorEliminate,
   // Not meant to be used except for iteration
   NUM_REWRITE_RULES
 };
@@ -177,7 +193,24 @@ const std::map<
         { SubEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             return t->get_op() == BVSub;
-          } } });
+          } },
+        
+        { NegEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVNeg;
+          } },
+        
+        { OrEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVOr;
+          } },
+        
+        { XorEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            return t->get_op() == BVXor;
+          } }
+
+    });
 
 const std::map<RewriteRule,
                std::function<Term(
@@ -224,10 +257,10 @@ const std::map<RewriteRule,
             Op ext_msb(Extract, size - 1, size - 1);
             Term a_lt_0 = s->make_term(Equal, s->make_term(ext_msb, a), one);
             Term b_lt_0 = s->make_term(Equal, s->make_term(ext_msb, b), one);
-            Term abs_a = s->make_term(Ite, a_lt_0, s->make_term(BVNeg, a), a);
-            Term abs_b = s->make_term(Ite, b_lt_0, s->make_term(BVNeg, b), b);
+            Term abs_a = s->make_term(Ite, a_lt_0, make_bvneg(s, a), a);
+            Term abs_b = s->make_term(Ite, b_lt_0, make_bvneg(s, b), b);
             Term a_udiv_b = s->make_term(BVUdiv, abs_a, abs_b);
-            Term neg_result = s->make_term(BVNeg, a_udiv_b);
+            Term neg_result = make_bvneg(s, a_udiv_b);
             Term condition = s->make_term(Xor, a_lt_0, b_lt_0);
             Term res = s->make_term(Ite, condition, neg_result, a_udiv_b);
             return res;
@@ -243,10 +276,10 @@ const std::map<RewriteRule,
             Op ext_msb(Extract, size - 1, size - 1);
             Term a_lt_0 = s->make_term(Equal, s->make_term(ext_msb, a), one);
             Term b_lt_0 = s->make_term(Equal, s->make_term(ext_msb, b), one);
-            Term abs_a = s->make_term(Ite, a_lt_0, s->make_term(BVNeg, a), a);
-            Term abs_b = s->make_term(Ite, b_lt_0, s->make_term(BVNeg, b), b);
+            Term abs_a = s->make_term(Ite, a_lt_0, make_bvneg(s, a), a);
+            Term abs_b = s->make_term(Ite, b_lt_0, make_bvneg(s, b), b);
             Term a_urem_b = s->make_term(BVUrem, abs_a, abs_b);
-            Term neg_result = s->make_term(BVNeg, a_urem_b);
+            Term neg_result = make_bvneg(s, a_urem_b);
             Term res = s->make_term(Ite, a_lt_0, neg_result, a_urem_b);
             return res;
           } },
@@ -268,14 +301,14 @@ const std::map<RewriteRule,
             Term abs_a = s->make_term(Ite,
                                       s->make_term(Equal, msb_a, bit0),
                                       a,
-                                      s->make_term(BVNeg, a));
+                                      make_bvneg(s, a));
             Term abs_b = s->make_term(Ite,
                                       s->make_term(Equal, msb_b, bit0),
                                       b,
-                                      s->make_term(BVNeg, b));
+                                      make_bvneg(s, b));
 
             Term u = s->make_term(BVUrem, abs_a, abs_b);
-            Term neg_u = s->make_term(BVNeg, u);
+            Term neg_u = make_bvneg(s, u);
             Term cond0 = s->make_term(Equal, u, s->make_term(0, t->get_sort()));
             Term cond1 = s->make_term(And,
                                       s->make_term(Equal, msb_a, bit0),
@@ -487,9 +520,59 @@ const std::map<RewriteRule,
           } },
         { SubEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
-            Term negb = s->make_term(BVNeg, children[1]);
+            Term negb = make_bvneg(s, children[1]);
             return s->make_term(BVAdd, children[0], negb);
-          } } });
+          } },
+
+        { NegEliminate,
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term result = make_bvneg(s, children[0]);
+            return result;
+          } },
+
+        { OrEliminate,
+          //From Hacker's delight, 2-2
+          //addition combined with logical operations
+          //item h
+          //x+y = (x|y)+(x&y) and so
+          //x|y = (x+y)-(x&y)
+          //to inline the elimination of bvsub, we do
+          //x|y = (x+y) + make_bvneg(s, x&y)
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term sum = s->make_term(BVAdd, children);
+            Term bvand = s->make_term(BVAnd, children);
+            Term bvneg = make_bvneg(s, bvand);
+            Term result = s->make_term(BVAdd, sum, bvneg);
+            return result;
+          } },
+
+        { XorEliminate,
+          //From Hacker's delight, 2-2
+          //addition combined with logical operations
+          //item g
+          //x+y = (x xor y)+2*(x&y) and so
+          //x xor y = (x+y)-2*(x&y)
+          //to inline the elimination of bvsub, we do
+          //x xor y = (x+y) + make_bvneg(s, 2*(x&y))
+          //but, if the bit-width is 1, then we cannot do
+          //2*(x&y). in such a case, this term is just 0.
+          [](const Term & t, const TermVec & children, SmtSolver & s) {
+            Term sum = s->make_term(BVAdd, children);
+            Term bvand = s->make_term(BVAnd, children);
+            size_t size = t->get_sort()->get_width();
+            Term two_bvand;
+            if (size == 1) {
+              two_bvand = s->make_term(0, s->make_sort(BV, size));
+            } else {
+              Term two = s->make_term(2, s->make_sort(BV, size));
+              two_bvand = s->make_term(BVMul, two, bvand);
+            }
+            Term bvneg = make_bvneg(s, two_bvand);
+            Term result = s->make_term(BVAdd, sum, bvneg);
+            return result;
+          } }
+    });
+
 
 Binarizer::Binarizer(SmtSolver & solver) : super(solver, false) {}
 
