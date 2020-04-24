@@ -25,8 +25,6 @@ class BV2Int : smt::IdentityWalker
   bool internal(smt::Term uf);
 
   const smt::Term & fbv_and() const { return utils_.fbvand_; }
-  const smt::Term & fbv_or() const { return utils_.fbvor_; }
-  const smt::Term & fbv_xor() const { return utils_.fbvxor_; }
   const smt::Term & fbv_lshift() const { return utils_.fbvshl_; }
   const smt::Term & fbv_rshift() const { return utils_.fbvlshr_; }
 

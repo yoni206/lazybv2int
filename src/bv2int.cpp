@@ -110,14 +110,6 @@ WalkerStepResult BV2Int::visit_term(Term & t)
             solver_->make_term(Equal, cached_children[1], int_zero_);
         Term res = solver_->make_term(Ite, condition, cached_children[0], mod);
         cache_[t] = res;
-      } else if (op.prim_op == BVNeg) {
-        uint64_t bv_width = t->get_sort()->get_width();
-        Term is_zero = solver_->make_term(Equal, cached_children[0], int_zero_);
-        Term p = pow2(bv_width);
-        Term neg =
-            solver_->make_term(Minus, p, cached_children[0]);
-        Term res = solver_->make_term(Ite, is_zero, int_zero_, neg);
-        cache_[t] = res;
       } else if (op.prim_op == BVNot) {
         uint64_t bv_width = t->get_sort()->get_width();
         Term res = make_bvnot_term(cached_children[0], bv_width);
@@ -298,7 +290,7 @@ Term BV2Int::int_max(uint64_t k)
 
 bool BV2Int::is_bw_op(Op op)
 {
-  return (op == BVAnd || op == BVOr || op == BVXor);
+  return (op == BVAnd); 
 }
 
 
