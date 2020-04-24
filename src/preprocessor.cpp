@@ -359,10 +359,12 @@ const std::map<RewriteRule,
             }
             Term neg_sign = make_signed_neg(s, bv);
             Term zeros = s->make_term(0, s->make_sort(BV, amount));
+            string p2_str = utils::pow2_str(amount);
+            string ones_str = utils::sub_value(p2_str, "1");
             //TODO optimize ones using gmp
-            Term ones = s->make_term(BVNot, zeros);
-            Term zero_extend = s->make_term(Concat, bv, zeros);
-            Term one_extend = s->make_term(Concat, bv, ones);
+            Term ones = s->make_term(ones_str, s->make_sort(BV, amount), 10);
+            Term zero_extend = s->make_term(Concat, zeros, bv);
+            Term one_extend = s->make_term(Concat, ones, bv);
             Term result = s->make_term(Ite, neg_sign, one_extend, zero_extend);
             return result;
           } },
