@@ -25,14 +25,6 @@ string utils::pow2_str(uint64_t k)
   return res.get_str();
 }
 
-int utils::compare(string x, uint64_t y)
-{
-  mpz_t a;
-  mpz_inits(a, NULL);
-  mpz_set_str(a, x.c_str(), 10);
-  return mpz_cmp_ui(a, y);
-}
-
 string utils::mod_value(string a, string b)
 {
   mpz_t az, bz, rz;
@@ -41,7 +33,6 @@ string utils::mod_value(string a, string b)
   mpz_set_str(bz, b.c_str(), 10);
 
   mpz_mod(rz, az, bz);
-
   mpz_class res(rz);
 
   mpz_clear(az);
@@ -58,13 +49,52 @@ string utils::div_value(string a, string b)
   mpz_set_str(bz, b.c_str(), 10);
 
   mpz_div(rz, az, bz);
-
   mpz_class res(rz);
 
   mpz_clear(az);
   mpz_clear(bz);
 
   return res.get_str();
+}
+
+string utils::add_value(string a, string b)
+{
+  mpz_t az, bz, rz;
+  mpz_inits(az, bz, rz, NULL);
+  mpz_set_str(az, a.c_str(), 10);
+  mpz_set_str(bz, b.c_str(), 10);
+
+  mpz_add(rz, az, bz);
+  mpz_class res(rz);
+
+  mpz_clear(az);
+  mpz_clear(bz);
+
+  return res.get_str();
+}
+
+string utils::sub_value(string a, string b)
+{
+  mpz_t az, bz, rz;
+  mpz_inits(az, bz, rz, NULL);
+  mpz_set_str(az, a.c_str(), 10);
+  mpz_set_str(bz, b.c_str(), 10);
+
+  mpz_sub(rz, az, bz);
+  mpz_class res(rz);
+
+  mpz_clear(az);
+  mpz_clear(bz);
+
+  return res.get_str();
+}
+
+int utils::compare(string x, uint64_t y)
+{
+  mpz_t a;
+  mpz_inits(a, NULL);
+  mpz_set_str(a, x.c_str(), 10);
+  return mpz_cmp_ui(a, y);
 }
 
 utils::utils(SmtSolver& solver) : solver_(solver) {
