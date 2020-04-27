@@ -186,14 +186,12 @@ bool Axioms::check_bvand_range(const Term & t, TermVec & outlemmas)
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == 0) {
-    Term pre = solver_->make_term(Le, a, b);
-    l = make_implies(pre, solver_->make_term(Le, t, a));
+    l = solver_->make_term(Le, t, a);
     add_if_voilated(l, outlemmas);
   }
 
   if (outlemmas.size() == 0) {
-    Term pre = solver_->make_term(Gt, a, b);
-    l = make_implies(pre, solver_->make_term(Le, t, b));
+    l = solver_->make_term(Le, t, b);
     add_if_voilated(l, outlemmas);
   }
 
