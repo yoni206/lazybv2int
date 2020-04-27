@@ -1,5 +1,0 @@
- if (i&j) <= abs(i-j):
-     data[i][j]=1
- else:
-     data[i][j]=0
-
