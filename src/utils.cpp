@@ -89,6 +89,22 @@ string utils::sub_value(string a, string b)
   return res.get_str();
 }
 
+string utils::and_value(string a, string b)
+{
+  mpz_t az, bz, rz;
+  mpz_inits(az, bz, rz, NULL);
+  mpz_set_str(az, a.c_str(), 10);
+  mpz_set_str(bz, b.c_str(), 10);
+
+  mpz_and(rz, az, bz);
+  mpz_class res(rz);
+
+  mpz_clear(az);
+  mpz_clear(bz);
+
+  return res.get_str();
+}
+
 int utils::compare(string x, uint64_t y)
 {
   mpz_t a;

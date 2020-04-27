@@ -15,6 +15,7 @@ public:
   static std::string div_value(std::string a, std::string b);
   static std::string add_value(std::string a, std::string b);
   static std::string sub_value(std::string a, std::string b);
+  static std::string and_value(std::string a, std::string b);
   static int compare(std::string x, uint64_t y);
   static int compare(uint64_t x, std::string y) {
     return -1 * compare(y, x);
