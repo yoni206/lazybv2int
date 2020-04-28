@@ -262,7 +262,7 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
 
   // if the l was not add in outlemmas
   if (outlemmas.size() == n) {
-    // (pre and a-b < 0) -> bvand(a,b) <= -1*(a - b)
+    // (pre and a-b < 0) -> bvand(a,b) <= b - a
     pre = solver_->make_term(And, UR,
                              solver_->make_term(Lt, a_minus_b, zero_));
     l = make_implies(pre, solver_->make_term(Gt, t, b_minus_a));
