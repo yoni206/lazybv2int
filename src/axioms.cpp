@@ -1,5 +1,7 @@
 #include "axioms.h"
 
+#include "utils.h"
+
 #include <assert.h>
 #include <gmpxx.h>
 #include <math.h>
@@ -64,7 +66,7 @@ bool Axioms::check_bvand_symmetry(const Term & t, TermVec & outlemmas)
 
   TermVec args = {fbvand_, b, a};
   Term sym_t = solver_->make_term(Apply, args);
-  Term l = solver_->make_term(Equal, t, sym_t);
+  Term l = make_eq(t, sym_t);
   add_if_voilated(l, outlemmas);
 
   return outlemmas.size() > n;
@@ -217,6 +219,79 @@ bool Axioms::check_bvand_range(const Term & t, TermVec & outlemmas)
   }
 
   return outlemmas.size() > n;
+}
+
+bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
+{
+  const size_t n = outlemmas.size();
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  // lemma1 would be preconditioned a - b >= 0
+  // lemma2 would be preconditioned a - b < 0
+
+  Term a_minus_b = solver_->make_term(Minus, a, b);
+  Term b_minus_a = solver_->make_term(Mult,
+                                      solver_->make_term("-1", int_sort_));
+  /*
+      |
+   UL | UR
+  ____|____
+      |   
+   LL | LR
+      |   
+  */
+
+  Term pow2_width_minus_one = solver_->make_term(utils::pow2_str(bv_width - 1),
+                                                 int_sort_);
+  Term UL = solver_->make_term(Lt, a, pow2_width_minus_one);
+  UL = solver_->make_term(And, UL, 
+                          solver_->make_term(Ge, b, pow2_width_minus_one));
+  Term UR = solver_->make_term(Ge, a, pow2_width_minus_one);
+  UR = solver_->make_term(And, UR,
+                          solver_->make_term(Ge, b, pow2_width_minus_one));
+  Term LR = solver_->make_term(Ge, a, pow2_width_minus_one);
+  UR = solver_->make_term(And, UR,
+                          solver_->make_term(Lt, b, pow2_width_minus_one));
+
+  // black part: bvand(a, b) > |a - b|
+  Term pre = solver_->make_term(And, UR,
+                               solver_->make_term(Ge, a_minus_b, zero_));
+  Term l = make_implies(pre, solver_->make_term(Gt, t, a_minus_b));
+  add_if_voilated(l, outlemmas);
+
+  // check l1 can be added or not (if it is falsified in the current model)
+  if (outlemmas.size() == n) {
+    // (pre and a-b < 0) -> bvand(a,b) <= -1*(a - b)
+    pre = solver_->make_term(And, UR,
+                             solver_->make_term(Lt, a_minus_b, zero_));
+    l = make_implies(pre, solver_->make_term(Gt, t, b_minus_a));
+    add_if_voilated(l, outlemmas);
+  }
+
+  // white part: bvand(a, b) <= |a - b|
+  for (int i = 0; i < 2; ++i) {
+    if (outlemmas.size() == n) {
+      pre = solver_->make_term(And, i==0 ? LR : UL,
+                               solver_->make_term(Ge, a_minus_b, zero_));
+      l = make_implies(pre, solver_->make_term(Le, t, a_minus_b));
+      add_if_voilated(l, outlemmas);
+    }
+    if (outlemmas.size() == n) {
+      pre = solver_->make_term(And, i==0 ? LR : UL,
+                               solver_->make_term(Lt, a_minus_b, zero_));
+      l = make_implies(pre, solver_->make_term(Le, t, b_minus_a));
+      add_if_voilated(l, outlemmas);
+    }
+  }
+
+  return outlemmas.size() > n;
+}
+
+bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
+{
+  return false;
 }
 
 inline Term Axioms::pow2_minus_one(uint64_t k)
