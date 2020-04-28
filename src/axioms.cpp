@@ -64,7 +64,7 @@ bool Axioms::check_bvand_symmetry(const Term & t, TermVec & outlemmas)
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  TermVec args = {fbvand_, b, a};
+  TermVec args = {fbvand_, solver_->make_term(bv_width, int_sort_), b, a};
   Term sym_t = solver_->make_term(Apply, args);
   Term l = make_eq(t, sym_t);
   add_if_voilated(l, outlemmas);
