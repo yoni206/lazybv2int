@@ -251,7 +251,7 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
   UR = solver_->make_term(And, UR,
                           solver_->make_term(Ge, b, pow2_width_minus_one));
   Term LR = solver_->make_term(Ge, a, pow2_width_minus_one);
-  UR = solver_->make_term(And, UR,
+  LR = solver_->make_term(And, LR,
                           solver_->make_term(Lt, b, pow2_width_minus_one));
 
   // black part: bvand(a, b) > |a - b|
