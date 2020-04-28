@@ -326,6 +326,12 @@ bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == n) {
+    // b >= bv_width -> t = 0
+    l = make_implies(t_eq_a, b_eq_zero);
+    add_if_voilated(l, outlemmas);
+  }
+
+  if (outlemmas.size() == n) {
     // t = a /\ a > 0 -> b = 0
     Term pre = solver_->make_term(And, t_eq_a,
                                   solver_->make_term(Gt, a, zero_));
@@ -334,17 +340,12 @@ bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
   }
 
   if (outlemmas.size() == n) {
-    // b >= bv_width -> t = 0
-    l = make_implies(t_eq_a, b_eq_zero);
-    add_if_voilated(l, outlemmas);
-  }
-
-  if (outlemmas.size() == n) {
     // t = 0 -> (a = 0 \/ b >= bv_width)
     Term t_eq_zero = make_eq(t, zero_);
     Term a_eq_zero = make_eq(a, zero_);
     Term cases = solver_->make_term(Or, a_eq_zero,
-                                    solver_->make_term(Ge, b, solver_->make_term(to_string(bv_width), int_sort_)));
+                         solver_->make_term(Ge, b,
+                                            solver_->make_term(to_string(bv_width), int_sort_)));
     l = make_implies(t_eq_zero, cases);
     add_if_voilated(l, outlemmas);
   }
