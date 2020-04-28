@@ -416,6 +416,9 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
     if (!found) {
       found = axioms_.check_bvand_minmax(f, true, outlemmas);
     }
+    if (!found) {
+      found = axioms_.check_bvand_bnw(f, outlemmas);
+    }
   }
 
   if (outlemmas.size() == n) {
