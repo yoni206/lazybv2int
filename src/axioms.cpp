@@ -295,8 +295,8 @@ bool Axioms::check_bvshiftl_range(const Term & t, TermVec & outlemmas)
   Term a, b;
   get_fbv_args(t, bv_width, a, b);
 
-  // t >= a
-  Term l = solver_->make_term(Ge, t, a);
+  // t >= 0
+  Term l = solver_->make_term(Ge, t, zero_);
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == n) {
@@ -305,11 +305,6 @@ bool Axioms::check_bvshiftl_range(const Term & t, TermVec & outlemmas)
     add_if_voilated(l, outlemmas);
   }
 
-  if (outlemmas.size() == n) {
-    // t >= b
-    l = solver_->make_term(Ge, t, b);
-    add_if_voilated(l, outlemmas);
-  }
 }
 
 bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
