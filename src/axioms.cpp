@@ -260,7 +260,7 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
   Term l = make_implies(pre, solver_->make_term(Gt, t, a_minus_b));
   add_if_voilated(l, outlemmas);
 
-  // check l1 can be added or not (if it is falsified in the current model)
+  // if the l was not add in outlemmas
   if (outlemmas.size() == n) {
     // (pre and a-b < 0) -> bvand(a,b) <= -1*(a - b)
     pre = solver_->make_term(And, UR,
