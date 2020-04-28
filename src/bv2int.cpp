@@ -267,7 +267,7 @@ inline Term BV2Int::pow2(uint64_t k)
 }
 
 
-Term BV2Int::make_bvnot_term(const Term & x, uint64_t k)
+inline Term BV2Int::make_bvnot_term(const Term & x, uint64_t k)
 {
   return solver_->make_term(Minus, int_max(k), x);
 }
@@ -288,7 +288,7 @@ Term BV2Int::int_max(uint64_t k)
   return solver_->make_term(res.get_str(), int_sort_);
 }
 
-bool BV2Int::is_bw_op(Op op)
+inline bool BV2Int::is_bw_op(Op op)
 {
   return (op == BVAnd); 
 }
@@ -324,7 +324,7 @@ Term BV2Int::handle_bw_op(const Term & t,
   return res;
 }
 
-bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
+inline bool BV2Int::is_shift_op(Op op) { return (op == BVShl || op == BVLshr); }
 
 
 Term BV2Int::handle_shift_op(const Term & t,
