@@ -232,8 +232,7 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
   // lemma2 would be preconditioned a - b < 0
 
   Term a_minus_b = solver_->make_term(Minus, a, b);
-  Term b_minus_a = solver_->make_term(Mult, solver_->make_term("-1", int_sort_),
-                                      a_minus_b);
+  Term b_minus_a = solver_->make_term(Minus, b, a);
   /*
       |
    UL | UR
