@@ -402,6 +402,9 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
       found = axioms_.check_bvand_range(f, outlemmas);
     }
     if (!found) {
+      found = axioms_.check_bvand_symmetry(f, outlemmas);
+    }
+    if (!found) {
       found = axioms_.check_bvand_idempotence(f, outlemmas);
     }
     if (!found) {

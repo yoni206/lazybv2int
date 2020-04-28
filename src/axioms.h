@@ -11,8 +11,9 @@ class Axioms
          const smt::Term & fbvand);
   ~Axioms();
 
-  // we assume that the term t looks like "fbvand(x, y)"
+  // we assume that the term t looks like "fbvand(bitwidth, x, y)"
   // note the function name
+  bool check_bvand_symmetry(const smt::Term & t, smt::TermVec & outlemmas);
   bool check_bvand_base_case(const smt::Term & t, smt::TermVec & outlemmas);
   bool check_bvand_minmax(const smt::Term & t,
                           bool is_max,
