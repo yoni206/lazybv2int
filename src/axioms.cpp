@@ -288,6 +288,30 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
+bool Axioms::check_bvshiftl_range(const Term & t, TermVec & outlemmas)
+{
+  const size_t n = outlemmas.size();
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  // t >= a
+  Term l = solver_->make_term(Ge, t, a);
+  add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == n) {
+    // t <= 2^bitwidth - 1
+    l = solver_->make_term(Gt, t, pow2_minus_one(bv_width));
+    add_if_voilated(l, outlemmas);
+  }
+
+  if (outlemmas.size() == n) {
+    // t >= b
+    l = solver_->make_term(Ge, t, b);
+    add_if_voilated(l, outlemmas);
+  }
+}
+
 bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
 {
   const size_t n = outlemmas.size();
