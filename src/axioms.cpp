@@ -326,8 +326,10 @@ bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == n) {
-    // t = a -> b = 0
-    l = make_implies(t_eq_a, b_eq_zero);
+    // t = a /\ a > 0 -> b = 0
+    Term pre = solver_->make_term(And, t_eq_a,
+                                  solver_->make_term(Gt, a, zero_));
+    l = make_implies(pre, b_eq_zero);
     add_if_voilated(l, outlemmas);
   }
 
