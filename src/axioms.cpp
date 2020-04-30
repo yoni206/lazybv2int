@@ -288,7 +288,7 @@ bool Axioms::check_bvand_bnw(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
-bool Axioms::check_bvshiftl_range(const Term & t, TermVec & outlemmas)
+bool Axioms::check_bvlshift_range(const Term & t, TermVec & outlemmas)
 {
   const size_t n = outlemmas.size();
   uint64_t bv_width;
@@ -301,13 +301,14 @@ bool Axioms::check_bvshiftl_range(const Term & t, TermVec & outlemmas)
 
   if (outlemmas.size() == n) {
     // t <= 2^bitwidth - 1
-    l = solver_->make_term(Gt, t, pow2_minus_one(bv_width));
+    l = solver_->make_term(Le, t, pow2_minus_one(bv_width));
     add_if_voilated(l, outlemmas);
   }
 
+  return outlemmas.size() > n;
 }
 
-bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
+bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
 {
   const size_t n = outlemmas.size();
   uint64_t bv_width;
@@ -348,9 +349,9 @@ bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
-bool Axioms::check_bvshiftr_range(const Term & t, TermVec & outlemmas)
+bool Axioms::check_bvrshift_range(const Term & t, TermVec & outlemmas)
 {
-  return check_bvshiftl_range(t, outlemmas);
+  return check_bvlshift_range(t, outlemmas);
 }
 
 inline Term Axioms::pow2_minus_one(uint64_t k)

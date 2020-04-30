@@ -28,7 +28,7 @@ class BV2Int : smt::IdentityWalker
   const smt::Term & fbv_lshift() const { return utils_.fbvshl_; }
   const smt::Term & fbv_rshift() const { return utils_.fbvlshr_; }
 
-  const smt::TermVec & fbv_terms() const { return f_bw_terms_; }
+  const smt::TermVec & fbv_terms() const { return f_bv_terms_; }
 
   const smt::TermVec & get_extra_assertions() const {
     return extra_assertions_;
@@ -68,7 +68,7 @@ private:
   smt::TermVec extra_assertions_;
   smt::UnorderedTermSet int_vars_;  ///< integer versions of bv vars
   // list of abstract (lazy_bv_op) terms
-  smt::TermVec f_bw_terms_;
+  smt::TermVec f_bv_terms_;
 
   typedef std::tuple<smt::UnorderedTermMap, size_t, size_t>
       stack_entry_t;

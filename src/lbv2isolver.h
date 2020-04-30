@@ -73,9 +73,10 @@ class LBV2ISolver : public smt::AbsSmtSolver
  private:
   bool refine(smt::TermVec & outlemmas);
   bool refine_bvand(const smt::TermVec & fterms, smt::TermVec & outlemmas);
-  bool refine_bvor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
-  bool refine_bvxor(const smt::TermVec & fterms, smt::TermVec & outlemmas);
-  bool refine_final(smt::Op op, const smt::TermVec & fterms, smt::TermVec & outlemmas);
+  bool refine_bvlshift(const smt::TermVec & fterms, smt::TermVec & outlemmas);
+  bool refine_bvrshift(const smt::TermVec & fterms, smt::TermVec & outlemmas);
+  bool refine_final_bw(smt::Op op, const smt::TermVec & fterms,
+                       smt::TermVec & outlemmas);
 
   bool try_sat_check();
 

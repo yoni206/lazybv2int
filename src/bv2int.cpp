@@ -41,14 +41,14 @@ void BV2Int::reset()
 {
   cache_.clear();
   extra_assertions_.clear();
-  f_bw_terms_.clear();
+  f_bv_terms_.clear();
   stack_.clear();
 }
 
 void BV2Int::push()
 {
   stack_.push_back(stack_entry_t(
-      cache_, extra_assertions_.size(), f_bw_terms_.size()));
+      cache_, extra_assertions_.size(), f_bv_terms_.size()));
 }
 
 void BV2Int::pop()
@@ -57,7 +57,7 @@ void BV2Int::pop()
   stack_entry_t e = stack_.back();
   cache_ = std::get<0>(e);
   extra_assertions_.resize(std::get<1>(e));
-  f_bw_terms_.resize(std::get<2>(e));
+  f_bv_terms_.resize(std::get<2>(e));
   stack_.pop_back();
 }
 
@@ -315,11 +315,10 @@ Term BV2Int::handle_bw_op(const Term & t,
     // in lazy mode, don't want to add anything to extra_assertions_
     // just get the uf representation
     res = utils_.gen_bw_uf(op, bv_width, x, y);
+    f_bv_terms_.push_back(res);
   } else {
     res = utils_.gen_bw(op, bv_width, granularity_, x, y, extra_assertions_);
   }
-
-  f_bw_terms_.push_back(res);
 
   return res;
 }
@@ -341,8 +340,9 @@ Term BV2Int::handle_shift_op(const Term & t,
     //TODO currently lazy and eager do the same for shift. 
     //Once there is a proper handling of shift in lazy,
     //the following line should be uncommented and the one that follows deleted.
-    //res = utils_.gen_shift_uf(op, bv_width, x, y);
-    res = utils_.gen_shift(op, bv_width, x, y, extra_assertions_);
+    res = utils_.gen_shift_uf(op, bv_width, x, y);
+    f_bv_terms_.push_back(res);
+    //res = utils_.gen_shift(op, bv_width, x, y, extra_assertions_);
   } else {
     res = utils_.gen_shift(op, bv_width, x, y, extra_assertions_);
   }

@@ -43,6 +43,25 @@ static void get_vars(Term term, TermVec & out)
   }
 }
 
+static void get_fbv_args(const Term & f,
+                         uint64_t & bv_width,
+                         Term & a,
+                         Term & b)
+{
+  TermIter it = f->begin();
+  ++it;  // first child is the function name
+
+  const Term & tmp = *it;
+  assert(tmp->is_value());
+  bv_width = tmp->to_int();
+
+  ++it;
+  a = *it;
+
+  ++it;
+  b = *it;
+}
+
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     : bv2int_(new BV2Int(solver, false, lazy)),
@@ -373,13 +392,26 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
 {
   const TermVec & fbv_terms = bv2int_->fbv_terms();
   const Term & fbv_and = bv2int_->fbv_and();
+  const Term & fbv_lshift = bv2int_->fbv_lshift();
+  const Term & fbv_rshift = bv2int_->fbv_rshift();
 
+  UnorderedTermSet seen;
   TermVec fbvand_terms;
+  TermVec fbvlshift_terms;
+  TermVec fbvrshift_terms;
   for (Term f : fbv_terms) {
+    if (seen.find(f) != seen.end()) {
+      continue;
+    }
+    seen.insert(f);
     // TODO: check for spurious terms
     Term fsymbol = *(f->begin());
     if (fsymbol == fbv_and) {
       fbvand_terms.push_back(f);
+    } else if (fsymbol == fbv_lshift) {
+      fbvlshift_terms.push_back(f);
+    } else if (fsymbol == fbv_rshift) {
+      fbvrshift_terms.push_back(f);
     } else {
       assert(false);
     }
@@ -388,6 +420,8 @@ bool LBV2ISolver::refine(TermVec & outlemmas)
   bool ret = false;
 
   ret |= refine_bvand(fbvand_terms, outlemmas);
+  ret |= refine_bvlshift(fbvlshift_terms, outlemmas);
+  ret |= refine_bvrshift(fbvrshift_terms, outlemmas);
 
   return ret;
 }
@@ -447,32 +481,77 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
   }
 
   if (opts.full_refinement && outlemmas.size() == n) {
-    refine_final(BVAnd, fterms, outlemmas);
+    refine_final_bw(BVAnd, fterms, outlemmas);
   }
 
   return outlemmas.size() > n;
 }
 
-static void get_fbv_args(const Term & f,
-                         uint64_t & bv_width,
-                         Term & a,
-                         Term & b)
+bool LBV2ISolver::refine_bvlshift(const TermVec & fterms, TermVec & outlemmas)
 {
-  TermIter it = f->begin();
-  ++it;  // first child is the function name
+  size_t n = outlemmas.size();
 
-  const Term & tmp = *it;
-  assert(tmp->is_value());
-  bv_width = tmp->to_int();
+  for (const Term & f : fterms) {
+    bool found = axioms_.check_bvlshift_range(f, outlemmas);
+  }
 
-  ++it;
-  a = *it;
+  if (opts.full_refinement && outlemmas.size() == n) {
+    Term false_term = solver_->make_term(false);
+    utils & utils = bv2int_->get_utils();
+    for (auto & f : fterms) {
+      Term a, b;
+      uint64_t bv_width;
+      get_fbv_args(f, bv_width, a, b);
 
-  ++it;
-  b = *it;
+      TermVec side_effects;
+      Term shift_result = utils.gen_shift_result(BVShl, bv_width, a, b,
+                                                 side_effects);
+      side_effects.push_back(solver_->make_term(Equal, f, shift_result));
+
+      for (auto &l : side_effects) {
+        if (solver_->get_value(l) == false_term) {
+          outlemmas.push_back(l);
+        }
+      }
+    }
+  }
+
+  return outlemmas.size() > n;
 }
 
-bool LBV2ISolver::refine_final(Op op, const TermVec &fterms, TermVec &outlemmas)
+bool LBV2ISolver::refine_bvrshift(const TermVec & fterms, TermVec & outlemmas)
+{
+  size_t n = outlemmas.size();
+
+  for (const Term & f : fterms) {
+    bool found = axioms_.check_bvrshift_range(f, outlemmas);
+  }
+
+  if (opts.full_refinement && outlemmas.size() == n) {
+    Term false_term = solver_->make_term(false);
+    utils & utils = bv2int_->get_utils();
+    for (auto & f : fterms) {
+      Term a, b;
+      uint64_t bv_width;
+      get_fbv_args(f, bv_width, a, b);
+
+      TermVec side_effects;
+      Term shift_result = utils.gen_shift_result(BVLshr, bv_width, a, b,
+                                                 side_effects);
+      side_effects.push_back(solver_->make_term(Equal, f, shift_result));
+
+      for (auto &l : side_effects) {
+        if (solver_->get_value(l) == false_term) {
+          outlemmas.push_back(l);
+        }
+      }
+    }
+  }
+
+  return outlemmas.size() > n;
+}
+
+bool LBV2ISolver::refine_final_bw(Op op, const TermVec &fterms, TermVec &outlemmas)
 {
   size_t n = outlemmas.size();
   Term false_term = solver_->make_term(false);
