@@ -348,6 +348,11 @@ bool Axioms::check_bvshiftl_zero(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
+bool Axioms::check_bvshiftr_range(const Term & t, TermVec & outlemmas)
+{
+  return check_bvshiftl_range(t, outlemmas);
+}
+
 inline Term Axioms::pow2_minus_one(uint64_t k)
 {
   string p = pow2_minus_one_str(k);

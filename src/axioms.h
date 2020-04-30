@@ -34,6 +34,8 @@ class Axioms
   bool check_bvshiftl_range(const smt::Term & t, smt::TermVec & outlemmas);
   bool check_bvshiftl_zero(const smt::Term & t, smt::TermVec & outlemmas);
 
+  bool check_bvshiftr_range(const smt::Term & t, smt::TermVec & outlemmas);
+
  private:
   smt::Term pow2_minus_one(uint64_t k);
 
