@@ -493,6 +493,9 @@ bool LBV2ISolver::refine_bvlshift(const TermVec & fterms, TermVec & outlemmas)
 
   for (const Term & f : fterms) {
     bool found = axioms_.check_bvlshift_range(f, outlemmas);
+    if (!found) {
+      found = axioms_.check_bvlshift_zero(f, outlemmas);
+    }
   }
 
   if (opts.full_refinement && outlemmas.size() == n) {
@@ -525,6 +528,9 @@ bool LBV2ISolver::refine_bvrshift(const TermVec & fterms, TermVec & outlemmas)
 
   for (const Term & f : fterms) {
     bool found = axioms_.check_bvrshift_range(f, outlemmas);
+    if (!found) {
+      found = axioms_.check_bvrshift_zero(f, outlemmas);
+    }
   }
 
   if (opts.full_refinement && outlemmas.size() == n) {

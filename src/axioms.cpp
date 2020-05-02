@@ -318,12 +318,15 @@ bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
   // b = 0 -> t = a
   Term b_eq_zero = make_eq(b, zero_);
   Term t_eq_a = make_eq(t, a);
+  Term b_ge_width = solver_->make_term(Ge, b,
+                                       solver_->make_term(to_string(bv_width),
+                                                          int_sort_));
   Term l = make_implies(b_eq_zero, t_eq_a);
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == n) {
     // b >= bv_width -> t = 0
-    l = make_implies(t_eq_a, b_eq_zero);
+    l = make_implies(b_ge_width, b_eq_zero);
     add_if_voilated(l, outlemmas);
   }
 
@@ -335,23 +338,17 @@ bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
     add_if_voilated(l, outlemmas);
   }
 
-  if (outlemmas.size() == n) {
-    // t = 0 -> (a = 0 \/ b >= bv_width)
-    Term t_eq_zero = make_eq(t, zero_);
-    Term a_eq_zero = make_eq(a, zero_);
-    Term cases = solver_->make_term(Or, a_eq_zero,
-                         solver_->make_term(Ge, b,
-                                            solver_->make_term(to_string(bv_width), int_sort_)));
-    l = make_implies(t_eq_zero, cases);
-    add_if_voilated(l, outlemmas);
-  }
-
   return outlemmas.size() > n;
 }
 
 bool Axioms::check_bvrshift_range(const Term & t, TermVec & outlemmas)
 {
   return check_bvlshift_range(t, outlemmas);
+}
+
+bool Axioms::check_bvrshift_zero(const Term & t, TermVec & outlemmas)
+{
+  return check_bvlshift_zero(t, outlemmas);
 }
 
 inline Term Axioms::pow2_minus_one(uint64_t k)
