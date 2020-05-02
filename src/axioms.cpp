@@ -343,12 +343,40 @@ bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
 
 bool Axioms::check_bvrshift_range(const Term & t, TermVec & outlemmas)
 {
-  return check_bvlshift_range(t, outlemmas);
+  const size_t n = outlemmas.size();
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  // t <= x
+  Term l = solver_->make_term(Le, t, a);
+  add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == n) {
+    check_bvlshift_range(t, outlemmas);
+  }
+
+  return outlemmas.size() > n;
 }
 
 bool Axioms::check_bvrshift_zero(const Term & t, TermVec & outlemmas)
 {
-  return check_bvlshift_zero(t, outlemmas);
+  const size_t n = outlemmas.size();
+  uint64_t bv_width;
+  Term a, b;
+  get_fbv_args(t, bv_width, a, b);
+
+  // a <= b -> t = 0
+  Term a_le_b = solver_->make_term(Le, a, b);
+  Term t_eq_zero = make_eq(t, zero_);
+  Term l = make_implies(a_le_b, t_eq_zero);
+  add_if_voilated(l, outlemmas);
+
+  if (outlemmas.size() == n) {
+    check_bvlshift_zero(t, outlemmas);
+  }
+
+  return outlemmas.size() > n;
 }
 
 inline Term Axioms::pow2_minus_one(uint64_t k)
