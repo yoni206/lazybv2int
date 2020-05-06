@@ -9,7 +9,7 @@ f=$1
 cvc4_res=`$CVC4_PATH $f`
 
 #store the result of bv2int. Change this line to invoke different options.
-lbv2int_res=`$LAZY_PATH $f --msat --lazy --full-refinement`
+lbv2int_res=`$LAZY_PATH $f --lazy --full-refinement`
 
 if [ "$lbv2int_res" = "sat" -a "$cvc4_res" = "unsat" ]
 then
