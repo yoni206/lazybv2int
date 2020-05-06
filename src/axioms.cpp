@@ -326,7 +326,7 @@ bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
 
   if (outlemmas.size() == n) {
     // b >= bv_width -> t = 0
-    l = make_implies(b_ge_width, b_eq_zero);
+    l = make_implies(b_ge_width, make_eq(t, zero_));
     add_if_voilated(l, outlemmas);
   }
 
