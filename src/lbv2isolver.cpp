@@ -487,6 +487,44 @@ bool LBV2ISolver::refine_bvand(const TermVec & fterms, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
+void LBV2ISolver::refine_final_shift(const TermVec & fterms, TermVec & outlemmas)
+{
+  Term false_term = solver_->make_term(false);
+  utils & utils = bv2int_->get_utils();
+  for (auto & f : fterms) {
+    Term f_sym = *(f->begin());
+    Term a, b;
+    uint64_t bv_width;
+    get_fbv_args(f, bv_width, a, b);
+
+    TermVec side_effects;
+    Term b_val = solver_->get_value(b);
+    string b_val_str = b_val->to_string();
+    if (utils.compare(b_val_str, bv_width) < 0) {
+      uint64_t b_int = strtoul(b_val_str.c_str(), NULL, 10);
+      Term two_pow_b = utils.pow2(b_int);
+      Term div_mul_term;
+      if (f_sym == bv2int_->fbv_lshift()) {
+        div_mul_term = utils.gen_mod(solver_->make_term(Mult, a, two_pow_b), utils.pow2(bv_width), side_effects);
+      } else {
+        assert(f_sym == bv2int_->fbv_rshift());
+        div_mul_term = utils.gen_intdiv(a, two_pow_b, side_effects);
+      }
+
+      Term b_eq_bval = solver_->make_term(Equal, b, b_val);
+      Term lemma = solver_->make_term(Implies, b_eq_bval,
+                                      solver_->make_term(Equal, f,
+                                                         div_mul_term));
+      side_effects.push_back(lemma);
+      for (auto &l : side_effects) {
+        if (solver_->get_value(l) == false_term) {
+          outlemmas.push_back(l);
+        }
+      }
+    }
+  }
+}
+
 bool LBV2ISolver::refine_bvlshift(const TermVec & fterms, TermVec & outlemmas)
 {
   size_t n = outlemmas.size();
@@ -499,24 +537,7 @@ bool LBV2ISolver::refine_bvlshift(const TermVec & fterms, TermVec & outlemmas)
   }
 
   if (opts.full_refinement && outlemmas.size() == n) {
-    Term false_term = solver_->make_term(false);
-    utils & utils = bv2int_->get_utils();
-    for (auto & f : fterms) {
-      Term a, b;
-      uint64_t bv_width;
-      get_fbv_args(f, bv_width, a, b);
-
-      TermVec side_effects;
-      Term shift_result = utils.gen_shift_result(BVShl, bv_width, a, b,
-                                                 side_effects);
-      side_effects.push_back(solver_->make_term(Equal, f, shift_result));
-
-      for (auto &l : side_effects) {
-        if (solver_->get_value(l) == false_term) {
-          outlemmas.push_back(l);
-        }
-      }
-    }
+    refine_final_shift(fterms, outlemmas);
   }
 
   return outlemmas.size() > n;
@@ -534,24 +555,7 @@ bool LBV2ISolver::refine_bvrshift(const TermVec & fterms, TermVec & outlemmas)
   }
 
   if (opts.full_refinement && outlemmas.size() == n) {
-    Term false_term = solver_->make_term(false);
-    utils & utils = bv2int_->get_utils();
-    for (auto & f : fterms) {
-      Term a, b;
-      uint64_t bv_width;
-      get_fbv_args(f, bv_width, a, b);
-
-      TermVec side_effects;
-      Term shift_result = utils.gen_shift_result(BVLshr, bv_width, a, b,
-                                                 side_effects);
-      side_effects.push_back(solver_->make_term(Equal, f, shift_result));
-
-      for (auto &l : side_effects) {
-        if (solver_->get_value(l) == false_term) {
-          outlemmas.push_back(l);
-        }
-      }
-    }
+    refine_final_shift(fterms, outlemmas);
   }
 
   return outlemmas.size() > n;

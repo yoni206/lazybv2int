@@ -73,6 +73,10 @@ class LBV2ISolver : public smt::AbsSmtSolver
  private:
   bool refine(smt::TermVec & outlemmas);
   bool refine_bvand(const smt::TermVec & fterms, smt::TermVec & outlemmas);
+
+  void refine_final_shift(const smt::TermVec & fterms,
+                          smt::TermVec & outlemmas);
+
   bool refine_bvlshift(const smt::TermVec & fterms, smt::TermVec & outlemmas);
   bool refine_bvrshift(const smt::TermVec & fterms, smt::TermVec & outlemmas);
   bool refine_final_bw(smt::Op op, const smt::TermVec & fterms,
