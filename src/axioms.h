@@ -31,6 +31,8 @@ class Axioms
 
   bool check_bvand_bnw(const smt::Term & t, smt::TermVec & outlemmas);
 
+  bool check_bvshift_zero(const smt::Term & t, smt::TermVec & outlemmas);
+
   bool check_bvlshift_range(const smt::Term & t, smt::TermVec & outlemmas);
   bool check_bvlshift_zero(const smt::Term & t, smt::TermVec & outlemmas);
 

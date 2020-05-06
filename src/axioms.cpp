@@ -308,7 +308,7 @@ bool Axioms::check_bvlshift_range(const Term & t, TermVec & outlemmas)
   return outlemmas.size() > n;
 }
 
-bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
+bool Axioms::check_bvshift_zero(const Term & t, TermVec & outlemmas)
 {
   const size_t n = outlemmas.size();
   uint64_t bv_width;
@@ -339,6 +339,11 @@ bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
   }
 
   return outlemmas.size() > n;
+}
+
+bool Axioms::check_bvlshift_zero(const Term & t, TermVec & outlemmas)
+{
+  return check_bvshift_zero(t, outlemmas);
 }
 
 bool Axioms::check_bvrshift_range(const Term & t, TermVec & outlemmas)
@@ -373,7 +378,7 @@ bool Axioms::check_bvrshift_zero(const Term & t, TermVec & outlemmas)
   add_if_voilated(l, outlemmas);
 
   if (outlemmas.size() == n) {
-    check_bvlshift_zero(t, outlemmas);
+    check_bvshift_zero(t, outlemmas);
   }
 
   return outlemmas.size() > n;
