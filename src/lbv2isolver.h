@@ -71,6 +71,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
                       const smt::Sort & sort,
                       uint64_t base = 10) const;
   void run(std::string filename);
+  void run_on_stdin();
 
  private:
   bool refine(smt::TermVec & outlemmas);
