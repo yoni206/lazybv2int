@@ -32,6 +32,8 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::Result check_sat();
   smt::Result check_sat_assuming(const smt::TermVec & assumptions);
 
+  smt::TermVec get_unsat_core();
+
   smt::Term substitute(const smt::Term term,
                        const smt::UnorderedTermMap & substitution_map) const;
 
@@ -82,7 +84,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   bool refine_final_bw(smt::Op op, const smt::TermVec & fterms,
                        smt::TermVec & outlemmas);
 
-  bool try_sat_check();
+  bool try_sat_check(smt::TermVec &outlemmas);
 
   // print result and values based on options
   void print_result(smt::Result res) const;
