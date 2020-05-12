@@ -42,6 +42,10 @@ if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cv
   message(FATAL_ERROR "Missing smt-switch cvc4 library -- try running ./contrib/setup-smt-switch.sh")
 endif()
 
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-btor.a")
+  message(FATAL_ERROR "Missing smt-switch Boolector library -- try running ./contrib/setup-smt-switch.sh")
+endif()
+
 # Tests are with MathSAT only for now
 enable_testing()
 add_subdirectory(test)
@@ -62,8 +66,10 @@ target_include_directories(lazybv2int PUBLIC
 
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.a")
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.a")
+target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-btor.a")
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.a")
 target_link_libraries(lazybv2int PUBLIC gmp)
+target_link_libraries(lazybv2int PUBLIC pthread)
 
 add_executable(lazybv2int-bin
   "${PROJECT_SOURCE_DIR}/src/main.cpp"

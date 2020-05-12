@@ -10,6 +10,7 @@
 
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
+#include "smt-switch/boolector_factory.h"
 
 #include "opts.h"
 #include "smtlibmsatparser.h"
@@ -79,11 +80,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     solver_->set_opt("produce-models", "true");
   }
 
-  if (opts.solver == "cvc4") {
-    sat_checker_ = CVC4SolverFactory::create();
-  } else if (opts.solver == "msat") {
-    sat_checker_ = MsatSolverFactory::create();
-  }
+  sat_checker_ = BoolectorSolverFactory::create();
   sat_checker_->set_opt("produce-unsat-cores", "true");
 
 }
@@ -361,14 +358,14 @@ void LBV2ISolver::do_assert_formula()
     f = solver_->make_term(true);
     for (size_t i = last_asserted_size_; i < orig_assertions_.size(); ++i) {
       f = solver_->make_term(And, f, orig_assertions_[i]);
+      if (opts.lazy && opts.sat_checker) {
+        sat_checker_->assert_formula(tr_sat_checker_.transfer_term(orig_assertions_[i]));
+      }
     }
 
     // preprocess the formula
     Term pre_f = prepro_->process(f);
 
-    if (opts.lazy && opts.sat_checker) {
-      sat_checker_->assert_formula(tr_sat_checker_.transfer_term(pre_f));
-    }
     // translate
     Term t_f = bv2int_->convert(pre_f);
 
@@ -868,6 +865,7 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
       Term int_val = solver_->get_value(int_v);
       Term bv_val = utils.int_val_to_bv_val(int_val, s->get_width());
       Term v_eq_val = solver_->make_term(Equal, v, bv_val);
+      //cout << v_eq_val << endl;
       assumptions.push_back(tr_sat_checker_.transfer_term(v_eq_val));
       orig_assump.push_back(solver_->make_term(Equal, int_v, int_val));
     }
