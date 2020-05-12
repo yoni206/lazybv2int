@@ -45,7 +45,7 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ] &&[ -f $DEPSsmt-switch/local/lib/libsmt-switch-btor.a ]; then \
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ] &&[ -f $DEPS/smt-switch/local/lib/libsmt-switch-btor.a ]; then \
     echo "It appears smt-switch with MathSAT, CVC4, and Boolector was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
