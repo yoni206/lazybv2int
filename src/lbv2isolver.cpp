@@ -80,7 +80,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     solver_->set_opt("produce-models", "true");
   }
 
-  sat_checker_ = BoolectorSolverFactory::create();
+  sat_checker_ = MsatSolverFactory::create();
   sat_checker_->set_opt("produce-unsat-cores", "true");
 
 }
@@ -156,12 +156,12 @@ Result LBV2ISolver::solve()
 
     for (auto &l : lemmas) {
       //cout << "<--------> " << endl;
-      //cout << "LAZY LEMMA : " << l << endl;
       tmp.clear();
       utils::conjunctive_partition(l, tmp);
       //cout << tmp.size() << endl;
       for (auto &c : tmp) {
         if (seen.find(c) == seen.end()) {
+          //cout << "LAZY LEMMA : " << c << endl;
           solver_->assert_formula(c);
           seen.insert(c);
         } else {
