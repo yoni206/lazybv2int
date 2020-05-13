@@ -991,12 +991,16 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
   for (auto &v : vars) {
     Sort s = v->get_sort();
     SortKind sk = s->get_sort_kind();
-    assert(map.find(v) != map.end());
+
+    if (map.find(v) == map.end()) {
+      continue;
+    }
     if (opts.sat_checker_filter &&
         filter_vars.find(map.at(v)) != filter_vars.end()) {
       //cout << "Dropping " << v << endl;
       continue;
     }
+
     if (sk == SortKind::BV && s->get_width() > opts.sat_checker_limit) {
       Term int_v = map.at(v);
       Term int_val = solver_->get_value(int_v);
