@@ -36,7 +36,7 @@ static void get_vars(Term term, TermVec & out)
       if (t->is_symbolic_const()) {
         out.push_back(t);
       } else {// add children to queue
-        for (auto &tt : t) {
+        for (auto tt : t) {
           to_visit.push_back(tt);
         }
       }
@@ -1059,7 +1059,7 @@ void LBV2ISolver::print_result(Result res) const
   cout << res << endl;
   if (res.is_sat()) {
     if (opts.print_values) {
-      for (auto &s : bv2int_->get_int_vars()) {
+      for (auto s : bv2int_->get_int_vars()) {
         cout << "\t" << s << " := " << solver_->get_value(s) << endl;
       }
     }
