@@ -10,6 +10,8 @@ public:
   utils(smt::SmtSolver& solver);
   ~utils() {};
 
+  static void conjunctive_partition(const smt::Term & term,
+                                    smt::TermVec & out);
   static std::string pow2_str(uint64_t k);
   static std::string mod_value(std::string a, std::string b);
   static std::string div_value(std::string a, std::string b);

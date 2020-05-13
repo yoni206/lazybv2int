@@ -37,33 +37,6 @@ Term make_signed_neg(SmtSolver& solver, const Term& x) {
             return condition;
 }
 
-static void conjunctive_partition(const Term & term, TermVec & out)
-{
-  TermVec to_visit({ term });
-  UnorderedTermSet visited;
-
-  Term t;
-  while (to_visit.size()) {
-    t = to_visit.back();
-    to_visit.pop_back();
-
-    if (visited.find(t) == visited.end()) {
-      visited.insert(t);
-
-      Op op = t->get_op();
-      if (op.prim_op == And) {
-        // add children to queue
-        for (auto tt : t) {
-          to_visit.push_back(tt);
-        }
-      } else {
-        out.push_back(t);
-      }
-
-    }
-  }
-}
-
 // Using simplification and op elimination rewrite rules from CVC4:
 // https://github.com/CVC4/CVC4/tree/master/src/theory/bv
 enum RewriteRule
@@ -705,7 +678,7 @@ Term TopLevelPropagator::process(Term &t, bool preserve_equiv)
 {
   DisjointSet ds;
   TermVec conjuncts;
-  conjunctive_partition(t, conjuncts);
+  utils::conjunctive_partition(t, conjuncts);
 
   UnorderedTermSet relevant;
   for (auto &c : conjuncts) {
