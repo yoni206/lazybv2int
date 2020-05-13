@@ -33,7 +33,6 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     ./contrib/setup-cvc4.sh
-    ./contrib/setup-msat.sh --auto-yes
     ./contrib/setup-btor.sh
     ./configure.sh --cvc4 --msat --btor --prefix=local --static $CONF_OPTS
     cd build
