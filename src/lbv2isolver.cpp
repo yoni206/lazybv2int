@@ -80,7 +80,7 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     solver_->set_opt("produce-models", "true");
   }
 
-  sat_checker_ = BoolectorSolverFactory::create();
+  sat_checker_ = MsatSolverFactory::create();
   sat_checker_->set_opt("produce-unsat-cores", "true");
 
 }
@@ -97,7 +97,7 @@ Result LBV2ISolver::check_sat() { return solve(); }
 Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
 {
   push();
-  for (auto a : assumptions) {
+  for (auto &a : assumptions) {
     assert_formula(a);
   }
   Result r = solve();
@@ -128,7 +128,7 @@ Result LBV2ISolver::solve()
   }
 
   // lazy version
-  TermVec lemmas;
+  TermVec lemmas, tmp;
   UnorderedTermSet seen;
 
   Result r = Result(ResultType::UNKNOWN);
@@ -153,12 +153,20 @@ Result LBV2ISolver::solve()
       break;
     }
 
-    for (auto l : lemmas) {
+
+    for (auto &l : lemmas) {
       //cout << "<--------> " << endl;
-      //cout << "LAZY LEMMA : " << l << endl;
-      if (seen.find(l) == seen.end()) {
-        solver_->assert_formula(l);
-        seen.insert(l);
+      tmp.clear();
+      utils::conjunctive_partition(l, tmp);
+      //cout << tmp.size() << endl;
+      for (auto &c : tmp) {
+        if (seen.find(c) == seen.end()) {
+          //cout << "LAZY LEMMA : " << c << endl;
+          solver_->assert_formula(c);
+          seen.insert(c);
+        } else {
+          //cout << "Skipping : " << c << endl;
+        }
       }
     }
   }
@@ -380,17 +388,21 @@ void LBV2ISolver::do_assert_formula()
 
     // extra constraints
     UnorderedTermSet seen;
+    TermVec tmp;
     const TermVec &extra_cons = bv2int_->get_extra_assertions();
     for (size_t i = extra_assertions_.size(); i < extra_cons.size(); ++i) {
-      Term t = extra_cons[i];
-      if (seen.find(t) == seen.end()) {
-        //Term t_p = postpro_->process(t);
-        solver_->assert_formula(t);
-        seen.insert(t);
-      } else {
-        //cout << "skipping" << endl;
+      tmp.clear();
+      utils::conjunctive_partition(extra_cons[i], tmp);
+      for (auto &t : tmp) {
+        if (seen.find(t) == seen.end()) {
+          //Term t_p = postpro_->process(t);
+          solver_->assert_formula(t);
+          seen.insert(t);
+        } else {
+          //cout << "skipping" << endl;
+        }
       }
-      extra_assertions_.push_back(t);
+      extra_assertions_.push_back(extra_cons[i]);
     }
   }
 }
@@ -591,7 +603,7 @@ bool LBV2ISolver::refine_final_bw(Op op, const TermVec &fterms, TermVec &outlemm
                                        side_effects);
       Term l = solver_->make_term(Equal, f, full_def);
       Term se = solver_->make_term(true);
-      for (auto t : side_effects) {
+      for (auto &t : side_effects) {
         se = solver_->make_term(And, se, t);
       }
       Term res = solver_->make_term(And, l, se);
@@ -680,7 +692,7 @@ bool LBV2ISolver::refine_final_bw(Op op, const TermVec &fterms, TermVec &outlemm
       side_effects.clear();
       Term bvop_uf = utils.gen_bw(
           op, bv_width, bv2int_->granularity(), a, b, side_effects);
-      for (auto ax : side_effects) {
+      for (auto &ax : side_effects) {
         if (solver_->get_value(ax) == false_term) {
           outlemmas.push_back(ax);
         }
