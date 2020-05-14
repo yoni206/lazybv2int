@@ -1036,24 +1036,32 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
   }
 
   Result r = sat_checker_->check_sat_assuming(bool_assump);
+  bool lemma_failed = false;
   //cout << bool_assump.size() << endl;
   if (r.is_unsat()) {
     Term lemma = solver_->make_term(false);
     if (bool_assump.size() > 0) {
-      TermVec core = sat_checker_->get_unsat_core();
-      UnorderedTermSet core_set(core.begin(), core.end());
+      try {
+        TermVec core = sat_checker_->get_unsat_core();
+        UnorderedTermSet core_set(core.begin(), core.end());
 
-      assert(orig_assump.size() == bool_assump.size());
+        assert(orig_assump.size() == bool_assump.size());
 
-      for (size_t j = 0; j < bool_assump.size(); ++j) {
-        if (core_set.find(bool_assump[j]) != core_set.end()) {
-          lemma = solver_->make_term(Or, lemma,
+        for (size_t j = 0; j < bool_assump.size(); ++j) {
+          if (core_set.find(bool_assump[j]) != core_set.end()) {
+            lemma = solver_->make_term(Or, lemma,
                                      solver_->make_term(Not, orig_assump[j]));
+          }
         }
+      } catch (...) {
+        lemma_failed = true;
       }
     }
-    outlemmas.push_back(lemma);
-    //cout << lemma << endl;
+
+    if (!lemma_failed) {
+      outlemmas.push_back(lemma);
+      //cout << lemma << endl;
+    }
   }
 
   sat_checker_->pop();
