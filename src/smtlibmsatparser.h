@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "smt-switch/smt.h"
 
@@ -17,5 +18,22 @@ namespace lbv2i {
 smt::Term parse_smt2(FILE * f, smt::TermTranslator tr);
 
 std::string remove_asserts(std::string input);
+
+class SExprBuffer
+{
+ public:
+  SExprBuffer() : num_unbalanced(0) {}
+  ~SExprBuffer(){};
+
+  bool any_new_commands() { return commands.size(); }
+  std::vector<std::string> & get_commands() { return commands; }
+  void clear_commands() { commands.clear(); }
+  void add_string(std::string input);
+
+ protected:
+  size_t num_unbalanced;  // the number of unbalanced open parantheses
+  std::vector<std::string> commands;  // a balanced set of commands
+  std::string buffered_input;         // buffered input that is not yet balanced
+};
 
 }  // namespace lbv2i

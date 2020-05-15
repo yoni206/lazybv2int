@@ -68,4 +68,28 @@ string remove_asserts(string input)
   return output;
 }
 
+void SExprBuffer::add_string(string input)
+{
+  for (std::string::size_type loc = 0; loc < input.size(); loc++) {
+    if (input[loc] == '(') {
+      num_unbalanced++;
+    } else if (input[loc] == ')') {
+      num_unbalanced--;
+    }
+
+    // add to the buffered input
+    buffered_input.push_back(input[loc]);
+
+    // if balanced, then add it to contents
+    if (num_unbalanced == 0) {
+      // buffered input is a complete command, add it to commands
+      commands.push_back(buffered_input);
+      // reset buffered input
+      buffered_input = "";
+    }
+  }
+  // add back the new line
+  buffered_input += "\n";
+}
+
 }  // namespace lbv2i
