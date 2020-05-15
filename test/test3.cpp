@@ -10,7 +10,7 @@ using namespace smt;
 using namespace std;
 
 int main() {
-  SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
+  SmtSolver underlying_solver = smt::CVC4SolverFactory::create(false);
 
   underlying_solver->set_logic("QF_NIA");
   Sort int_sort = underlying_solver->make_sort(INT);

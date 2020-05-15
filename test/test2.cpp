@@ -9,7 +9,7 @@ using namespace lbv2i;
 using namespace smt;
 
 int main() {
-  SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
+  SmtSolver underlying_solver = smt::CVC4SolverFactory::create(false);
 
   LBV2ISolver s = LBV2ISolver(underlying_solver);
   s.set_logic("QF_UFBVNIA");

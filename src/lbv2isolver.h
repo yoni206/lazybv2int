@@ -28,7 +28,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
   void assert_formula(const smt::Term & f);
   void do_assert_formula();
   void dump_smt2();
-  smt::Term get_value(smt::Term & t) const;
+  smt::Term get_value(const smt::Term & t) const;
+  smt::UnorderedTermMap get_array_values(const smt::Term & arr,
+                                         smt::Term & out_const_base) const;
   smt::Result check_sat();
   smt::Result check_sat_assuming(const smt::TermVec & assumptions);
 

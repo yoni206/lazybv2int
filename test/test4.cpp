@@ -11,7 +11,7 @@ using namespace smt;
 using namespace std;
 
 int main() {
-  SmtSolver underlying_solver = smt::CVC4SolverFactory::create();
+  SmtSolver underlying_solver = smt::CVC4SolverFactory::create(false);
   utils u(underlying_solver);
   Sort int_sort = underlying_solver->make_sort(INT);
   Term int_x = underlying_solver->make_term(10, int_sort);

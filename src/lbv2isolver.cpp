@@ -80,7 +80,8 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
     solver_->set_opt("produce-models", "true");
   }
 
-  sat_checker_ = MsatSolverFactory::create();
+  // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
+  sat_checker_ = MsatSolverFactory::create(false);
   sat_checker_->set_opt("produce-unsat-cores", "true");
 
 }
@@ -288,7 +289,7 @@ void LBV2ISolver::set_opt(string op, string value)
   solver_->set_opt(op, value);
 }
 
-Term LBV2ISolver::get_value(Term & t) const
+Term LBV2ISolver::get_value(const Term & t) const
 {
   // handle special case of booleans
   // useful for cosa
@@ -300,6 +301,12 @@ Term LBV2ISolver::get_value(Term & t) const
   }
   // Need to do this by translating back to bv...
   assert(false);
+}
+
+UnorderedTermMap LBV2ISolver::get_array_values(const Term & arr,
+                                               Term & out_const_base) const
+{
+  throw NotImplementedException("Does not support getting array values.");
 }
 
 void LBV2ISolver::push(uint64_t num)

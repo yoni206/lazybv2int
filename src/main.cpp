@@ -37,10 +37,12 @@ int main(int argc, char ** argv)
 
   smt::SmtSolver underlying_solver;
   if (opts.solver == "cvc4") {
-    underlying_solver = smt::CVC4SolverFactory::create();
+    // create CVC4 Solver without a shadow DAG (e.g. LoggingSolver wrapper)
+    underlying_solver = smt::CVC4SolverFactory::create(false);
     underlying_solver->set_opt("nl-ext-tplanes", "true");
   } else if (opts.solver == "msat") {
-    underlying_solver = smt::MsatSolverFactory::create();
+    // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
+    underlying_solver = smt::MsatSolverFactory::create(false);
   } else {
     assert(false);
   }
