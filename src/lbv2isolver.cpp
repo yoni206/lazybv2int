@@ -883,8 +883,10 @@ void LBV2ISolver::run_on_stdin()
     seb.add_string(input_line);
     if (seb.any_new_commands()) {
       string smtlib;
+      string command;
       for (auto c : seb.get_commands()) {
         smatch match;
+        command = "";
         if (regex_search(c, match, re) && match.size() > 1) {
           msat_term msat_assertions = msat_from_smtlib2(env, smtlib.c_str());
           if (MSAT_ERROR_TERM(msat_assertions)) {
@@ -911,7 +913,7 @@ void LBV2ISolver::run_on_stdin()
           assert_formula(assertions);
 
           // run command
-          std::string command = match.str(1);
+          command = match.str(1);
           if (command == "push") {
             size_t num = match.size() > 3 ? stoi(match.str(3)) : 1;
             push(num);
@@ -965,7 +967,8 @@ void LBV2ISolver::run_on_stdin()
           smtlib += "\n";
         }
 
-        if (print_success) {
+        if (print_success && command != "check-sat"
+            && command != "check-sat-assuming") {
           std::cout << "success" << std::endl;
         }
       }
