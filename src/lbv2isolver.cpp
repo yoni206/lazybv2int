@@ -879,10 +879,12 @@ void LBV2ISolver::run_on_stdin()
 
   // Read input until a push/pop/check-sat/check-sat-assuming call
   SExprBuffer seb;
+
+  // store all the input in smtlib
+  string smtlib = "";
   for (std::string input_line; std::getline(std::cin, input_line);) {
     seb.add_string(input_line);
     if (seb.any_new_commands()) {
-      string smtlib;
       string command;
       for (auto c : seb.get_commands()) {
         smatch match;
@@ -960,6 +962,13 @@ void LBV2ISolver::run_on_stdin()
             throw std::exception();
           }
 
+          // save smtlib in case needed for the fallback HACK -- mathsat parse
+          // failure
+          previous_smtlib.push_back(smtlib);
+
+          // now clear smtlib
+          smtlib = "";
+
         } else {
           // if not one of the commands processed at lbv2isolver level,
           // just append to smtlib
@@ -972,10 +981,6 @@ void LBV2ISolver::run_on_stdin()
           std::cout << "success" << std::endl;
         }
       }
-
-      // save smtlib in case needed for the fallback HACK -- mathsat parse
-      // failure
-      previous_smtlib.push_back(smtlib);
 
       // clear the commands in the buffer
       seb.clear_commands();
