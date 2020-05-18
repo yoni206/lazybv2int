@@ -22,7 +22,7 @@ std::string remove_asserts(std::string input);
 class SExprBuffer
 {
  public:
-  SExprBuffer() : num_unbalanced(0) {}
+  SExprBuffer() : num_unbalanced(0), in_command(false) {}
   ~SExprBuffer(){};
 
   bool any_new_commands() { return commands.size(); }
@@ -34,6 +34,7 @@ class SExprBuffer
   size_t num_unbalanced;  // the number of unbalanced open parantheses
   std::vector<std::string> commands;  // a balanced set of commands
   std::string buffered_input;         // buffered input that is not yet balanced
+  bool in_command; // set to true BEFORE processing the next character, if in a command
 };
 
 }  // namespace lbv2i

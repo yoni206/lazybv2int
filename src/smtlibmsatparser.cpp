@@ -71,6 +71,7 @@ string remove_asserts(string input)
 void SExprBuffer::add_string(string input)
 {
   for (std::string::size_type loc = 0; loc < input.size(); loc++) {
+    in_command = (num_unbalanced != 0);
     if (input[loc] == '(') {
       num_unbalanced++;
     } else if (input[loc] == ')') {
@@ -80,8 +81,9 @@ void SExprBuffer::add_string(string input)
     // add to the buffered input
     buffered_input.push_back(input[loc]);
 
-    // if balanced, then add it to contents
-    if (num_unbalanced == 0) {
+    // if it was in a command and became balanced, then add it to contents
+    // because the command has finished
+    if (in_command && num_unbalanced == 0) {
       // buffered input is a complete command, add it to commands
       commands.push_back(buffered_input);
       // reset buffered input
