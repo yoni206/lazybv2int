@@ -34,7 +34,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     cd smt-switch
     ./contrib/setup-cvc4.sh
     ./contrib/setup-btor.sh
-    ./configure.sh --cvc4 --msat --btor --prefix=local --static $CONF_OPTS
+    ./configure.sh --cvc4 --msat --msat-home=../mathsat --btor --prefix=local --static $CONF_OPTS
     cd build
     make -j$(nproc)
     make test
