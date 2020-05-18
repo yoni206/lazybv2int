@@ -61,7 +61,7 @@ target_include_directories(lazybv2int PUBLIC
   "${PROJECT_SOURCE_DIR}/smt-switch/local/include"
   "${PROJECT_SOURCE_DIR}/deps/smt-switch"
   "${PROJECT_SOURCE_DIR}/deps/smt-switch/include"
-  "${PROJECT_SOURCE_DIR}/deps/smt-switch/deps/mathsat/include")
+  "${PROJECT_SOURCE_DIR}/deps/mathsat/include")
 
 
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.a")
