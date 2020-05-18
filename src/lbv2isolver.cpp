@@ -901,11 +901,10 @@ void LBV2ISolver::run_on_stdin()
             previous_smtlib.erase(++(previous_smtlib.begin()),
                                   previous_smtlib.end());
             string input =
-                previous_smtlib[0] + "\n" + smtlib.substr(0, match.position());
+              previous_smtlib[0] + "\n" + smtlib;
             msat_assertions = msat_from_smtlib2(env, input.c_str());
             if (MSAT_ERROR_TERM(msat_assertions)) {
               cout << "Failed to read first part of smt-lib file:" << endl;
-              // cout << smtlib.substr(0, match.position()) << endl;
               throw std::exception();
             }
           }
