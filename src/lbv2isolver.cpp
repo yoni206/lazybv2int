@@ -989,6 +989,11 @@ void LBV2ISolver::run_on_stdin()
 
 bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
 {
+  const TermVec &fterms = bv2int_->fbv_terms();
+  if (fterms.size() == 0) {
+    return false;
+  }
+
   //cout << "SAT CHECKER" << endl;
   Term formula = solver_->make_term(true);
   for (auto &t : orig_assertions_) {
@@ -1002,7 +1007,7 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
   UnorderedTermSet filter_vars;
   if (opts.sat_checker_filter) {
     TermVec tmp_vars;
-    for (auto &t : bv2int_->fbv_terms()) {
+    for (auto &t : fterms) {
       get_vars(t, tmp_vars);
     }
     for (auto &v : tmp_vars) {
