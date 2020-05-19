@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The lazybv2int source code uses third-party software which has its own
 copyright and licensing terms, as described below.
 
-- lazybv2int uses the MathSAT SMTLIB Parser via MathSAT API. MathSAT license is 
+- lazybv2int uses the MathSAT SMTLIB Parser via MathSAT API. The MathSAT license is 
 restricted to research-only usage. For more details, see 
 https://mathsat.fbk.eu/download.html
 
