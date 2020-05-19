@@ -39,6 +39,10 @@ copyright and licensing terms, as described below.
 restricted to research-only usage. For more details, see 
 https://mathsat.fbk.eu/download.html
 
-- lazybv2int uses CVC4 to solve formulas over arithmetics and uninterpreted functions. This dependency is compatible with the BSD license above. For more details, see https://github.com/CVC4/CVC4
+- lazybv2int uses CVC4 to solve formulas over arithmetics and uninterpreted functions. 
+This dependency is compatible with the BSD license above. 
+For more details, see https://github.com/CVC4/CVC4
 
-- lazybv2int uses smt-switch as an interface to the other solvers. This dependency is compatible with the BSD license above. For more details, see https://github.com/makaimann/smt-switch/
+- lazybv2int uses smt-switch as an interface to the other solvers. 
+This dependency is compatible with the BSD license above. 
+For more details, see https://github.com/makaimann/smt-switch/
