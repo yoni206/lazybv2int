@@ -1,0 +1,62 @@
+\documentclass{easychair}
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+\usepackage{cite}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newcommand{lazybvtoint}{lazybv2int}
+
+\begin{document}
+
+\author{
+		Ahmed Irfan\inst{1} \and
+		Makai Mann\inst{1} \and
+		Andres N\"otzli\inst{1} \and
+		Andrew Reynolds\inst{2}\and
+		Yoni Zohar\inst{1}
+		Clark Barrett\inst{1}
+}
+\institute{
+  Stanford University \and
+  The University of Iowa
+ }
+
+\title{LazyBV2Int at the SMT Competition 2020}
+
+\maketitle
+
+
+\noindent
+\begin{abstract}
+TBD
+\end{abstract}
+
+\section*{Overview}
+
+\lazybvtoint is a prototype SMT-solver for the theory of fixed-width bit-vectors.
+It also supports uninterpreted functions, however, it will only compete in QF\_BV tracks.
+The basic idea behind the tool is a 
+translation of bit-vector formulas into formulas over integer 
+arithmetic and uninterpreted functions.
+
+\section*{Wrapper Tool}
+According to the definitions of various types of solvers published by the organizers
+of \smtcomp 2020, \lazybvtoint is a {\em wrapper tool} (see \cite{}).
+To parse the input problem (in \smtlib format), \lazybvtoint employs \msat's parser through an API \cite{};
+And to solve the translated problem it uses \cvcfour \cite{}.
+The interface to both external solvers, as well as many parts of the implementation,
+use \smtswitch \cite{}.
+
+
+\section*{Technical Details}
+
+\section*{Configurations}
+
+\newpage% align right and left column in size
+
+%  \bibliography{smtcomp-2020}
+%  \bibliographystyle{plain}
+
+\end{document}
