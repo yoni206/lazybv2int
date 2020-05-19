@@ -18,7 +18,7 @@ cd build
 make
 ```
 
-#Use
+# Use
 From `build` do:
 ```
 ./lazybv2int <smtlib-file>
