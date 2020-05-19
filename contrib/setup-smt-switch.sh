@@ -33,8 +33,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     ./contrib/setup-cvc4.sh
-    ./contrib/setup-btor.sh
-    ./configure.sh --cvc4 --msat --msat-home=../mathsat --btor --prefix=local --static $CONF_OPTS
+    ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static $CONF_OPTS
     cd build
     make -j$(nproc)
     make test
@@ -44,8 +43,8 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ] &&[ -f $DEPS/smt-switch/local/lib/libsmt-switch-btor.a ]; then \
-    echo "It appears smt-switch with MathSAT, CVC4, and Boolector was successfully installed to $DEPS/smt-switch/local."
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ]; then \
+    echo "It appears smt-switch with MathSAT and CVC4 was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
     echo "You might be missing some dependencies."
