@@ -1,3 +1,14 @@
+# Welcome
+Welcome to lazybv2int. It is an SMT-solver for the thory
+of bit-vectors and uninterpreted functions.
+
+It is based on a translation of the input problem into an equisatisfiable problem over the theory of integer arithmetic and uninterpreted functions.
+There are several variants of this translation, all activated with various options that are described in the tool's help (see below).
+
+Incremental solving is supported.
+
+The tool uses [mathsat](https://mathsat.fbk.eu/) to parse the input problem and [cvc4](https://cvc4.github.io/) to solve the arithmetic translations.
+
 # Install
 To build with mathsat (which is currently required for parsing SMT-LIB), you must obtain the MathSAT libraries yourself. You are responsible for ensuring that you meet the conditions of the MathSAT license. Please download the mathsat distribution, unpack the compressed directory and move it to `./deps/mathsat`. Then, run the following commands:
 ```
