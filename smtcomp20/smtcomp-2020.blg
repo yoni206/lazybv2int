@@ -3,53 +3,46 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: smtcomp-2020.aux
 The style file: plain.bst
 Database file #1: smtcomp-2020.bib
-Warning--to sort, need author or key in cvc4-website
-Warning--to sort, need author or key in cvc4-github
-Warning--to sort, need author or key in runscript
-Warning--to sort, need author or key in incremental-runscript
-Warning--to sort, need author or key in mv-runscript
-Warning--to sort, need author or key in uc-runscript
-Warning--empty journal in irfanmathsat5
-Warning--empty year in irfanmathsat5
-You've used 11 entries,
+Warning--I didn't find a database entry for ""
+You've used 4 entries,
             2118 wiz_defined-function locations,
-            548 strings with 5724 characters,
-and the built_in function-call counts, 3101 in all, are:
-= -- 303
-> -- 120
-< -- 4
-+ -- 52
-- -- 40
-* -- 202
-:= -- 455
-add.period$ -- 28
-call.type$ -- 11
-change.case$ -- 52
+            519 strings with 4588 characters,
+and the built_in function-call counts, 1550 in all, are:
+= -- 136
+> -- 99
+< -- 3
++ -- 38
+- -- 34
+* -- 113
+:= -- 255
+add.period$ -- 12
+call.type$ -- 4
+change.case$ -- 28
 chr.to.int$ -- 0
-cite$ -- 19
-duplicate$ -- 120
-empty$ -- 284
-format.name$ -- 40
-if$ -- 687
+cite$ -- 4
+duplicate$ -- 53
+empty$ -- 117
+format.name$ -- 34
+if$ -- 325
 int.to.chr$ -- 0
-int.to.str$ -- 11
-missing$ -- 4
-newline$ -- 51
+int.to.str$ -- 4
+missing$ -- 2
+newline$ -- 21
 num.names$ -- 10
-pop$ -- 86
+pop$ -- 39
 preamble$ -- 1
-purify$ -- 42
+purify$ -- 24
 quote$ -- 0
-skip$ -- 99
+skip$ -- 46
 stack$ -- 0
-substring$ -- 154
-swap$ -- 34
-text.length$ -- 4
+substring$ -- 52
+swap$ -- 19
+text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 44
-warning$ -- 8
-while$ -- 18
-width$ -- 13
-write$ -- 105
-(There were 8 warnings)
+type$ -- 16
+warning$ -- 0
+while$ -- 12
+width$ -- 5
+write$ -- 41
+(There was 1 warning)

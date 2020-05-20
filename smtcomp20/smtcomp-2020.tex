@@ -5,12 +5,21 @@
 \usepackage{authblk}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{mdframed}
 
-\newcommand{lazybvtoint}{lazybv2int}
-\newcommand{smtcomp}{SMT-COMP}
-\newcommand{smtlib}{SMT-LIB}
-\newcommand{msat}{mathsat}
-\newcommand{cvcfour}{CVC4}
+\newcommand{\comment}[3]{\begin{mdframed}{{\textcolor{#1}{#2: #3}}}\end{mdframed}}
+\newcommand{\yoni}[1]{\comment{red}{Yoni}{#1}}
+\newcommand{\ahmed}[1]{\comment{red}{Ahmed}{#1}}
+\newcommand{\makai}[1]{\comment{red}{Makai}{#1}}
+\newcommand{\lazybvtoint}{lazybv2int\xspace}
+\newcommand{\smtcomp}{SMT-COMP\xspace}
+\newcommand{\smtlib}{SMT-LIB~2\xspace}
+\newcommand{\qfbv}{QF\_BV\xspace}
+\newcommand{\qfufnia}{QF\_UFNIA\xspace}
+\newcommand{\msat}{mathsat\xspace}
+\newcommand{\cvcfour}{CVC4\xspace}
+\newcommand{\smtswitch}{smt-switch\xspace}
 
 \begin{document}
 
@@ -19,7 +28,7 @@
 		Makai Mann\inst{1} \and
 		Andres N\"otzli\inst{1} \and
 		Andrew Reynolds\inst{2}\and
-		Yoni Zohar\inst{1}
+		Yoni Zohar\inst{1}\and
 		Clark Barrett\inst{1}
 }
 \institute{
@@ -34,32 +43,91 @@
 
 \noindent
 \begin{abstract}
-TBD
+\lazybvtoint is a new prototype SMT-solver, that  will participate in the incremental and non-incremental trackes of the \qfbv logic.
 \end{abstract}
 
-\section*{Overview}
+\paragraph{Overview}
+\lazybvtoint is a prototype SMT-solver for the theory of fixed-width bit-vectors and uninterpreted functions.
+This year will be the first in which it competes in \smtcomp.
+It will participate in the incremental and non-incremental \qfbv trackes.
 
-\lazybvtoint is a prototype SMT-solver for the theory of fixed-width bit-vectors.
-It also supports uninterpreted functions, however, it will only compete in QF\_BV tracks.
-The basic idea behind the tool is a 
-translation of bit-vector formulas into formulas over integer 
-arithmetic and uninterpreted functions.
+%basic idea
+The basic algorithm of the tool relies on a translation from bit-vectors into
+non-linear integer arithmetic with uninterpreted functions, and then performing
+a CEGAR loop \cite{}.
+The idea of using integer reasoning for bit-vector solving is not new (see, e.g., \cite{}), however, it is worth revisiting, given recent imrpvements in solvers for non-linear integer arithmetic.
 
-\section*{Wrapper Tool}
-According to the definitions of various types of solvers published by the organizers
-of \smtcomp 2020, \lazybvtoint is a {\em wrapper tool} (see \cite{}).
-To parse the input problem (in \smtlib format), \lazybvtoint employs \msat's parser through an API \cite{};
-And to solve the translated problem it uses \cvcfour \cite{}.
-The interface to both external solvers, as well as many parts of the implementation,
-use \smtswitch \cite{}.
+We expect this solver to perform better on benchmarks that involve arithmetic
+bit-vector constraints and large bit-widths because these seem
+more suitable for the approach of this tool.
 
-\section*{Technical Details}
+The tool is open-source and is available at \url{https://github.com/yoni206/lazybv2int}.
 
-\section*{Configurations}
+\paragraph{Dependencies on Other Tools}
+%
+To parse the input problem, \lazybvtoint employs \msat's
+parser through an API \cite{mathsat5}.
+To solve the translated arithmetic problem it uses \cvcfour \cite{cvc4}.
+In some cases, \cvcfour is called on an extension of the original bit-vector problem.
+%
+The interface to both external solvers uses
+\smtswitch \cite{smtswitchgithub}.
 
-\newpage% align right and left column in size
+According to the rules published by the organizers
+of \smtcomp 2020, \lazybvtoint is a {\em wrapper tool} (see \cite{rules20})
+and not a {\em portfolio solver},
+and thus is allowed to compete. 
+This was confirmed in a private communication with the competition organizers.
 
-%  \bibliography{smtcomp-2020}
-%  \bibliographystyle{plain}
+%technical details
+\paragraph{Technical Details}
+\lazybvtoint works as follows.
+The input \qfbv formula $\varphi$ is translated into a
+\qfufnia formula $\varphi'$.
+$\varphi'$ is obtained from $\varphi$ by eliminating
+bit-vector operators.
+For arithmetical operators, this is standard.
+The bit-wise operators other than bit-wise conjunction, left
+and right (logical) shift, and negation are first
+eliminated in a preprocessing stage using other bit-vector operators.
+Bit-wise negation has a standard arithmetical interpretation which is being utilized.
+Bit-wise conjunction as well as shift operations are replaced by uninterpreted functions.
+
+The translated formula is solved using a CEGAR-loop that refines the current formula by adding lemmas.
+The procedure is complete because the lemma schemes that are used are complete.
+%
+These include some basic properties of the abstracted operations
+(e.g., idempotence of bit-wise and), and in the worst case,
+they include a full expansion of the opertion (using 
+$ite$ operations and summations).
+
+In each step of the loop, there is one additional check that is being done by \cvcfour's \qfbv solver:
+\yoni{ahmed please write here everything about sat-checker and sat-checker-filter}
+
+
+%conclusion
+\paragraph{Conclusion and Acknowledgments}
+To conclude, this is a prototype experimental tool that is aimed 
+to serve as a playground for arithmetic-based techniques
+for bit-vector solving.
+Incoprporating such techniques in a full-fledged solver is left for future work,
+and is planned for when these techniques are better
+understood and evaluated using this tool.
+
+%acknowledgments
+We would like to thank the \cvcfour and \msat teams for allowing us 
+to use their tools without any issues.
+In particular, we thank Alberto Griggio for clarifying 
+the relevant aspects of the \msat license,
+and to Aina Niemetz and Mathias Preiner for helpful tips
+regarding benchmarking and evaluating bit-vector formulas.
+We also thank the competition organizers,
+Haniel Barbosa, Jochen Hoenicke, and 
+Antti Hyvarinen for clarifying the status of this tool for the competition and willingly accepting it as a new participant.
+
+
+
+  \bibliography{smtcomp-2020}
+  \bibliographystyle{plain}
 
 \end{document}
