@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex smtcomp-2020"] 1589998346 "smtcomp-2020.aux" "smtcomp-2020.bbl" "smtcomp-2020" 1589998483
+["bibtex smtcomp-2020"] 1589998542 "smtcomp-2020.aux" "smtcomp-2020.bbl" "smtcomp-2020" 1589998544
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/base/plain.bst" 1480098433 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "smtcomp-2020.aux" 1589998347 1434 ad02a55cd683be94012cca7abe1ed159 ""
+  "smtcomp-2020.aux" 1589998543 1434 ad02a55cd683be94012cca7abe1ed159 ""
   "smtcomp-2020.bib" 1589997209 9965 fe7aba86f66d2a3084cefc5204e5d896 ""
   (generated)
-  "smtcomp-2020.blg"
   "smtcomp-2020.bbl"
-["pdflatex"] 1589998346 "smtcomp-2020.tex" "smtcomp-2020.pdf" "smtcomp-2020" 1589998483
+  "smtcomp-2020.blg"
+["pdflatex"] 1589998542 "smtcomp-2020.tex" "smtcomp-2020.pdf" "smtcomp-2020" 1589998544
   "/usr/local/texlive/2017/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1480098698 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1480098698 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -124,12 +124,12 @@
   "/usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt" 1517031391 4131551 115f58e0c11150f94ae8ba80bca60cb0 ""
   "/usr/local/texlive/2017/texmf.cnf" 1495593465 577 2b71d4d888f9e5560b2e99985915a9fa ""
   "easychair.cls" 1589993144 22243 f1c095d2b567c4f560c7cd435809e3d7 ""
-  "smtcomp-2020.aux" 1589998347 1434 ad02a55cd683be94012cca7abe1ed159 ""
-  "smtcomp-2020.bbl" 1589998346 846 17eeaa03eb3174103b68a55e1cbf68fc "bibtex smtcomp-2020"
-  "smtcomp-2020.out" 1589998347 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "smtcomp-2020.aux" 1589998543 1434 ad02a55cd683be94012cca7abe1ed159 ""
+  "smtcomp-2020.bbl" 1589998542 846 17eeaa03eb3174103b68a55e1cbf68fc "bibtex smtcomp-2020"
+  "smtcomp-2020.out" 1589998543 0 d41d8cd98f00b204e9800998ecf8427e ""
   "smtcomp-2020.tex" 1589998342 5052 f8b1accb2080023d3ec239b828b4049c ""
   (generated)
-  "smtcomp-2020.pdf"
-  "smtcomp-2020.aux"
   "smtcomp-2020.out"
   "smtcomp-2020.log"
+  "smtcomp-2020.aux"
+  "smtcomp-2020.pdf"
