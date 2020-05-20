@@ -130,3 +130,6 @@ dmypy.json
 
 # Vim stuff
 *.swp
+
+#pdf
+*.pdf
