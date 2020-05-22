@@ -111,9 +111,9 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
   // smt-switch solver
   smt::SmtSolver & solver_;
-  smt::SmtSolver sat_checker_;
-  // term transfer to sat_checker
-  smt::TermTranslator tr_sat_checker_;
+  smt::SmtSolver s_checker_;
+  // term transfer to s_checker
+  smt::TermTranslator tr_s_checker_;
 
   // assertion stack
   smt::TermVec orig_assertions_;

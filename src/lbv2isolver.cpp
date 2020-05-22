@@ -71,8 +71,8 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       axioms_(
           solver, bv2int_->fbv_and()),
       solver_(solver),
-      tr_sat_checker_(sat_checker_),
-      sat_checker_(NULL),
+      tr_s_checker_(s_checker_),
+      s_checker_(NULL),
       lazy_(lazy)
 {
   last_asserted_size_ = 0;
@@ -81,8 +81,8 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
   }
 
   // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
-  sat_checker_ = MsatSolverFactory::create(false);
-  sat_checker_->set_opt("produce-unsat-cores", "true");
+  s_checker_ = MsatSolverFactory::create(false);
+  s_checker_->set_opt("produce-unsat-cores", "true");
 
 }
 
@@ -141,7 +141,7 @@ Result LBV2ISolver::solve()
 
     if (r.is_unsat()) {
       break;
-    } else if (lazy_ && opts.sat_checker) {
+    } else if (lazy_ && opts.s_checker) {
       if (try_sat_check(lemmas)) {
         return r;
       }
@@ -321,8 +321,8 @@ void LBV2ISolver::push(uint64_t num)
 
   solver_->push(num);
 
-  if (opts.lazy && opts.sat_checker) {
-    sat_checker_->push(num);
+  if (opts.lazy && opts.s_checker) {
+    s_checker_->push(num);
   }
 }
 
@@ -345,8 +345,8 @@ void LBV2ISolver::pop(uint64_t num)
 
   solver_->pop(num);
 
-  if (opts.lazy && opts.sat_checker) {
-    sat_checker_->pop(num);
+  if (opts.lazy && opts.s_checker) {
+    s_checker_->pop(num);
   }
 }
 
@@ -373,8 +373,8 @@ void LBV2ISolver::do_assert_formula()
     f = solver_->make_term(true);
     for (size_t i = last_asserted_size_; i < orig_assertions_.size(); ++i) {
       f = solver_->make_term(And, f, orig_assertions_[i]);
-      if (opts.lazy && opts.sat_checker) {
-        sat_checker_->assert_formula(tr_sat_checker_.transfer_term(orig_assertions_[i]));
+      if (opts.lazy && opts.s_checker) {
+        s_checker_->assert_formula(tr_s_checker_.transfer_term(orig_assertions_[i]));
       }
     }
 
@@ -1005,7 +1005,7 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
   get_vars(formula, vars);
 
   UnorderedTermSet filter_vars;
-  if (opts.sat_checker_filter) {
+  if (opts.s_checker_filter) {
     TermVec tmp_vars;
     for (auto &t : fterms) {
       get_vars(t, tmp_vars);
@@ -1025,26 +1025,26 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     if (map.find(v) == map.end()) {
       continue;
     }
-    if (opts.sat_checker_filter &&
+    if (opts.s_checker_filter &&
         filter_vars.find(map.at(v)) != filter_vars.end()) {
       //cout << "Dropping " << v << endl;
       continue;
     }
 
-    if (sk == SortKind::BV && s->get_width() > opts.sat_checker_limit) {
+    if (sk == SortKind::BV && s->get_width() > opts.s_checker_limit) {
       Term int_v = map.at(v);
       Term int_val = solver_->get_value(int_v);
       Term bv_val = utils.int_val_to_bv_val(int_val, s->get_width());
       Term v_eq_val = solver_->make_term(Equal, v, bv_val);
       //cout << v_eq_val << endl;
-      assumptions.push_back(tr_sat_checker_.transfer_term(v_eq_val));
+      assumptions.push_back(tr_s_checker_.transfer_term(v_eq_val));
       orig_assump.push_back(solver_->make_term(Equal, int_v, int_val));
     }
   }
 
   assert(assumptions.size() == orig_assump.size());
 
-  sat_checker_->push();
+  s_checker_->push();
   for (auto &a : assumptions) {
     //cout << a << endl;
     unsigned i = 0;
@@ -1052,8 +1052,8 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     Term b;
     while(true) {
       try {
-        b = sat_checker_->make_symbol("assump_" + to_string(a->hash()) + "_" + to_string(i),
-                                      sat_checker_->make_sort(BOOL));
+        b = s_checker_->make_symbol("assump_" + to_string(a->hash()) + "_" + to_string(i),
+                                      s_checker_->make_sort(BOOL));
         break;
       } catch (IncorrectUsageException & e){
         ++i;
@@ -1062,17 +1062,17 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
       }
     }
     bool_assump.push_back(b);
-    sat_checker_->assert_formula(sat_checker_->make_term(Implies, b, a));
+    s_checker_->assert_formula(s_checker_->make_term(Implies, b, a));
   }
 
-  Result r = sat_checker_->check_sat_assuming(bool_assump);
+  Result r = s_checker_->check_sat_assuming(bool_assump);
   bool lemma_failed = false;
   //cout << bool_assump.size() << endl;
   if (r.is_unsat()) {
     Term lemma = solver_->make_term(false);
     if (bool_assump.size() > 0) {
       try {
-        TermVec core = sat_checker_->get_unsat_core();
+        TermVec core = s_checker_->get_unsat_core();
         UnorderedTermSet core_set(core.begin(), core.end());
 
         assert(orig_assump.size() == bool_assump.size());
@@ -1094,7 +1094,7 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     }
   }
 
-  sat_checker_->pop();
+  s_checker_->pop();
   //  cout << "SAT CHECKER DONE" << endl;
   return r.is_sat();
 }
