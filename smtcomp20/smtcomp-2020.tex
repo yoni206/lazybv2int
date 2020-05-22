@@ -36,7 +36,7 @@
   The University of Iowa
  }
 
-\title{LazyBV2Int at the SMT Competition 2020}
+\title{Lazybv2int at the SMT Competition 2020}
 
 \maketitle
 
@@ -56,7 +56,7 @@ The basic algorithm of the tool relies on a translation from bit-vectors to
 non-linear integer arithmetic with uninterpreted functions, followed by
 a CEGAR loop \cite{cegar} that lazily instantiates bit-vector axioms over the translation.
 The idea of using integer reasoning for bit-vector solving is not new (see,
-e.g., \cite{}), however, it is worth revisiting due to recent improvements in solvers for non-linear integer arithmetic.
+e.g., \cite{DBLP:journals/entcs/BozzanoBCFHKPS06,DBLP:conf/fmcad/BackemanRZ18}), however, it is worth revisiting due to recent improvements in solvers for non-linear integer arithmetic.
 
 We expect this solver to perform better on benchmarks that involve arithmetic
 bit-vector constraints and large bit-widths because the encoding of arithmetic
@@ -108,7 +108,7 @@ they include a full expansion of the operation (using
 $ite$ operations and summations).
 
 In each step of the loop, there is one additional check performed by \cvcfour's \qfbv solver:
-\yoni{ahmed please write here everything about sat-checker and sat-checker-filter}
+\yoni{ahmed please write here everything about sat-checker and sat-checker-filter, and also about unsat cores.}
 
 
 %conclusion
