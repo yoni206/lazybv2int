@@ -138,4 +138,5 @@ dmypy.json
 *.blg
 *.out
 *.fdb_latexmk
+*.fls
 
