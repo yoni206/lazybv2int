@@ -17,7 +17,7 @@
 \newcommand{\smtlib}{SMT-LIB~2\xspace}
 \newcommand{\qfbv}{QF\_BV\xspace}
 \newcommand{\qfufnia}{QF\_UFNIA\xspace}
-\newcommand{\msat}{mathsat\xspace}
+\newcommand{\msat}{MathSAT5\xspace}
 \newcommand{\cvcfour}{CVC4\xspace}
 \newcommand{\smtswitch}{smt-switch\xspace}
 
@@ -53,10 +53,13 @@ It will participate in the incremental and non-incremental \qfbv tracks.
 
 %basic idea
 The basic algorithm of the tool relies on a translation from bit-vectors to
-non-linear integer arithmetic with uninterpreted functions, followed by
-a CEGAR loop \cite{cegar} that lazily instantiates bit-vector axioms over the translation.
-The idea of using integer reasoning for bit-vector solving is not new (see,
-e.g., \cite{DBLP:journals/entcs/BozzanoBCFHKPS06,DBLP:conf/fmcad/BackemanRZ18}), however, it is worth revisiting due to recent improvements in solvers for non-linear integer arithmetic.
+non-linear integer arithmetic with uninterpreted functions, followed by a CEGAR
+loop \cite{cegar} that lazily instantiates bit-vector axioms over the
+translation. The idea of using integer reasoning for bit-vector solving is not
+new (see, e.g.,
+\cite{DBLP:journals/entcs/BozzanoBCFHKPS06,DBLP:conf/fmcad/BackemanRZ18}),
+however, it is worth revisiting due to recent improvements in solvers for
+non-linear integer arithmetic~\cite{DBLP:conf/vmcai/Jovanovic17, DBLP:conf/sat/CimattiGIRS18}.
 
 We expect this solver to perform better on benchmarks that involve arithmetic
 bit-vector constraints and large bit-widths because the encoding of arithmetic
@@ -74,7 +77,7 @@ The tool is open-source and is available at \url{https://github.com/yoni206/lazy
 To parse the input problem, \lazybvtoint employs \msat's
 parser through an API \cite{mathsat5}.
 To solve the translated arithmetic problem it uses \cvcfour \cite{cvc4}.
-In some cases, \cvcfour is called on an extension of the original bit-vector problem.
+In some cases, \msat is called on an extension of the original bit-vector problem.
 %
 The interface to both external solvers uses
 \smtswitch \cite{smtswitchgithub}.
@@ -87,28 +90,34 @@ This was confirmed in a private communication with the competition organizers.
 
 %technical details
 \paragraph{Technical Details}
-\lazybvtoint works as follows.
-The input \qfbv formula $\varphi$ is translated into a
-\qfufnia formula $\varphi'$.
-$\varphi'$ is obtained from $\varphi$ by eliminating
-bit-vector operators.
-For arithmetical operators, this is standard.
-The bit-wise operators other than bit-wise conjunction, left
-and right (logical) shift, and negation are first
-eliminated in a preprocessing stage using other bit-vector operators.
-Bit-wise negation has a standard arithmetical interpretation which is utilized.
-Bit-wise conjunction as well as shift operations are replaced by uninterpreted functions.
+\lazybvtoint works as follows. The input \qfbv formula $\varphi$ is translated
+into a \qfufnia formula $\varphi'$. $\varphi'$ is obtained from $\varphi$ by
+eliminating bit-vector operators. For arithmetical operators, this is standard.
+The bit-wise operators other than bit-wise conjunction, left and right (logical)
+shift, and negation are first eliminated in a preprocessing stage using other
+bit-vector operators. Bit-wise negation has a standard arithmetical
+interpretation which is utilized. Bit-wise conjunction as well as shift
+operations are replaced by uninterpreted functions.
 
-The translated formula is solved using a CEGAR-loop that refines the current formula by adding lemmas.
-The procedure is complete because the lemma schemes that are used are complete.
+The translated formula is solved using a CEGAR-loop that refines the current
+formula by adding lemmas. The procedure is complete because the lemma schemes
+that are used are complete.
 %
-These include some basic properties of the abstracted operations
-(e.g., idempotence of bit-wise \emph{and}), and in the worst case,
-they include a full expansion of the operation (using
-$ite$ operations and summations).
+These include some basic properties of the abstracted operations (e.g.,
+idempotence of bit-wise \emph{and}), and in the worst case, they include a full
+expansion of the operation (using $ite$ operations and summations).
 
-In each step of the loop, there is one additional check performed by \cvcfour's \qfbv solver:
-\yoni{ahmed please write here everything about sat-checker and sat-checker-filter, and also about unsat cores.}
+In each step of the loop, an under-approximation check is performed by \msat's
+\qfbv solver: the current model $\mu'$ for $\varphi'$ are used as assumptions
+---of the form $ToBV(x = \mu'[x])$--- to solve $\varphi$. The assumptions don't
+include variables which appear in bitwise-and and bitwise-shift operators.
+Clearly, $\varphi$ conjoined with the assumptions is an under-approximation of
+the orignal formula $\varphi$. So, if the result of the under-approximation is
+is SAT, then $\varphi$ is satisfiable. In case the result of the additional
+check is UNSAT, then the disjunction of negated assumptions ---only those
+assumptions that appear in the unsatisfiable core--- is learned as an additional
+refinement lemma.
+
 
 
 %conclusion
