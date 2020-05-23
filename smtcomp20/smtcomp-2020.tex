@@ -43,23 +43,25 @@
 
 \noindent
 \begin{abstract}
-\lazybvtoint is a new prototype SMT-solver, that  will participate in the incremental and non-incremental tracks of the \qfbv logic.
+\noindent \lazybvtoint is a new prototype SMT-solver, that will participate in
+the incremental and non-incremental tracks of the \qfbv logic.
 \end{abstract}
 
-\paragraph{Overview}
-\lazybvtoint is a prototype SMT-solver for the theory of fixed-width bit-vectors and uninterpreted functions.
-This is the first year it will compete in \smtcomp.
+\paragraph{Overview.}
+\lazybvtoint is a prototype SMT-solver for the theory of fixed-width bit-vectors
+and uninterpreted functions. This is the first year it will compete in \smtcomp.
 It will participate in the incremental and non-incremental \qfbv tracks.
 
 %basic idea
 The basic algorithm of the tool relies on a translation from bit-vectors to
 non-linear integer arithmetic with uninterpreted functions, followed by a CEGAR
-loop \cite{cegar} that lazily instantiates bit-vector axioms over the
+loop~\cite{cegar} that lazily instantiates bit-vector axioms over the
 translation. The idea of using integer reasoning for bit-vector solving is not
-new (see, e.g.,
-\cite{DBLP:journals/entcs/BozzanoBCFHKPS06,DBLP:conf/fmcad/BackemanRZ18}),
+new (see,
+e.g.,~\cite{DBLP:journals/entcs/BozzanoBCFHKPS06,DBLP:conf/fmcad/BackemanRZ18}),
 however, it is worth revisiting due to recent improvements in solvers for
-non-linear integer arithmetic~\cite{DBLP:conf/vmcai/Jovanovic17, DBLP:conf/sat/CimattiGIRS18}.
+non-linear integer arithmetic~\cite{DBLP:conf/vmcai/Jovanovic17,
+  DBLP:conf/sat/CimattiGIRS18}.
 
 We expect this solver to perform better on benchmarks that involve arithmetic
 bit-vector constraints and large bit-widths because the encoding of arithmetic
@@ -72,15 +74,15 @@ bit-widths.
 
 The tool is open-source and is available at \url{https://github.com/yoni206/lazybv2int}.
 
-\paragraph{Dependencies on Other Tools}
+\paragraph{Dependencies on Other Tools.}
 %
 To parse the input problem, \lazybvtoint employs \msat's
-parser through an API \cite{mathsat5}.
-To solve the translated arithmetic problem it uses \cvcfour \cite{cvc4}.
+parser through an API~\cite{mathsat5}.
+To solve the translated arithmetic problem it uses \cvcfour~\cite{cvc4}.
 In some cases, \msat is called on an extension of the original bit-vector problem.
 %
 The interface to both external solvers uses
-\smtswitch \cite{smtswitchgithub}.
+\smtswitch~\cite{smtswitchgithub}.
 
 According to the rules published by the organizers
 of \smtcomp 2020, \lazybvtoint is a {\em wrapper tool} (see \cite{rules20})
@@ -89,7 +91,7 @@ and thus is allowed to compete.
 This was confirmed in a private communication with the competition organizers.
 
 %technical details
-\paragraph{Technical Details}
+\paragraph{Technical Details.}
 \lazybvtoint works as follows. The input \qfbv formula $\varphi$ is translated
 into a \qfufnia formula $\varphi'$. $\varphi'$ is obtained from $\varphi$ by
 eliminating bit-vector operators. For arithmetical operators, this is standard.
@@ -121,24 +123,20 @@ refinement lemma.
 
 
 %conclusion
-\paragraph{Conclusion and Acknowledgments}
-To conclude, this is a prototype experimental tool that is aimed
-to serve as a playground for arithmetic-based techniques
-for bit-vector solving.
-Incorporating such techniques in a full-fledged solver is left for future work,
-and is planned for when these techniques are better
-understood and evaluated using this tool.
+\paragraph{Conclusion.}
+To conclude, this is a prototype experimental tool that is aimed to serve as a
+playground for arithmetic-based techniques for bit-vector solving. Incorporating
+such techniques in a full-fledged solver is left for future work, and is planned
+for when these techniques are better understood and evaluated using this tool.
 
 %acknowledgments
-We would like to thank the \cvcfour and \msat teams for allowing us
-to use their tools without any issues.
-In particular, we thank Alberto Griggio for clarifying
-the relevant aspects of the \msat license,
-and to Aina Niemetz and Mathias Preiner for helpful tips
-regarding benchmarking and evaluating bit-vector formulas.
-We also thank the competition organizers,
-Haniel Barbosa, Jochen Hoenicke, and
-Antti Hyvarinen for clarifying the status of this tool for the competition and willingly accepting it as a new participant.
+\paragraph{Acknowledgements.} We would like to thank the \cvcfour and \msat teams for allowing us
+to use their tools without any issues. In particular, we thank Alberto Griggio
+for clarifying the relevant aspects of the \msat license, and to Aina Niemetz
+and Mathias Preiner for helpful tips regarding benchmarking and evaluating
+bit-vector formulas. We also thank the competition organizers, Haniel Barbosa,
+Jochen Hoenicke, and Antti Hyvarinen for clarifying the status of this tool for
+the competition and willingly accepting it as a new participant.
 
 
 
