@@ -83,7 +83,8 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
   // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
   s_checker_ = MsatSolverFactory::create(false);
   s_checker_->set_opt("produce-unsat-cores", "true");
-
+  s_checker_base_assump_ = s_checker_->make_symbol("s_checker_base_assump",
+                                                   s_checker_->make_sort(BOOL));
 }
 
 LBV2ISolver::~LBV2ISolver()
@@ -374,7 +375,9 @@ void LBV2ISolver::do_assert_formula()
     for (size_t i = last_asserted_size_; i < orig_assertions_.size(); ++i) {
       f = solver_->make_term(And, f, orig_assertions_[i]);
       if (opts.lazy && opts.s_checker) {
-        s_checker_->assert_formula(tr_s_checker_.transfer_term(orig_assertions_[i]));
+        Term t = s_checker_->make_term(Implies, s_checker_base_assump_,
+                                       tr_s_checker_.transfer_term(orig_assertions_[i]));
+        s_checker_->assert_formula(t);
       }
     }
 
@@ -1065,6 +1068,9 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     s_checker_->assert_formula(s_checker_->make_term(Implies, b, a));
   }
 
+  // adding base assumption as the last element
+  bool_assump.push_back(s_checker_base_assump_);
+
   Result r = s_checker_->check_sat_assuming(bool_assump);
   bool lemma_failed = false;
   //cout << bool_assump.size() << endl;
@@ -1077,7 +1083,8 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
 
         assert(orig_assump.size() == bool_assump.size());
 
-        for (size_t j = 0; j < bool_assump.size(); ++j) {
+        for (size_t j = 0; j+1 < bool_assump.size(); ++j) {
+          // skipping last element
           if (core_set.find(bool_assump[j]) != core_set.end()) {
             lemma = solver_->make_term(Or, lemma,
                                      solver_->make_term(Not, orig_assump[j]));
