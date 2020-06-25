@@ -11,6 +11,7 @@
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
 #include "smt-switch/boolector_factory.h"
+#include "smt-switch/solver_enums.h"
 
 #include "opts.h"
 #include "smtlibmsatparser.h"
@@ -73,7 +74,8 @@ LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
       solver_(solver),
       tr_s_checker_(s_checker_),
       s_checker_(NULL),
-      lazy_(lazy)
+      lazy_(lazy),
+      AbsSmtSolver(opts.solver=="CVC4" ? CVC4 : MSAT)
 {
   last_asserted_size_ = 0;
   if (opts.print_values || opts.print_sigma_values || opts.lazy) {

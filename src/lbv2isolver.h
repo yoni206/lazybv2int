@@ -72,6 +72,35 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::Term make_term(const std::string val,
                       const smt::Sort & sort,
                       uint64_t base = 10) const;
+
+  smt::Sort make_sort(const smt::DatatypeDecl & d) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  smt::DatatypeDecl make_datatype_decl(const std::string & s) {
+    throw NotImplementedException("Not Implemented");
+  };
+  smt::DatatypeConstructorDecl make_datatype_constructor_decl(const std::string s) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  void add_constructor(smt::DatatypeDecl & dt, const smt::DatatypeConstructorDecl & con) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  void add_selector(smt::DatatypeConstructorDecl & dt, const std::string & name, const smt::Sort & s) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  void add_selector_self(smt::DatatypeConstructorDecl & dt, const std::string & name) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  smt::Term get_constructor(const smt::Sort & s, std::string name) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  smt::Term get_tester(const smt::Sort & s, std::string name) const {
+    throw NotImplementedException("Not Implemented");
+  };
+  smt::Term get_selector(const smt::Sort & s, std::string con, std::string name) const {
+    throw NotImplementedException("Not Implemented");
+  };
+
   void run(std::string filename);
   void run_on_stdin();
 
