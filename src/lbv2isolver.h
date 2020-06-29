@@ -79,7 +79,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::DatatypeDecl make_datatype_decl(const std::string & s) {
     throw NotImplementedException("Not Implemented");
   };
-  smt::DatatypeConstructorDecl make_datatype_constructor_decl(const std::string s) const {
+  smt::DatatypeConstructorDecl make_datatype_constructor_decl(const std::string s) {
     throw NotImplementedException("Not Implemented");
   };
   void add_constructor(smt::DatatypeDecl & dt, const smt::DatatypeConstructorDecl & con) const {
