@@ -1,0 +1,112 @@
+\documentclass[t,aspectratio=43,9pt,bookmarks=false,dvipsnames,table]{beamer}
+\usetheme{metropolis}
+
+\usepackage{microtype}
+\usepackage{xspace}
+
+\usepackage{enumitem}
+\setlist{nolistsep}
+\setlist[itemize]{leftmargin=*,label=$\bullet$}
+
+
+\newcommand{\comment}[3]{\begin{mdframed}{{\textcolor{#1}{#2: #3}}}\end{mdframed}}
+\newcommand{\yoni}[1]{\comment{red}{Yoni}{#1}}
+\newcommand{\ahmed}[1]{\comment{red}{Ahmed}{#1}}
+\newcommand{\makai}[1]{\comment{red}{Makai}{#1}}
+\newcommand{\lazybvtoint}{\texttt{lazybv2int}\xspace}
+\newcommand{\smtcomp}{SMT-COMP\xspace}
+\newcommand{\smtlib}{SMT-LIB~2\xspace}
+\newcommand{\qfbv}{QF\_BV\xspace}
+\newcommand{\qfufnia}{QF\_UFNIA\xspace}
+\newcommand{\msat}{MathSAT5\xspace}
+\newcommand{\cvcfour}{CVC4\xspace}
+\newcommand{\smtswitch}{smt-switch\xspace}
+
+
+\begin{document}
+
+\newcommand{\gray}[1]{\textcolor{gray}{#1}}
+
+\begin{frame}[t]
+  \frametitle{\lazybvtoint at the SMT Competition 2020\\
+    \footnotesize\gray{
+      Yoni Zohar,
+      Ahmed Irfan,
+      Makai Mann,
+      Andres N\"otzli,
+      Andrew Reynolds,
+      Clark Barrett
+}}
+
+  \small
+
+ \begin{center}
+New participant in \qfbv incremental and non-incremental tracks
+\end{center}
+
+  \begin{block}{}
+  \begin{columns}
+    \column{.5\textwidth}
+  \begin{alertblock}{Highlights}
+  \begin{itemize}
+  \item Prototype solver
+    \item Uses \smtswitch, \msat, \cvcfour
+    \item New Approach (almost no bit-blasting)
+    \item Playground for integer-based solving
+  \end{itemize}
+  \end{alertblock}
+      \column{.5\textwidth}
+  \begin{alertblock}{Approach}
+      \begin{itemize}
+  \item Translation from BV to integers
+        \item Arithmetic oerations are easy
+        \item Shift operations: UF 
+        \item Bit-wise operations: UF
+      \end{itemize}
+  \end{alertblock}
+  \end{columns}
+  \end{block}
+
+\vspace{-1em}
+  
+  \begin{block}{}
+  \begin{columns}
+    \column{.5\textwidth}
+  \begin{alertblock}{Eager Mode}
+      \begin{itemize}
+      \item Shfits:
+        \begin{itemize}
+          \item Replace with a UF
+          \item Equate with a big ITE
+          \item ITE simulates exponentiation
+        \end{itemize}
+      \item Bitwise Operators:
+        \begin{itemize}
+            \item Replace with a UF
+            \item Equate with sum or "compare bits''
+         \end{itemize}
+      \end{itemize}
+  \end{alertblock}
+  \column{.5\textwidth}
+  \begin{alertblock}{\underline{Lazy Mode}}
+    \begin{itemize}
+      \item Shfits:
+        \begin{itemize}
+          \item Replace with a UF
+          \item Lazilly invoke properties
+          \item Worst case: ITE
+        \end{itemize}
+      \item Bitwise Operators:
+        \begin{itemize}
+        \item Replace with a UF
+        \item Lazilly invoke properties
+        \item Check candidate model with BV solver
+        \item Worst case: sum/bits
+        \end{itemize}
+                \end{itemize}
+  \end{alertblock}
+  \end{columns}
+\end{block}
+\end{frame}
+
+\end{document}
