@@ -59,7 +59,7 @@ New participant in \qfbv incremental and non-incremental tracks
   \begin{alertblock}{Approach}
       \begin{itemize}
   \item Translation from BV to integers
-        \item Arithmetic oerations are easy
+        \item Arithmetic operations are easy
         \item Shift operations: UF 
         \item Bit-wise operations: UF
       \end{itemize}
@@ -74,7 +74,7 @@ New participant in \qfbv incremental and non-incremental tracks
     \column{.5\textwidth}
   \begin{alertblock}{Eager Mode}
       \begin{itemize}
-      \item Shfits:
+      \item Shifts:
         \begin{itemize}
           \item Replace with a UF
           \item Equate with a big ITE
@@ -90,16 +90,16 @@ New participant in \qfbv incremental and non-incremental tracks
   \column{.5\textwidth}
   \begin{alertblock}{\underline{Lazy Mode}}
     \begin{itemize}
-      \item Shfits:
+      \item Shifts:
         \begin{itemize}
           \item Replace with a UF
-          \item Lazilly invoke properties
+          \item Lazily invoke properties
           \item Worst case: ITE
         \end{itemize}
       \item Bitwise Operators:
         \begin{itemize}
         \item Replace with a UF
-        \item Lazilly invoke properties
+        \item Lazily invoke properties
         \item Check candidate model with BV solver
         \item Worst case: sum/bits
         \end{itemize}
