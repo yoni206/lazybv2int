@@ -10,7 +10,15 @@ Incremental solving is supported.
 The tool uses [mathsat](https://mathsat.fbk.eu/) to parse the input problem and [cvc4](https://cvc4.github.io/) to solve the arithmetic translations.
 
 # Install
-To build with mathsat (which is currently required for parsing SMT-LIB), you must obtain the MathSAT libraries yourself. You are responsible for ensuring that you meet the conditions of the MathSAT license. Please download the mathsat distribution, unpack the compressed directory and move it to `./deps/mathsat`. Then, run the following commands:
+To build with mathsat (which is currently required for parsing SMT-LIB), you must obtain the MathSAT libraries yourself. You are responsible for ensuring that you meet the conditions of the MathSAT license. Please download the mathsat distribution, unpack the compressed directory and move it to `./deps/mathsat` (create `deps` directory if it does not exist). 
+After that, you should be able to do the following:
+```
+$ cd <repo-path>/deps
+$ ls
+CREDITS.txt  LICENSE.txt  README.txt  bin  configurations  examples  gpl-3.0.txt  include  java  lgpl-3.0.txt  lib  python
+```
+
+Then, run the following commands:
 ```
 ./contrib/setup-smt-switch.sh
 ./configure.sh
