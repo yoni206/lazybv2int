@@ -32,6 +32,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     cd $DEPS
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
+    git checkout -f 969a5c0850e639c5547f0e6166491c85bd2e1e4d
     ./contrib/setup-cvc4.sh
     ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static $CONF_OPTS
     cd build
