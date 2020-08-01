@@ -46,6 +46,7 @@ def get_bv_const_exprs(content):
     result = set([])
     p = re.compile('\(_ bv\d+ \d+\)')
     all_matches = p.findall(content)
+    p = re.compile('#b\d*\s')
     result.update(all_matches)
     return result
 
@@ -84,6 +85,13 @@ def all_constants_zero_or_one(content):
         return False
     return True
 
+def no_constants(content):
+    if content.find("(_ bv") != -1:
+        return False
+    if content.find("#b") != -1:
+        return False
+    return True
+
 def filter_paths(full_paths):
     res = set([])
     for f in full_paths:
@@ -97,20 +105,21 @@ def filter_paths(full_paths):
         with open(f, "r") as fi:
             content = "".join(fi.readlines())
 
-        #only one bitwidths, or two, if one of them is 1
+        #only one bitwidth
         bitwidths = get_bitwidths(content)
-        if len(bitwidths) > 2:
-            logline += ":more_than_2_bws"
+        if len(bitwidths) != 1:
+            logline += ":more_than_1_bw"
             add = False
-        if len(bitwidths) == 2:
-            if 1 not in bitwidths:
-                logline += ":2_bws_without_1"
-                add = False
+        
+        #no constants whatsoever!
+        if not no_constants(content):
+            logline += ":there_are_constants"
+            add = False
 
         #constants must be 0 or 1
-        if not all_constants_zero_or_one(content):
-            logline += ":cons_other_than_0_1"
-            add = False
+        #if not all_constants_zero_or_one(content):
+        #    logline += ":cons_other_than_0_1"
+        #    add = False
 
         #no concat, no extract, no extend
         if has_concat(content):
@@ -134,27 +143,27 @@ def filter_paths(full_paths):
         f.write("\n".join(log))
     return res
 
-
-if len(sys.argv) < 3:
-    print("arg1: path to dir with all the relevant smtlib problems")
-    print("arg2: path to file with filtered paths")
-    sys.exit(1)
-smtlib_problems_dir = sys.argv[1]
-output_file = sys.argv[2]
-full_paths=set([])
-for currentpath, folders, files in os.walk(smtlib_problems_dir):
-    files = [f for f in files if not f[0] == '.']
-    folders[:] = [d for d in folders if not d[0] == '.']
-    for f in files:
-        rel_path = os.path.join(currentpath, f)
-        full_path = os.path.abspath(rel_path)
-        full_paths.add(full_path)
-full_paths = list(full_paths)
-full_paths.sort()
-
-filtered_paths = filter_paths(full_paths)
-filtered_paths = list(filtered_paths)
-filtered_paths.sort()
-with open(output_file, "w") as f:
-    f.write("\n".join(filtered_paths))
+if __name__ == "__main__":
+  if len(sys.argv) < 3:
+      print("arg1: path to dir with all the relevant smtlib problems")
+      print("arg2: path to file with filtered paths")
+      sys.exit(1)
+  smtlib_problems_dir = sys.argv[1]
+  output_file = sys.argv[2]
+  full_paths=set([])
+  for currentpath, folders, files in os.walk(smtlib_problems_dir):
+      files = [f for f in files if not f[0] == '.']
+      folders[:] = [d for d in folders if not d[0] == '.']
+      for f in files:
+          rel_path = os.path.join(currentpath, f)
+          full_path = os.path.abspath(rel_path)
+          full_paths.add(full_path)
+  full_paths = list(full_paths)
+  full_paths.sort()
+  
+  filtered_paths = filter_paths(full_paths)
+  filtered_paths = list(filtered_paths)
+  filtered_paths.sort()
+  with open(output_file, "w") as f:
+      f.write("\n".join(filtered_paths))
 
