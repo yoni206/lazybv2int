@@ -1080,8 +1080,8 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     Term lemma = solver_->make_term(false);
     if (bool_assump.size() > 0) {
       try {
-        TermVec core = s_checker_->get_unsat_core();
-        UnorderedTermSet core_set(core.begin(), core.end());
+        UnorderedTermSet core_set;
+        s_checker_->get_unsat_assumptions(core_set);
 
         assert(orig_assump.size() == bool_assump.size());
 
