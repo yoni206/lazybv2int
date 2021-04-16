@@ -1,19 +1,19 @@
 #include "lbv2isolver.h"
 
 #include <assert.h>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <sstream>
 #include <streambuf>
 
-#include "msat/include/msat_term.h"
-
+#include "opts.h"
+#include "smt-switch/boolector_factory.h"
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
-#include "smt-switch/boolector_factory.h"
+#include "smt-switch/msat_term.h"
 #include "smt-switch/solver_enums.h"
-
-#include "opts.h"
 #include "smtlibmsatparser.h"
 
 using namespace smt;
