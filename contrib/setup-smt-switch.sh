@@ -34,7 +34,9 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     cd smt-switch
     git checkout -f 970f5aaa9f262f30f26f85f2de9364be33483d7b
     ./travis-scripts/download-cvc4.sh
-    ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static $CONF_OPTS
+    ./contrib/setup-flex.sh
+    ./contrib/setup-bison.sh
+    ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static --smtlib-reader $CONF_OPTS
     cd build
     make -j$(nproc)
     make test
