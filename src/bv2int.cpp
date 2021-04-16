@@ -13,7 +13,7 @@ namespace lbv2i {
 
 static bool is_simple_op(Op op)
 {
-  vector<Op> simple_op = { And,  Or,     Xor,      Not,    Implies, Iff,
+  vector<Op> simple_op = { And,  Or,     Xor,      Not,    Implies,
                            Ite,  Equal,  Distinct, Plus,   Minus,   Negate,
                            Mult, IntDiv, Lt,       Le,     Gt,      Ge,
                            Mod,  Abs,    Pow,      To_Real };
