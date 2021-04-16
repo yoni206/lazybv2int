@@ -1,22 +1,21 @@
 #pragma once
 
-#include "smt-switch/identity_walker.h"
+#include "identity_walker.h"
 #include "smt-switch/smt.h"
 #include "utils.h"
 
 namespace lbv2i {
 
-
-class BV2Int : smt::IdentityWalker
+class BV2Int : IdentityWalker
 {
  public:
   BV2Int(smt::SmtSolver & solver, bool clear_cache, bool lazy_bw = false);
   ~BV2Int();
 
-  typedef smt::IdentityWalker super;
+  typedef IdentityWalker super;
   // it will also use the walker infrastructure
 
-  smt::WalkerStepResult visit_term(smt::Term & term);
+  WalkerStepResult visit_term(smt::Term & term);
   smt::Term convert(smt::Term & t);
 
   void reset();

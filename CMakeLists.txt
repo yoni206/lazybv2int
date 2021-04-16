@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.1)
 
+
 project(lazybv2int)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 message("-- CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
+find_package(GMP REQUIRED)
+
 add_library(lazybv2int "${LBV2I_LIB_TYPE}"
   "${PROJECT_SOURCE_DIR}/src/utils.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
+  "${PROJECT_SOURCE_DIR}/src/identity_walker.cpp"
   "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
   "${PROJECT_SOURCE_DIR}/src/preprocessor.cpp"
   "${PROJECT_SOURCE_DIR}/src/postprocessor.cpp"
@@ -51,19 +57,19 @@ target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib")
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/smtlib2parser-1.4")
 #target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/contrib/optionparser-1.7/src")
 target_include_directories(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/include")
+target_include_directories (lazybv2int PUBLIC "${GMP_INCLUDE_DIR}")
 
 # HACK: Using MathSAT parser (need to expose some of smt-switch internals)
 target_include_directories(lazybv2int PUBLIC
   "${PROJECT_SOURCE_DIR}/smt-switch/local/include"
-  "${PROJECT_SOURCE_DIR}/deps/smt-switch"
-  "${PROJECT_SOURCE_DIR}/deps/smt-switch/include"
   "${PROJECT_SOURCE_DIR}/deps/mathsat/include")
 
 
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-msat.a")
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch-cvc4.a")
 target_link_libraries(lazybv2int PUBLIC "${PROJECT_SOURCE_DIR}/deps/smt-switch/local/lib/libsmt-switch.a")
-target_link_libraries(lazybv2int PUBLIC gmp)
+target_link_libraries(lazybv2int PUBLIC ${GMPXX_LIBRARIES})
+target_link_libraries(lazybv2int PUBLIC ${GMP_LIBRARIES})
 target_link_libraries(lazybv2int PUBLIC pthread)
 
 add_executable(lazybv2int-bin

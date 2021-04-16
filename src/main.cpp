@@ -2,9 +2,10 @@
 #include <fstream>
 
 #include "opts.h"
+#include "lbv2isolver.h"
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
-#include "smtlibsolver.h"
+#include "smt-switch/smtlib_reader.h"
 
 using namespace lbv2i;
 using namespace std;
@@ -47,17 +48,19 @@ int main(int argc, char ** argv)
     assert(false);
   }
 
-  LBV2ISolver solver = LBV2ISolver(underlying_solver, opts.lazy);
+  smt::SmtSolver solver = std::make_shared<LBV2ISolver>(underlying_solver, opts.lazy);
+  SmtLibReader parser(solver);
 
-  if (num_files) {
-    ifstream ifile(filename);
-    if (!ifile) {
-      cout << "file does not exist" << endl;
-      return 1;
-    }
-    solver.run(filename);
+  if (num_files == 1) {
+    // ifstream ifile(filename);
+    // if (!ifile) {
+    //   cout << "file does not exist" << endl;
+    //   return 1;
+    // }
+    parser.parse(filename);
   } else {
-    solver.run_on_stdin();
+    cout << "usage: lazybv2int <filename>" << endl;
+    // can add a run on stdin option if needed
   }
 
   return 0;

@@ -1,19 +1,19 @@
 #include "lbv2isolver.h"
 
 #include <assert.h>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <sstream>
 #include <streambuf>
 
-#include "msat/include/msat_term.h"
-
+#include "opts.h"
+#include "smt-switch/boolector_factory.h"
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
-#include "smt-switch/boolector_factory.h"
+#include "smt-switch/msat_term.h"
 #include "smt-switch/solver_enums.h"
-
-#include "opts.h"
 #include "smtlibmsatparser.h"
 
 using namespace smt;
@@ -66,25 +66,24 @@ static void get_fbv_args(const Term & f,
 
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
-    : bv2int_(new BV2Int(solver, false, lazy)),
-      prepro_(new Preprocessor(solver)),
-      postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
-      axioms_(
-          solver, bv2int_->fbv_and()),
-      solver_(solver),
-      tr_s_checker_(s_checker_),
-      s_checker_(NULL),
-      lazy_(lazy),
-      AbsSmtSolver(opts.solver=="CVC4" ? CVC4 : MSAT)
+  : AbsSmtSolver(opts.solver=="CVC4" ? CVC4 : MSAT),
+    bv2int_(new BV2Int(solver, false, lazy)),
+    prepro_(new Preprocessor(solver)),
+    postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
+    axioms_(
+            solver, bv2int_->fbv_and()),
+    solver_(solver),
+    // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
+    s_checker_(MsatSolverFactory::create(false)),
+    tr_s_checker_(s_checker_),
+    lazy_(lazy)
 {
   last_asserted_size_ = 0;
   if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
   }
 
-  // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
-  s_checker_ = MsatSolverFactory::create(false);
-  s_checker_->set_opt("produce-unsat-cores", "true");
+  s_checker_->set_opt("produce-unsat-assumptions", "true");
   s_checker_base_assump_ = s_checker_->make_symbol("s_checker_base_assump",
                                                    s_checker_->make_sort(BOOL));
 }
@@ -109,11 +108,9 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
   return r;
 }
 
-TermVec LBV2ISolver::get_unsat_core()
+void LBV2ISolver::get_unsat_assumptions(UnorderedTermSet & core)
 {
-  assert(false);
-  TermVec core;
-  return core;
+  solver_->get_unsat_assumptions(core);
 }
 
 Term LBV2ISolver::substitute(const Term term,
@@ -237,14 +234,14 @@ Term LBV2ISolver::make_term(const Op op,
   return solver_->make_term(op, t0, t1, t2);
 }
 
-Term LBV2ISolver::make_term(const string val, const Sort & sort, uint64_t base)
-{
-  return solver_->make_term(val, sort, base);
-}
-
 Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort)
 {
   return solver_->make_symbol(name, sort);
+}
+
+Term LBV2ISolver::make_param(const string name, const Sort & sort)
+{
+  throw SmtException("LBV2ISolver does not support quantifiers");
 }
 
 Sort LBV2ISolver::make_sort(const std::string name, uint64_t arity) const
@@ -285,6 +282,11 @@ Sort LBV2ISolver::make_sort(const SortKind sk,
 Sort LBV2ISolver::make_sort(const SortKind sk, const SortVec & sorts) const
 {
   return solver_->make_sort(sk, sorts);
+}
+
+Sort LBV2ISolver::make_sort(const Sort & sort_con, const SortVec & sorts) const
+{
+  return solver_->make_sort(sort_con, sorts);
 }
 
 void LBV2ISolver::set_opt(string op, string value)
@@ -1080,8 +1082,8 @@ bool LBV2ISolver::try_sat_check(TermVec &outlemmas)
     Term lemma = solver_->make_term(false);
     if (bool_assump.size() > 0) {
       try {
-        TermVec core = s_checker_->get_unsat_core();
-        UnorderedTermSet core_set(core.begin(), core.end());
+        UnorderedTermSet core_set;
+        s_checker_->get_unsat_assumptions(core_set);
 
         assert(orig_assump.size() == bool_assump.size());
 

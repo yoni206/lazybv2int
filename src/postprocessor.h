@@ -1,10 +1,11 @@
 #pragma once
 
-#include "smt-switch/identity_walker.h"
+#include <functional>
+#include <map>
+
+#include "identity_walker.h"
 #include "smt-switch/smt.h"
 #include "utils.h"
-#include <map>
-#include <functional>
 
 namespace lbv2i {
 enum RewriteRule
@@ -14,21 +15,20 @@ enum RewriteRule
   NUM_REWRITE_RULES
 };
 
-class Moderizer: public smt::IdentityWalker
+class Moderizer : public IdentityWalker
 {
  public:
   Moderizer(smt::SmtSolver & solver, utils* u);
   ~Moderizer();
 
-  typedef smt::IdentityWalker super;
+  typedef IdentityWalker super;
 
   smt::Term process(smt::Term t);
   bool is_fintmod(smt::Term t);
   smt::TermVec get_children(smt::Term t);
 
  protected:
-  smt::WalkerStepResult visit_term(smt::Term & term) override;
-
+  WalkerStepResult visit_term(smt::Term & term) override;
 
  private:
     utils* utils_;
