@@ -19,6 +19,7 @@ find_package(GMP REQUIRED)
 add_library(lazybv2int "${LBV2I_LIB_TYPE}"
   "${PROJECT_SOURCE_DIR}/src/utils.cpp"
   "${PROJECT_SOURCE_DIR}/src/lbv2isolver.cpp"
+  "${PROJECT_SOURCE_DIR}/src/identity_walker.cpp"
   "${PROJECT_SOURCE_DIR}/src/bv2int.cpp"
   "${PROJECT_SOURCE_DIR}/src/preprocessor.cpp"
   "${PROJECT_SOURCE_DIR}/src/postprocessor.cpp"

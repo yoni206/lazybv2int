@@ -1,43 +1,43 @@
 #pragma once
 
-#include "smt-switch/identity_walker.h"
+#include "identity_walker.h"
 #include "smt-switch/smt.h"
 #include "utils.h"
 
 namespace lbv2i {
 
-class Binarizer : public smt::IdentityWalker
+class Binarizer : public IdentityWalker
 {
   // probably this class will inherit from SMT-Switch-Walker
  public:
   Binarizer(smt::SmtSolver & solver);
   ~Binarizer();
 
-  typedef smt::IdentityWalker super;
+  typedef IdentityWalker super;
   // it will also use the walker infrastructure
 
   smt::Term process(smt::Term t);
 
  protected:
-  smt::WalkerStepResult visit_term(smt::Term & term) override;
+  WalkerStepResult visit_term(smt::Term & term) override;
 
  private:
 };
 
-class OpEliminator : public smt::IdentityWalker
+class OpEliminator : public IdentityWalker
 {
   // probably this class will inherit from SMT-Switch-Walker
  public:
   OpEliminator(smt::SmtSolver & solver);
   ~OpEliminator();
 
-  typedef smt::IdentityWalker super;
+  typedef IdentityWalker super;
   // it will also use the walker infrastructure
 
   smt::Term process(smt::Term t);
 
  protected:
-  smt::WalkerStepResult visit_term(smt::Term & term) override;
+  WalkerStepResult visit_term(smt::Term & term) override;
 
  private:
 };

@@ -109,11 +109,9 @@ Result LBV2ISolver::check_sat_assuming(const TermVec & assumptions)
   return r;
 }
 
-TermVec LBV2ISolver::get_unsat_core()
+void LBV2ISolver::get_unsat_assumptions(UnorderedTermSet & core)
 {
-  assert(false);
-  TermVec core;
-  return core;
+  solver_->get_unsat_assumptions(core);
 }
 
 Term LBV2ISolver::substitute(const Term term,
@@ -247,6 +245,11 @@ Term LBV2ISolver::make_symbol(const std::string name, const Sort & sort)
   return solver_->make_symbol(name, sort);
 }
 
+Term LBV2ISolver::make_param(const string name, const Sort & sort)
+{
+  throw SmtException("LBV2ISolver does not support quantifiers");
+}
+
 Sort LBV2ISolver::make_sort(const std::string name, uint64_t arity) const
 {
   return solver_->make_sort(name, arity);
@@ -285,6 +288,11 @@ Sort LBV2ISolver::make_sort(const SortKind sk,
 Sort LBV2ISolver::make_sort(const SortKind sk, const SortVec & sorts) const
 {
   return solver_->make_sort(sk, sorts);
+}
+
+Sort LBV2ISolver::make_sort(const Sort & sort_con, const SortVec & sorts) const
+{
+  return solver_->make_sort(sort_con, sorts);
 }
 
 void LBV2ISolver::set_opt(string op, string value)

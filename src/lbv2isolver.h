@@ -34,7 +34,7 @@ class LBV2ISolver : public smt::AbsSmtSolver
   smt::Result check_sat();
   smt::Result check_sat_assuming(const smt::TermVec & assumptions);
 
-  smt::TermVec get_unsat_core();
+  void get_unsat_assumptions(smt::UnorderedTermSet & core) override;
 
   smt::Term substitute(const smt::Term term,
                        const smt::UnorderedTermMap & substitution_map) const;
@@ -51,8 +51,11 @@ class LBV2ISolver : public smt::AbsSmtSolver
                       const smt::Sort & sort2,
                       const smt::Sort & sort3) const;
   smt::Sort make_sort(const smt::SortKind sk, const smt::SortVec & sorts) const;
+  smt::Sort make_sort(const smt::Sort & sort_con,
+                      const smt::SortVec & sorts) const override;
 
   smt::Term make_symbol(const std::string name, const smt::Sort & sort);
+  smt::Term make_param(const std::string name, const smt::Sort & sort) override;
   smt::Term make_term(const smt::Op op, const smt::TermVec & terms) const;
   smt::Term make_term(const smt::Op op, const smt::Term & t) const;
   smt::Term make_term(const smt::Op op,

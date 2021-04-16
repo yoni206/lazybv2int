@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "msat/include/msat_term.h"
+#include "smt-switch/msat_term.h"
 #include "stdio.h"
 
 using namespace smt;
