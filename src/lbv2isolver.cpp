@@ -66,25 +66,24 @@ static void get_fbv_args(const Term & f,
 
 
 LBV2ISolver::LBV2ISolver(SmtSolver & solver, bool lazy)
-    : bv2int_(new BV2Int(solver, false, lazy)),
-      prepro_(new Preprocessor(solver)),
-      postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
-      axioms_(
-          solver, bv2int_->fbv_and()),
-      solver_(solver),
-      tr_s_checker_(s_checker_),
-      s_checker_(NULL),
-      lazy_(lazy),
-      AbsSmtSolver(opts.solver=="CVC4" ? CVC4 : MSAT)
+  : AbsSmtSolver(opts.solver=="CVC4" ? CVC4 : MSAT),
+    bv2int_(new BV2Int(solver, false, lazy)),
+    prepro_(new Preprocessor(solver)),
+    postpro_(new Postprocessor(solver, &(bv2int_->get_utils()))),
+    axioms_(
+            solver, bv2int_->fbv_and()),
+    solver_(solver),
+    // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
+    s_checker_(MsatSolverFactory::create(false)),
+    tr_s_checker_(s_checker_),
+    lazy_(lazy)
 {
   last_asserted_size_ = 0;
   if (opts.print_values || opts.print_sigma_values || opts.lazy) {
     solver_->set_opt("produce-models", "true");
   }
 
-  // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
-  s_checker_ = MsatSolverFactory::create(false);
-  s_checker_->set_opt("produce-unsat-cores", "true");
+  s_checker_->set_opt("produce-unsat-assumptions", "true");
   s_checker_base_assump_ = s_checker_->make_symbol("s_checker_base_assump",
                                                    s_checker_->make_sort(BOOL));
 }
