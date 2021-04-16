@@ -19,88 +19,108 @@ class LBV2ISolver : public smt::AbsSmtSolver
 
   smt::Result solve();
 
-  void push(uint64_t num = 1);
-  void pop(uint64_t num = 1);
-  void reset();
-  void reset_assertions();
-  void set_logic(const std::string logic_name);
-  void set_opt(std::string op, std::string value);
-  void assert_formula(const smt::Term & f);
+  void push(uint64_t num = 1) override;
+  void pop(uint64_t num = 1) override;
+  void reset() override;
+  void reset_assertions() override;
+  void set_logic(const std::string logic_name) override;
+  void set_opt(std::string op, std::string value) override;
+  void assert_formula(const smt::Term & f) override;
   void do_assert_formula();
   void dump_smt2();
-  smt::Term get_value(const smt::Term & t) const;
-  smt::UnorderedTermMap get_array_values(const smt::Term & arr,
-                                         smt::Term & out_const_base) const;
-  smt::Result check_sat();
-  smt::Result check_sat_assuming(const smt::TermVec & assumptions);
+  smt::Term get_value(const smt::Term & t) const override;
+  smt::UnorderedTermMap get_array_values(
+      const smt::Term & arr, smt::Term & out_const_base) const override;
+  smt::Result check_sat() override;
+  smt::Result check_sat_assuming(const smt::TermVec & assumptions) override;
 
   void get_unsat_assumptions(smt::UnorderedTermSet & core) override;
 
-  smt::Term substitute(const smt::Term term,
-                       const smt::UnorderedTermMap & substitution_map) const;
+  smt::Term substitute(
+      const smt::Term term,
+      const smt::UnorderedTermMap & substitution_map) const override;
 
-  smt::Sort make_sort(const smt::SortKind sk) const;
-  smt::Sort make_sort(const std::string name, uint64_t arity) const;
-  smt::Sort make_sort(const smt::SortKind sk, uint64_t size) const;
-  smt::Sort make_sort(const smt::SortKind sk, const smt::Sort & sort1) const;
+  smt::Sort make_sort(const smt::SortKind sk) const override;
+  smt::Sort make_sort(const std::string name, uint64_t arity) const override;
+  smt::Sort make_sort(const smt::SortKind sk, uint64_t size) const override;
+  smt::Sort make_sort(const smt::SortKind sk,
+                      const smt::Sort & sort1) const override;
   smt::Sort make_sort(const smt::SortKind sk,
                       const smt::Sort & sort1,
-                      const smt::Sort & sort2) const;
+                      const smt::Sort & sort2) const override;
   smt::Sort make_sort(const smt::SortKind sk,
                       const smt::Sort & sort1,
                       const smt::Sort & sort2,
-                      const smt::Sort & sort3) const;
-  smt::Sort make_sort(const smt::SortKind sk, const smt::SortVec & sorts) const;
+                      const smt::Sort & sort3) const override;
+  smt::Sort make_sort(const smt::SortKind sk,
+                      const smt::SortVec & sorts) const override;
   smt::Sort make_sort(const smt::Sort & sort_con,
                       const smt::SortVec & sorts) const override;
 
-  smt::Term make_symbol(const std::string name, const smt::Sort & sort);
+  smt::Term make_symbol(const std::string name,
+                        const smt::Sort & sort) override;
   smt::Term make_param(const std::string name, const smt::Sort & sort) override;
-  smt::Term make_term(const smt::Op op, const smt::TermVec & terms) const;
-  smt::Term make_term(const smt::Op op, const smt::Term & t) const;
+  smt::Term make_term(const smt::Op op,
+                      const smt::TermVec & terms) const override;
+  smt::Term make_term(const smt::Op op, const smt::Term & t) const override;
   smt::Term make_term(const smt::Op op,
                       const smt::Term & t0,
-                      const smt::Term & t1) const;
+                      const smt::Term & t1) const override;
   smt::Term make_term(const smt::Op op,
                       const smt::Term & t0,
                       const smt::Term & t1,
-                      const smt::Term & t2) const;
+                      const smt::Term & t2) const override;
   smt::Term make_term(const std::string val,
                       const smt::Sort & sort,
-                      uint64_t base = 10);
+                      uint64_t base = 10) const override;
 
-  smt::Term make_term(bool b) const;
-  smt::Term make_term(int64_t i, const smt::Sort & sort) const;
-  smt::Term make_term(const smt::Term & val, const smt::Sort & sort) const;
-  smt::Term make_term(const std::string val,
-                      const smt::Sort & sort,
-                      uint64_t base = 10) const;
+  smt::Term make_term(bool b) const override;
+  smt::Term make_term(int64_t i, const smt::Sort & sort) const override;
+  smt::Term make_term(const smt::Term & val,
+                      const smt::Sort & sort) const override;
 
-  smt::Sort make_sort(const smt::DatatypeDecl & d) const {
+  smt::Sort make_sort(const smt::DatatypeDecl & d) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  smt::DatatypeDecl make_datatype_decl(const std::string & s) {
+  smt::DatatypeDecl make_datatype_decl(const std::string & s) override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  smt::DatatypeConstructorDecl make_datatype_constructor_decl(const std::string s) {
+  smt::DatatypeConstructorDecl make_datatype_constructor_decl(
+      const std::string s) override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  void add_constructor(smt::DatatypeDecl & dt, const smt::DatatypeConstructorDecl & con) const {
+  void add_constructor(smt::DatatypeDecl & dt,
+                       const smt::DatatypeConstructorDecl & con) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  void add_selector(smt::DatatypeConstructorDecl & dt, const std::string & name, const smt::Sort & s) const {
+  void add_selector(smt::DatatypeConstructorDecl & dt,
+                    const std::string & name,
+                    const smt::Sort & s) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  void add_selector_self(smt::DatatypeConstructorDecl & dt, const std::string & name) const {
+  void add_selector_self(smt::DatatypeConstructorDecl & dt,
+                         const std::string & name) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  smt::Term get_constructor(const smt::Sort & s, std::string name) const {
+  smt::Term get_constructor(const smt::Sort & s,
+                            std::string name) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  smt::Term get_tester(const smt::Sort & s, std::string name) const {
+  smt::Term get_tester(const smt::Sort & s, std::string name) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
-  smt::Term get_selector(const smt::Sort & s, std::string con, std::string name) const {
+  smt::Term get_selector(const smt::Sort & s,
+                         std::string con,
+                         std::string name) const override
+  {
     throw NotImplementedException("Not Implemented");
   };
 
