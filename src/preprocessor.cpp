@@ -543,7 +543,17 @@ OpEliminator::OpEliminator(SmtSolver & solver) : super(solver, false) {}
 
 OpEliminator::~OpEliminator() {}
 
-Term OpEliminator::process(Term t) { return visit(t); }
+Term OpEliminator::process(Term t)
+{
+  Term trailing_res = visit(t);
+  Term res = visit(trailing_res);
+  // keep visiting until there's a fixpoint
+  while (res != trailing_res) {
+    trailing_res = res;
+    res = visit(res);
+  }
+  return res;
+}
 
 WalkerStepResult OpEliminator::visit_term(Term & term)
 {
