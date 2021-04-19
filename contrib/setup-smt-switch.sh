@@ -11,9 +11,12 @@ Sets up the smt-switch API for interfacing with SMT solvers through a C++ API.
 
 -h, --help              display this message and exit
 --debug                 build a debug version
+--cvc4-home             use an already downloaded version of CVC4
 EOF
     exit 0
 }
+
+cvc4_home=default
 
 while [ $# -gt 0 ]
 do
@@ -21,6 +24,17 @@ do
         -h|--help) usage;;
         --debug)
             CONF_OPTS=--debug;;
+        --cvc4-home) die "missing argument to $1 (see -h)" ;;
+        --cvc4-home=*)
+            cvc4_home=${1##*=}
+            # Check if cvc4_home is an absolute path and if not, make it
+            # absolute.
+            case $cvc4_home in
+                /*) ;;                            # absolute path
+                *) cvc4_home=$(pwd)/$cvc4_home ;; # make absolute path
+            esac
+            CONF_OPTS="$CONF_OPTS --cvc4-home=$cvc4_home"
+            ;;
         *) die "unexpected argument: $1";;
     esac
     shift
@@ -33,7 +47,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     git clone https://github.com/makaimann/smt-switch
     cd smt-switch
     git checkout -f 970f5aaa9f262f30f26f85f2de9364be33483d7b
-    ./travis-scripts/download-cvc4.sh
+    [[ $cvc4_home == default ]] && echo "Downloading cvc4" && ./travis-scripts/download-cvc4.sh
     ./contrib/setup-flex.sh
     ./contrib/setup-bison.sh
     ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static --smtlib-reader $CONF_OPTS
