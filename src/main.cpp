@@ -11,6 +11,20 @@ using namespace lbv2i;
 using namespace std;
 using namespace smt;
 
+class BV2IntParser : public SmtLibReader
+{
+ public:
+  BV2IntParser(SmtSolver & solver) : SmtLibReader(solver) {}
+
+  void set_logic(const string & logic) override
+  {
+    if (logic != "QF_BV" && logic != "QF_UFBV") {
+      throw SmtException("Only supported logics are QF_BV and QF_UFBV");
+    }
+    solver_->set_logic("QF_UFNIA");
+  }
+};
+
 int main(int argc, char ** argv)
 {
   string filename;
@@ -49,7 +63,7 @@ int main(int argc, char ** argv)
   }
 
   smt::SmtSolver solver = std::make_shared<LBV2ISolver>(underlying_solver, opts.lazy);
-  SmtLibReader parser(solver);
+  BV2IntParser parser(solver);
 
   if (num_files == 1) {
     // ifstream ifile(filename);
