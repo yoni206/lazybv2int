@@ -59,9 +59,9 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     [[ $cvc4_home == default ]] && echo "Downloading cvc4" && ./travis-scripts/download-cvc4.sh
     ./contrib/setup-flex.sh
     ./contrib/setup-bison.sh
-    ./configure.sh --cvc4 --msat --msat-home=../mathsat --prefix=local --static --smtlib-reader $CONF_OPTS
+    ./configure.sh --cvc4 --prefix=local --smtlib-reader $CONF_OPTS
     cd build
-    make -j$(nproc)
+    make -j2
     make test
     make install
     cd $DIR
@@ -70,7 +70,7 @@ else
 fi
 
 if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ]; then \
-    echo "It appears smt-switch with MathSAT and CVC4 was successfully installed to $DEPS/smt-switch/local."
+    echo "It appears smt-switch with CVC4 was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
     echo "You might be missing some dependencies."
