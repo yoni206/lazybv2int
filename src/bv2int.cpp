@@ -173,7 +173,7 @@ WalkerStepResult BV2Int::visit_term(Term & t)
       // leaf now
       Sort s = t->get_sort();
       SortKind sk = s->get_sort_kind();
-      if (t->is_symbolic_const()) {
+      if (t->is_symbol()) {
         // a variable
         if (sk == SortKind::BV) {
           uint64_t bv_width = t->get_sort()->get_width();
