@@ -297,7 +297,7 @@ const std::map<RewriteRule,
         { RepeatEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             Term a = children[0];
-            Term res = t;
+            Term res = a;
             size_t amount = t->get_op().idx0;
 
             if (amount == 1) {
@@ -305,7 +305,7 @@ const std::map<RewriteRule,
             }
 
             for (size_t i = 1; i < amount; ++i) {
-              res = s->make_term(Concat, res, t);
+              res = s->make_term(Concat, res, a);
             }
 
             return res;
@@ -436,7 +436,8 @@ const std::map<RewriteRule,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             Term a = children[0];
             Term b = children[1];
-            return s->make_term(Equal, b, a);
+            Term xor_term = s->make_term(BVXor, a, b);
+            return s->make_term(BVNot, xor_term);
           } },
         
         { SubEliminate,
@@ -543,7 +544,17 @@ OpEliminator::OpEliminator(SmtSolver & solver) : super(solver, false) {}
 
 OpEliminator::~OpEliminator() {}
 
-Term OpEliminator::process(Term t) { return visit(t); }
+Term OpEliminator::process(Term t)
+{
+  Term trailing_res = visit(t);
+  Term res = visit(trailing_res);
+  // keep visiting until there's a fixpoint
+  while (res != trailing_res) {
+    trailing_res = res;
+    res = visit(res);
+  }
+  return res;
+}
 
 WalkerStepResult OpEliminator::visit_term(Term & term)
 {

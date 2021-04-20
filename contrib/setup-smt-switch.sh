@@ -16,6 +16,11 @@ EOF
     exit 0
 }
 
+die () {
+    echo "*** $0: $*" 1>&2
+    exit 1
+}
+
 cvc4_home=default
 
 while [ $# -gt 0 ]
