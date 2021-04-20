@@ -436,7 +436,8 @@ const std::map<RewriteRule,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             Term a = children[0];
             Term b = children[1];
-            return s->make_term(Equal, b, a);
+            Term xor_term = s->make_term(BVXor, a, b);
+            return s->make_term(BVNot, xor_term);
           } },
         
         { SubEliminate,
