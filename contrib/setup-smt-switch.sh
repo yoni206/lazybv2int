@@ -24,7 +24,9 @@ do
         -h|--help) usage;;
         --debug)
             CONF_OPTS=--debug;;
-        --cvc4-home) die "missing argument to $1 (see -h)" ;;
+        --cvc4-home) 
+            echo "missing argument to $1 (see -h)" 
+            exit 1;;
         --cvc4-home=*)
             cvc4_home=${1##*=}
             # Check if cvc4_home is an absolute path and if not, make it
@@ -35,7 +37,9 @@ do
             esac
             CONF_OPTS="$CONF_OPTS --cvc4-home=$cvc4_home"
             ;;
-        *) die "unexpected argument: $1";;
+        *) 
+            echo "unexpected argument: $1"
+            exit 1;;
     esac
     shift
 done
