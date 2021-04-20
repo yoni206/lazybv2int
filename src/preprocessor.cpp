@@ -297,7 +297,7 @@ const std::map<RewriteRule,
         { RepeatEliminate,
           [](const Term & t, const TermVec & children, SmtSolver & s) {
             Term a = children[0];
-            Term res = t;
+            Term res = a;
             size_t amount = t->get_op().idx0;
 
             if (amount == 1) {
@@ -305,7 +305,7 @@ const std::map<RewriteRule,
             }
 
             for (size_t i = 1; i < amount; ++i) {
-              res = s->make_term(Concat, res, t);
+              res = s->make_term(Concat, res, a);
             }
 
             return res;
