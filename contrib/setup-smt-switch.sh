@@ -29,8 +29,8 @@ do
         -h|--help) usage;;
         --debug)
             CONF_OPTS=--debug;;
-        --cvc4-home) 
-            echo "missing argument to $1 (see -h)" 
+        --cvc4-home)
+            echo "missing argument to $1 (see -h)"
             exit 1;;
         --cvc4-home=*)
             cvc4_home=${1##*=}
@@ -42,7 +42,7 @@ do
             esac
             CONF_OPTS="$CONF_OPTS --cvc4-home=$cvc4_home"
             ;;
-        *) 
+        *)
             echo "unexpected argument: $1"
             exit 1;;
     esac
@@ -69,8 +69,11 @@ else
     echo "$DEPS/smt-switch already exists. If you want to rebuild, please remove it manually."
 fi
 
-if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.a ] && [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.a ]; then \
-    echo "It appears smt-switch with CVC4 was successfully installed to $DEPS/smt-switch/local."
+if [ -f $DEPS/smt-switch/local/lib/libsmt-switch.* ]; then \
+    echo "It appears smt-switch"
+    [ -f $DEPS/smt-switch/local/lib/libsmt-switch-msat.* ] && echo "+ mathsat backend"
+    [ -f $DEPS/smt-switch/local/lib/libsmt-switch-cvc4.* ] && echo "+ cvc4 backend"
+    echo "was successfully installed to $DEPS/smt-switch/local."
 else
     echo "Building smt-switch failed."
     echo "You might be missing some dependencies."
