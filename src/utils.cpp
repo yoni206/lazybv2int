@@ -495,15 +495,15 @@ Term utils::gen_mul_sigma(const TermVec& children, TermVec& side_effects, uint64
   TermVec args = {fsigmul_, solver_->make_term(bv_width, int_sort_), children[0], children[1]};
   Term res = solver_->make_term(Apply, args);
 
-  if (children[0]->is_value() || children[1]->is_value()) {
-    // linear multiplication optimization
-    Term c = children[0]->is_value() ? children[0]
-                                            : children[1];
-    side_effects.push_back(solver_->make_term(Ge, res, int_zero_));
-    side_effects.push_back(solver_->make_term(Lt, res, c));
-  } else {
-    side_effects.push_back(make_range_constraint(res, bv_width));
-  }
+//   if (children[0]->is_value() || children[1]->is_value()) {
+//     // linear multiplication optimization
+//     Term c = children[0]->is_value() ? children[0]
+//                                             : children[1];
+//     side_effects.push_back(solver_->make_term(Ge, res, int_zero_));
+//     side_effects.push_back(solver_->make_term(Lt, res, c));
+//   } else {
+//     side_effects.push_back(make_range_constraint(res, bv_width));
+//   }
   return res;
 }
 

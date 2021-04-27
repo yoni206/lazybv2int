@@ -1,11 +1,22 @@
 #include <assert.h>
 #include <fstream>
+#include <cstdio>
+#include <stdexcept>
+#include <string>
+#include <array>
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <sstream>
+#include "assert.h"
+
 
 #include "opts.h"
 #include "lbv2isolver.h"
 #include "smt-switch/cvc4_factory.h"
 #include "smt-switch/msat_factory.h"
 #include "smt-switch/smtlib_reader.h"
+#include "smt-switch/printing_solver.h"
 
 using namespace lbv2i;
 using namespace std;
@@ -53,16 +64,19 @@ int main(int argc, char ** argv)
   smt::SmtSolver underlying_solver;
   if (opts.solver == "cvc4") {
     // create CVC4 Solver without a shadow DAG (e.g. LoggingSolver wrapper)
-    underlying_solver = smt::CVC4SolverFactory::create(false);
+    underlying_solver = smt::CVC4SolverFactory::create(true);
     underlying_solver->set_opt("nl-ext-tplanes", "true");
   } else if (opts.solver == "msat") {
     // create MathSAT Solver without a shadow DAG (e.g. LoggingSolver wrapper)
-    underlying_solver = smt::MsatSolverFactory::create(false);
+    underlying_solver = smt::MsatSolverFactory::create(true);
   } else {
     assert(false);
   }
+  stringbuf strbuf1;
+  ostream os1(&strbuf1);
+  smt::SmtSolver printing_solver = create_printing_solver(underlying_solver,&os1,PrintingStyleEnum::CVC4_STYLE);
 
-  smt::SmtSolver solver = std::make_shared<LBV2ISolver>(underlying_solver, opts.lazy);
+  smt::SmtSolver solver = std::make_shared<LBV2ISolver>(printing_solver, opts.lazy);
   BV2IntParser parser(solver);
 
   if (num_files == 1) {
@@ -76,6 +90,7 @@ int main(int argc, char ** argv)
     cout << "usage: lazybv2int <filename>" << endl;
     // can add a run on stdin option if needed
   }
+  std::cout << strbuf1.str() << std::endl;
 
   return 0;
 }
