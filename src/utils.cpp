@@ -504,6 +504,7 @@ Term utils::gen_mul_sigma(const TermVec& children, TermVec& side_effects, uint64
 //   } else {
 //     side_effects.push_back(make_range_constraint(res, bv_width));
 //   }
+     side_effects.push_back(make_range_constraint(res, bv_width));
   return res;
 }
 
