@@ -59,7 +59,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
     [[ $cvc4_home == default ]] && echo "Downloading cvc4" && ./travis-scripts/download-cvc4.sh
     ./contrib/setup-flex.sh
     ./contrib/setup-bison.sh
-    ./configure.sh --cvc4 --prefix=local --smtlib-reader $CONF_OPTS
+    ./configure.sh --cvc4 --msat --msat-home=../mathsat --static --prefix=local --smtlib-reader $CONF_OPTS
     cd build
     make -j2
     make test
