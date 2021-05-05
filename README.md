@@ -11,6 +11,9 @@ The tool uses [mathsat](https://mathsat.fbk.eu/) to parse the input problem and 
 
 # Install
 ```
+# make sure you meet all the license requirements to use mathsat
+./contrib/setup-msat.sh
+
 ./contrib/setup-smt-switch.sh
 ./configure.sh
 cd build
