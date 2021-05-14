@@ -9,7 +9,7 @@ Incremental solving is supported.
 
 The tool uses [mathsat](https://mathsat.fbk.eu/) to parse the input problem and [cvc4](https://cvc4.github.io/) to solve the arithmetic translations.
 
-A description of lazybv2int is available [here](https://github.com/yoni206/lazybv2int/blob/master/smtcomp20/smtcomp-2020.pdf).
+A description of lazybv2int is available [here](https://github.com/yoni206/lazybv2int/blob/master/smtcomp-2020.pdf).
 
 # Install
 ```
